@@ -14,6 +14,7 @@ use tauri::api::process::Command;
 use ipfs_api::IpfsClient;
 
 fn main() {
+  let ctx = tauri::generate_context!();
   tauri::Builder::default()
     .setup(|_app| {
       // tauri::async_runtime::spawn(async move {
@@ -28,12 +29,13 @@ fn main() {
       });
       Ok(())
     })
-    .run(tauri::generate_context!())
+    .run(ctx)
     .expect("error while running tauri application");
 }
 
 async fn launch_ipfs_daemon() -> Result<(), String> {
   // config::create_initial_config_if_necessary();
+  eprintln!("Starting IPFS.");
   Command::new_sidecar("ipfs")
     .or(Err(String::from("Can't find ipfs binary")))?
     .args(&[
@@ -47,7 +49,7 @@ async fn launch_ipfs_daemon() -> Result<(), String> {
     .map_err(|err| format!("Failed to execute ipfs: {:?}", err))?;
 
   let client = IpfsClient::default();
-  match wait_for_ipfs_ready().await {
+  match wait_for_ipfs_ready(&client).await {
     Ok(ready) => eprintln!("ipfs ready: {:?}", ready),
     Err(e) => eprintln!("error waiting for ipfs: {}", e),
   }
@@ -60,8 +62,7 @@ async fn launch_ipfs_daemon() -> Result<(), String> {
   Ok(())
 }
 
-async fn wait_for_ipfs_ready() -> Result<bool, bool> {
-  let client = IpfsClient::default();
+async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {
   // A counter variable
   let mut ready = false;
   let mut retries = 1;
