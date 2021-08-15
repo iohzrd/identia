@@ -11,10 +11,41 @@
     clippy::nonstandard_macro_braces,
 )]
 
+use tauri::{
+  api::process::{Command},
+};
+
 fn main() {
-  let ctx = tauri::generate_context!();
   tauri::Builder::default()
-    // .register_global_uri_scheme_protocol(String::from("file://"), uri_handler)
-    .run(ctx)
+    .setup(|_app| {
+      // tauri::async_runtime::spawn(async move {
+      tauri::async_runtime::block_on(async move {
+        match launch_ipfs_daemon().await {
+          Ok(()) => (),
+          Err(_err) => {
+            // log::error!("There was an error launching holochain: {:?}", err);
+          }
+        }
+        // log::info!("Launch setup successful")
+      });
+      Ok(())
+    })
+    .run(tauri::generate_context!())
     .expect("error while running tauri application");
+}
+
+async fn launch_ipfs_daemon() -> Result<(), String> {
+  // config::create_initial_config_if_necessary();
+  Command::new_sidecar("ipfs")
+    .or(Err(String::from("Can't find ipfs binary")))?
+    .args(&[
+      "daemon",
+      // config::conductor_config_path()
+      //   .into_os_string()
+      //   .to_str()
+      //   .unwrap(),
+    ])
+    .spawn()
+    .map_err(|err| format!("Failed to execute ipfs: {:?}", err))?;
+  Ok(())
 }

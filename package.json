@@ -6,17 +6,23 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "info": "tauri info",
+    "postinstall": "npm run renameIpfsBinary",
+    "renameIpfsBinary": "node scripts/renameIpfsBinary.js",
     "start": "sirv public --no-clear",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:build-debug": "tauri build -- --debug"
+    "tauri:build-debug": "tauri build -- --debug",
+    "tauri:dev": "tauri dev",
+    "update": "cd src-tauri; cargo update; cd ../"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@tauri-apps/cli": "^1.0.0-beta.6",
     "buffer": "^6.0.3",
+    "carbon-components-svelte": "^0.42.2",
+    "carbon-icons-svelte": "^10.36.0",
+    "carbon-preprocess-svelte": "^0.6.0",
     "exifremove": "^1.0.1",
     "file-type": "^16.5.3",
     "go-ipfs": "^0.9.1",
@@ -32,6 +38,6 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.5",
-    "sirv-cli": "^1.0.12"
+    "sirv-cli": "^1.0.14"
   }
 }
