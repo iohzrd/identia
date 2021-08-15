@@ -48,7 +48,7 @@ async fn launch_ipfs_daemon() -> Result<(), String> {
 
   let client = IpfsClient::default();
   match wait_for_ipfs_ready().await {
-    Ok(connected) => eprintln!("connected: {:?}", connected),
+    Ok(ready) => eprintln!("ipfs ready: {:?}", ready),
     Err(e) => eprintln!("error waiting for ipfs: {}", e),
   }
 
@@ -60,27 +60,27 @@ async fn launch_ipfs_daemon() -> Result<(), String> {
   Ok(())
 }
 
-async fn wait_for_ipfs_ready() -> Result<String, String> {
+async fn wait_for_ipfs_ready() -> Result<bool, bool> {
   let client = IpfsClient::default();
   // A counter variable
-  let mut iden = "".to_string();
+  let mut ready = false;
   let mut retries = 1;
-  let mut connected = false;
   // Loop while `n` is less than 101
-  while !connected && retries < 300 {
-    println!("trying to connect to ipfs");
+  while !ready {
     match client.id(None).await {
-      Ok(id) => {
-        connected = true;
-        iden = id.id;
+      Ok(_id) => {
+        ready = true;
       }
-      Err(e) => {
+      Err(_err) => {
+        if retries > 300 {
+          // Err()
+          break;
+        }
         retries += 1;
-        eprintln!("connected: {:?}, {:?}", connected, e);
         thread::sleep(Duration::from_millis(100));
       }
     }
   }
 
-  Ok(iden)
+  Ok(ready)
 }
