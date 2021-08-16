@@ -18,6 +18,13 @@ fn main() {
     .setup(|app| {
       let splashscreen_window = app.get_window("splashscreen").unwrap();
       let main_window = app.get_window("main").unwrap();
+      // let splashscreen_window = app
+      //   .create_window(
+      //     "splashscreen".into(),
+      //     WindowUrl::App("index.html".into()),
+      //     move |window_builder, webview_attributes| (window_builder., webview_attributes),
+      //   )
+      //   .unwrap();
 
       tauri::async_runtime::spawn(async move {
         // tauri::async_runtime::block_on(async move {
