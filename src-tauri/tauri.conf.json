@@ -77,8 +77,21 @@
     },
     "windows": [
       {
-        "title": "Tauri API Validation",
-        "transparent": false
+        "label": "main",
+        "title": "Tauri",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "visible": false
+      },
+      {
+        "label": "splashscreen",
+        "width": 512,
+        "height": 512,
+        "decorations": false,
+        "resizable": false,
+        "transparent": true,
+        "url": "splashscreen.html"
       }
     ]
   }
