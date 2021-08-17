@@ -11,7 +11,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.0.0-beta.3" }
+tauri-build = { version = "1.0.0-beta.4" }
 
 [dependencies]
 directories = "3.0.2"
@@ -19,7 +19,9 @@ ipfs-api = "0.11.0"
 rusqlite = { version = "0.25.1", features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.66"
-tauri = { version = "1.0.0-beta.5", features = ["api-all", "cli", "menu", "system-tray", "updater"] }
+percent-encoding = "2.1.0"
+tauri = { version = "1.0.0-beta.6", features = ["api-all", "cli", "system-tray", "updater"] }
+tokio = { version = "1.9", features = [ "rt", "rt-multi-thread", "sync", "fs" ] }
 
 [features]
 default = [ "custom-protocol" ]

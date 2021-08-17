@@ -79,19 +79,20 @@
       {
         "label": "main",
         "title": "Tauri",
-        "width": 800,
-        "height": 600,
+        "width": 1280,
+        "height": 720,
         "resizable": true,
         "visible": false
       },
       {
-        "label": "splashscreen",
+        "label": "splash",
+        "center": true,
         "width": 512,
         "height": 512,
         "decorations": false,
         "resizable": false,
         "transparent": true,
-        "url": "splashscreen.html"
+        "url": "splash.html"
       }
     ]
   }

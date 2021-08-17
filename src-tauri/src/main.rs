@@ -7,30 +7,41 @@
   windows_subsystem = "windows"
 )]
 
-// use ipfs_api::IpfsClient;
 use ipfs_api::IpfsClient;
+// use percent_encoding;
 use std::{thread, time::Duration};
 use tauri::api::process::Command;
 use tauri::Manager;
+// use tauri::WindowUrl;
 
 fn main() {
   tauri::Builder::default()
     .setup(|app| {
-      let splashscreen_window = app.get_window("splashscreen").unwrap();
-      let main_window = app.get_window("main").unwrap();
-      // let splashscreen_window = app
-      //   .create_window(
-      //     "splashscreen".into(),
-      //     WindowUrl::App("index.html".into()),
-      //     move |window_builder, webview_attributes| (window_builder., webview_attributes),
-      //   )
-      //   .unwrap();
+      let splashscreen_window = app.get_window("splash").unwrap();
+      // let splashscreen_window = app.create_window(
+      //   "splashscreen".into(),
+      //   WindowUrl::default(),
+      //   move |window_builder, webview_attributes| {
+      //     (
+      //       window_builder,
+      //       webview_attributes.register_uri_scheme_protocol("tauri", move |url| {
+      //         let path = url.replace("tauri://", "");
+      //         let path = percent_encoding::percent_decode(path.as_bytes())
+      //           .decode_utf8_lossy()
+      //           .to_string();
+      //         let data =
+      //           tauri::async_runtime::block_on(async move { tokio::fs::read(path).await })?;
+      //         Ok(data)
+      //       }),
+      //     )
+      //   },
+      // );
 
       tauri::async_runtime::spawn(async move {
-        // tauri::async_runtime::block_on(async move {
         match launch_ipfs_daemon().await {
           Ok(()) => {
             splashscreen_window.close().unwrap();
+            let main_window = app.get_window("main").unwrap();
             main_window.show().unwrap();
           }
           Err(err) => {

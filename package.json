@@ -18,7 +18,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
-    "@tauri-apps/cli": "^1.0.0-beta.6",
+    "@tauri-apps/cli": "^1.0.0-beta.8",
     "buffer": "^6.0.3",
     "carbon-components-svelte": "^0.42.2",
     "carbon-icons-svelte": "^10.36.0",
@@ -37,7 +37,7 @@
     "timeago.js": "^4.0.2"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.0-beta.5",
+    "@tauri-apps/api": "^1.0.0-beta.6",
     "sirv-cli": "^1.0.14"
   }
 }
