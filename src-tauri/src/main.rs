@@ -18,6 +18,7 @@ fn main() {
   tauri::Builder::default()
     .setup(|app| {
       let splashscreen_window = app.get_window("splash").unwrap();
+      let main_window = app.get_window("main").unwrap();
       // let splashscreen_window = app.create_window(
       //   "splashscreen".into(),
       //   WindowUrl::default(),
@@ -41,7 +42,6 @@ fn main() {
         match launch_ipfs_daemon().await {
           Ok(()) => {
             splashscreen_window.close().unwrap();
-            let main_window = app.get_window("main").unwrap();
             main_window.show().unwrap();
           }
           Err(err) => {
