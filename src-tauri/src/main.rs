@@ -8,13 +8,14 @@
 )]
 
 mod cmd;
-mod menu;
 
 #[cfg(target_os = "linux")]
 use std::path::PathBuf;
 
-use ipfs_api::IpfsClient;
 // use percent_encoding;
+use ipfs_api::IpfsClient;
+use rusqlite::NO_PARAMS;
+use rusqlite::{Connection, Result};
 use serde::Deserialize;
 use serde::Serialize;
 use std::{thread, time::Duration};
@@ -28,11 +29,6 @@ struct Reply {
   data: String,
 }
 
-#[tauri::command]
-async fn menu_toggle(window: tauri::Window) {
-  window.menu_handle().toggle().unwrap();
-}
-
 fn main() {
   tauri::Builder::default()
     .on_page_load(|window, _| {
@@ -40,17 +36,13 @@ fn main() {
       window.listen("ipfs-id", move |event| {
         println!("got js-event with message '{:?}'", event.payload());
         let reply = Reply {
-          data: "something else".to_string(),
+          data: "ipfs-id".to_string(),
         };
 
         window_
           .emit("rust-event", Some(reply))
           .expect("failed to emit");
       });
-    })
-    .menu(menu::get_menu())
-    .on_menu_event(|event| {
-      println!("{:?}", event.menu_item_id());
     })
     .system_tray(
       SystemTray::new().with_menu(
@@ -116,35 +108,24 @@ fn main() {
       cmd::ipfs_id,
       cmd::log_operation,
       cmd::perform_request,
-      menu_toggle,
     ])
     .setup(|app| {
+      // let mut conn;
+      let client = IpfsClient::default();
       let splashscreen_window = app.get_window("splash").unwrap();
       let main_window = app.get_window("main").unwrap();
-      // let splashscreen_window = app.create_window(
-      //   "splashscreen".into(),
-      //   WindowUrl::default(),
-      //   move |window_builder, webview_attributes| {
-      //     (
-      //       window_builder,
-      //       webview_attributes.register_uri_scheme_protocol("tauri", move |url| {
-      //         let path = url.replace("tauri://", "");
-      //         let path = percent_encoding::percent_decode(path.as_bytes())
-      //           .decode_utf8_lossy()
-      //           .to_string();
-      //         let data =
-      //           tauri::async_runtime::block_on(async move { tokio::fs::read(path).await })?;
-      //         Ok(data)
-      //       }),
-      //     )
-      //   },
-      // );
 
       tauri::async_runtime::spawn(async move {
-        match launch_ipfs_daemon().await {
-          Ok(()) => {
+        match launch_ipfs_daemon(&client.clone()).await {
+          Ok(iden) => {
+            let conn = Connection::open(iden.clone() + ".db");
             splashscreen_window.close().unwrap();
             main_window.show().unwrap();
+
+            let reply = Reply { data: iden.clone() };
+            main_window
+              .emit("ipfs-id", Some(reply))
+              .expect("failed to emit");
           }
           Err(err) => {
             // log::error!("There was an error launching ipfs: {:?}", err);
@@ -154,6 +135,7 @@ fn main() {
         // log::info!("Launch setup successful")
         println!("Launch setup successful")
       });
+
       Ok(())
     })
     .build(tauri::generate_context!())
@@ -208,7 +190,7 @@ fn main() {
     })
 }
 
-async fn launch_ipfs_daemon() -> Result<(), String> {
+async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
   // config::create_initial_config_if_necessary();
   println!("Starting IPFS.");
   Command::new_sidecar("ipfs")
@@ -223,18 +205,17 @@ async fn launch_ipfs_daemon() -> Result<(), String> {
     .spawn()
     .map_err(|err| format!("Failed to execute ipfs: {:?}", err))?;
 
-  let client = IpfsClient::default();
   match wait_for_ipfs_ready(&client).await {
     Ok(ready) => println!("ipfs ready: {:?}", ready),
     Err(e) => eprintln!("error waiting for ipfs: {}", e),
   }
 
-  match client.id(None).await {
-    Ok(id) => println!("id: {:?}", id.id),
-    Err(e) => eprintln!("error getting id: {}", e),
+  match get_ipfs_id(&client).await {
+    Ok(id) => Ok(id),
+    Err(e) => Err(e),
   }
 
-  Ok(())
+  // Ok(iden)
 }
 
 async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {
@@ -259,4 +240,11 @@ async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {
   }
 
   Ok(ready)
+}
+
+async fn get_ipfs_id(client: &IpfsClient) -> Result<String, String> {
+  match client.id(None).await {
+    Ok(id) => Ok(id.id),
+    Err(err) => Err(err.to_string()),
+  }
 }

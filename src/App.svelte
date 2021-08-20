@@ -1,58 +1,59 @@
 <script>
   import {
-    Header,
-    SideNav,
-    SideNavItems,
-    SideNavMenu,
-    SideNavMenuItem,
-    SideNavLink,
-    SideNavDivider,
-    SkipToContent,
     Content,
+    Header,
+    HeaderGlobalAction,
+    HeaderUtilities,
+    SideNav,
+    SideNavDivider,
+    SideNavItems,
+    SideNavLink,
+    SkipToContent,
   } from "carbon-components-svelte";
+  import SettingsAdjust20 from "carbon-icons-svelte/lib/SettingsAdjust20";
+  import Add20 from "carbon-icons-svelte/lib/Add20";
+
+  import Identity from "./components/Identity.svelte";
+  import Feed from "./components/Feed.svelte";
+  import Settings from "./components/Settings.svelte";
 
   import { listen, emit } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-  import { writable } from "svelte/store";
+  // import { writable } from "svelte/store";
   // import { create } from "ipfs-http-client";
 
-  // export let onMessage;
+  // export let onIpfsId;
   let isSideNavOpen = false;
-  let unlisten;
+  let ipfs_id_unlisten;
   let count = 1;
   // let ipfs;
-  // let ipfs_id = {};
   let ipfs_id = "";
-  let responses = writable([]);
+  // let responses = writable([]);
 
   // the `$:` means 're-run whenever these values change'
   $: doubled = count * 2;
   $: quadrupled = doubled * 2;
 
-  onMount(async () => {
-    unlisten = await listen("rust-event", onMessage);
+  const views = [
+    {
+      label: "Identity",
+      component: Identity,
+    },
+    {
+      label: "Feed",
+      component: Feed,
+    },
+    {
+      label: "Settings",
+      component: Settings,
+    },
+  ];
+  let selected_view = views[0];
 
-    // try {
-    //   console.log(navigator.userAgent);
-    //   // navigator.userAgent = "Tauri";
-    //   console.log(navigator.userAgent);
-    //   ipfs = await create("/ip4/127.0.0.1/tcp/5001");
-    //   console.log("ipfs in svelte!");
-
-    //   ipfs_id = await ipfs.id();
-    //   console.log(ipfs_id);
-    //   id = ipfs_id.id;
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  });
-
-  onDestroy(() => {
-    if (unlisten) {
-      unlisten();
-    }
-  });
+  function select(view) {
+    selected_view = view;
+  }
 
   function handleClick() {
     count += 1;
@@ -73,21 +74,31 @@
         name: "test",
       },
     })
-      .then(onMessage)
-      .catch(onMessage);
+      .then(onIpfsId)
+      .catch(onIpfsId);
   }
 
   function ipfsID() {
-    invoke("ipfs_id").then(onIpfsId).catch(onMessage);
+    invoke("ipfs_id").then(onIpfsId).catch(onIpfsId);
   }
 
   function emitEvent() {
     emit("ipfs-id", "this is the payload string");
   }
 
+  function onIpfsId(value) {
+    console.log("onIpfsId");
+    if (
+      value &&
+      value.payload &&
+      value.payload.data &&
+      typeof value.payload.data === "string"
+    ) {
+      ipfs_id = value.payload.data;
+    }
+  }
+
   function onMessage(value) {
-    console.log("onMessage");
-    console.log(value);
     responses.update((r) => [
       `[${new Date().toLocaleTimeString()}]` +
         ": " +
@@ -96,62 +107,61 @@
     ]);
   }
 
-  function onIpfsId(value) {
-    console.log("onIpfsId");
-    console.log(value);
-    ipfs_id = value;
-  }
+  onMount(async () => {
+    ipfs_id_unlisten = await listen("ipfs-id", onIpfsId);
+
+    // try {
+    //   console.log(navigator.userAgent);
+    //   // navigator.userAgent = "Tauri";
+    //   console.log(navigator.userAgent);
+    //   ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    //   console.log("ipfs in svelte!");
+
+    //   ipfs_id = await ipfs.id();
+    //   console.log(ipfs_id);
+    //   id = ipfs_id.id;
+    // } catch (error) {
+    //   console.log(error);
+    // }
+  });
+
+  onDestroy(() => {
+    if (ipfs_id_unlisten) {
+      ipfs_id_unlisten();
+    }
+  });
 </script>
 
 <Header
   persistentHamburgerMenu={true}
-  company="IBM"
-  platformName="Carbon Svelte"
+  company="Identia: "
+  platformName={ipfs_id}
   bind:isSideNavOpen
 >
   <div slot="skip-to-content">
     <SkipToContent />
   </div>
+  <HeaderUtilities>
+    <HeaderGlobalAction aria-label="Settings" icon={SettingsAdjust20} />
+    <HeaderGlobalAction aria-label="Follow new identity" icon={Add20} />
+  </HeaderUtilities>
 </Header>
 
 <SideNav bind:isOpen={isSideNavOpen}>
   <SideNavItems>
-    <SideNavLink text="Link 1" />
-    <SideNavLink text="Link 2" />
-    <SideNavLink text="Link 3" />
-    <SideNavMenu text="Menu">
-      <SideNavMenuItem href="/" text="Link 1" />
-      <SideNavMenuItem href="/" text="Link 2" />
-      <SideNavMenuItem href="/" text="Link 3" />
-    </SideNavMenu>
+    {#each views as view}
+      <SideNavLink
+        text={view.label}
+        class="nv noselect {selected_view === view ? 'nv_selected' : ''}"
+        on:click={() => select(view)}
+      >
+        {view.label}
+      </SideNavLink>
+    {/each}
     <SideNavDivider />
-    <SideNavLink text="Link 4" />
   </SideNavItems>
 </SideNav>
 
 <Content>
-  <div>
-    <h3>
-      Hello, {ipfs_id}
-    </h3>
-
-    <p>{count} * 2 = {doubled}</p>
-    <p>{doubled} * 2 = {quadrupled}</p>
-
-    <button on:click={handleClick}>
-      Count: {count}
-    </button>
-
-    <div>{window.location}</div>
-    <div>{window.location.href}</div>
-
-    <button class="button" id="log" on:click={log}>Call Log API</button>
-    <button class="button" id="id" on:click={performRequest}>
-      Call Request (async) API
-    </button>
-    <button class="button" id="request" on:click={ipfsID}> ipfs_id </button>
-    <button class="button" id="event" on:click={emitEvent}>
-      Send event to Rust
-    </button>
-  </div>
+  <svelte:component this={selected_view.component} />
 </Content>
