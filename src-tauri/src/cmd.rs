@@ -2,8 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+use chrono::prelude::{DateTime, Utc};
+use ipfs_api::request::Id;
 use ipfs_api::IpfsClient;
-use serde::Deserialize;
+use rusqlite::NO_PARAMS;
+use rusqlite::{Connection, Result};
+use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
 use tauri::command;
 
 #[derive(Debug, Deserialize)]
@@ -12,9 +17,36 @@ pub struct RequestBody {
   name: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct Identity {
+  aux: Vec<String>,
+  av: String,
+  dn: String,
+  following: Vec<String>,
+  meta: Vec<String>,
+  posts: Vec<String>,
+  publisher: String,
+  ts: i64,
+}
+
 #[command]
 pub fn log_operation(event: String, payload: Option<String>) {
   println!("{} {:?}", event, payload);
+}
+
+#[command]
+pub fn request_test_obj() -> Identity {
+  let me = Identity {
+    aux: vec![],
+    av: "".to_string(),
+    dn: "iohzrd".to_string(),
+    following: vec![],
+    meta: vec![],
+    posts: vec![],
+    publisher: "asdf1234".to_string(),
+    ts: DateTime::timestamp(&Utc::now()),
+  };
+  me.into()
 }
 
 #[command]
@@ -33,3 +65,24 @@ pub async fn ipfs_id() -> String {
   }
   iden.into()
 }
+
+// #[derive(Debug)]
+// struct Identity {
+//   id: String,
+//   name: String,
+//   data: Option<Vec<u8>>,
+// }
+
+// #[command]
+// pub async fn db_query(id: String) -> Identity {
+//   let conn = Connection::open(id + ".db")?;
+//   conn.execute(
+//     "CREATE TABLE person (
+//               id              INTEGER PRIMARY KEY,
+//               name            TEXT NOT NULL,
+//               data            BLOB
+//               )",
+//     [],
+//   )?;
+//   "iden".into()
+// }

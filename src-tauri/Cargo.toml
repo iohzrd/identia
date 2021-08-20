@@ -14,6 +14,7 @@ edition = "2018"
 tauri-build = { version = "1.0.0-beta.4" }
 
 [dependencies]
+chrono = "0.4"
 directories = "3.0.2"
 ipfs-api = "0.11.0"
 percent-encoding = "2.1.0"

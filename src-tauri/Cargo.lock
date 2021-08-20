@@ -53,6 +53,7 @@ checksum = "28ae2b3dec75a406790005a200b1bd89785afc02517a00ca99ecfe093ee9e6cf"
 name = "app"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "directories",
  "ipfs-api",
  "percent-encoding",

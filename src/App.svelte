@@ -78,6 +78,15 @@
       .catch(onIpfsId);
   }
 
+  function requestTestObj() {
+    invoke("request_test_obj").then(onTestObj).catch(onTestObj);
+  }
+
+  function onTestObj(obj) {
+    console.log("onTestObj");
+    console.log(obj);
+  }
+
   function ipfsID() {
     invoke("ipfs_id").then(onIpfsId).catch(onIpfsId);
   }
@@ -163,5 +172,9 @@
 </SideNav>
 
 <Content>
+  <button class="button" id="id" on:click={requestTestObj}>
+    Request obj (async)
+  </button>
+
   <svelte:component this={selected_view.component} />
 </Content>

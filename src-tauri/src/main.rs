@@ -108,9 +108,9 @@ fn main() {
       cmd::ipfs_id,
       cmd::log_operation,
       cmd::perform_request,
+      cmd::request_test_obj
     ])
     .setup(|app| {
-      // let mut conn;
       let client = IpfsClient::default();
       let splashscreen_window = app.get_window("splash").unwrap();
       let main_window = app.get_window("main").unwrap();
@@ -118,20 +118,26 @@ fn main() {
       tauri::async_runtime::spawn(async move {
         match launch_ipfs_daemon(&client.clone()).await {
           Ok(iden) => {
-            let conn = Connection::open(iden.clone() + ".db");
-            splashscreen_window.close().unwrap();
-            main_window.show().unwrap();
-
             let reply = Reply { data: iden.clone() };
             main_window
               .emit("ipfs-id", Some(reply))
               .expect("failed to emit");
+
+            // conn = Connection::open(iden.clone() + ".db");
+            splashscreen_window.close().unwrap();
+            main_window.show().unwrap();
           }
           Err(err) => {
             // log::error!("There was an error launching ipfs: {:?}", err);
             eprintln!("There was an error launching ipfs: {:?}", err);
           }
         }
+        // log::info!("Launch setup successful")
+        println!("Launch setup successful")
+      });
+
+      tauri::async_runtime::spawn(async move {
+        let conn = Connection::open("test_spawn.db");
         // log::info!("Launch setup successful")
         println!("Launch setup successful")
       });
@@ -186,6 +192,7 @@ fn main() {
       Event::ExitRequested { api, .. } => {
         api.prevent_exit();
       }
+
       _ => {}
     })
 }
@@ -214,8 +221,6 @@ async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
     Ok(id) => Ok(id),
     Err(e) => Err(e),
   }
-
-  // Ok(iden)
 }
 
 async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {

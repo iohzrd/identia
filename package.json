@@ -13,7 +13,7 @@
     "tauri:build": "tauri build",
     "tauri:build-debug": "tauri build -- --debug",
     "tauri:dev": "tauri dev",
-    "update": "cd src-tauri; cargo update; cd ../; ncu -u; npm install"
+    "update": "ncu -u; npm install; cd src-tauri; cargo update"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
