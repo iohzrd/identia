@@ -38,10 +38,24 @@
     identity = obj;
   }
 
-  function requestTestObj() {
+  function requestTestIdentity() {
     invoke("request_test_identity")
       .then(onIdentityObject)
       .catch(onIdentityObject);
+  }
+
+  function onPostObject(obj) {
+    console.log("onPostObject");
+    console.log(obj);
+    // identity = obj;
+  }
+
+  function requestTestPost() {
+    invoke("ipfs_get_post", {
+      cid: "QmQW72f51MRFj9PaJnLPcUWkZXRMcQVctf1ExJXrU3wWRs",
+    })
+      .then(onPostObject)
+      .catch(onPostObject);
   }
 </script>
 
@@ -49,8 +63,12 @@
   <Form on:submit>
     <div>{window.location}</div>
 
-    <button class="button" id="id" on:click={requestTestObj}>
-      Request obj (async)
+    <button class="button" id="id" on:click={requestTestIdentity}>
+      Request test identity (async)
+    </button>
+
+    <button class="button" id="id" on:click={requestTestPost}>
+      Request test post (async)
     </button>
 
     {#if identity}

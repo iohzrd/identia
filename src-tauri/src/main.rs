@@ -107,8 +107,8 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       cmd::ipfs_id,
       cmd::log_operation,
-      cmd::perform_request,
-      cmd::request_test_identity
+      cmd::request_test_identity,
+      cmd::ipfs_get_post
     ])
     .setup(|app| {
       let client = IpfsClient::default();

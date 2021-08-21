@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: MIT
 
 use chrono::prelude::{DateTime, Utc};
+use futures::TryStreamExt;
 use ipfs_api::request::Id;
 use ipfs_api::IpfsClient;
 use rusqlite::NO_PARAMS;
 use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
+use std::io::{self, Write};
+use std::str::from_utf8;
 use std::time::SystemTime;
 use tauri::command;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestBody {
-  id: i32,
-  name: String,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
@@ -102,9 +99,35 @@ pub fn request_test_identity() -> Identity {
 }
 
 #[command]
-pub fn perform_request(endpoint: String, body: RequestBody) -> String {
-  println!("{} {:?}", endpoint, body);
-  "message response".into()
+pub async fn ipfs_get_post(mut cid: String) -> String {
+  // if !cid.contains("/post.json") {
+  //   cid.push_str("/post.json");
+  // }
+  let client = IpfsClient::default();
+  let mut post = String::from("");
+  match client
+    .get(&cid)
+    .map_ok(|chunk| chunk.to_vec())
+    .try_concat()
+    .await
+  {
+    Ok(res) => {
+      let str = match from_utf8(&res) {
+        Ok(buf) => {
+          let out = io::stdout();
+          let mut out = out.lock();
+          out.write_all(&res).unwrap();
+
+          post = buf.to_string();
+          buf
+        }
+        Err(e) => "",
+      };
+      println!("get: {}", str)
+    }
+    Err(e) => eprintln!("error getting file: {}", e),
+  }
+  post.into()
 }
 
 #[command]
