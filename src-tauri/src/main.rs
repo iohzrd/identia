@@ -80,7 +80,7 @@ fn main() {
           #[cfg(target_os = "linux")]
           "icon_1" => app
             .tray_handle()
-            .set_icon(tauri::Icon::File(PathBuf::from("../../public/icon.png")))
+            .set_icon(tauri::Icon::File(PathBuf::from("../icons/icon.png")))
             .unwrap(),
           #[cfg(target_os = "macos")]
           "icon_1" => {
@@ -88,7 +88,7 @@ fn main() {
             app
               .tray_handle()
               .set_icon(tauri::Icon::Raw(
-                include_bytes!("../../public/icon.png").to_vec(),
+                include_bytes!("../icons/icon.png").to_vec(),
               ))
               .unwrap();
           }
@@ -96,7 +96,7 @@ fn main() {
           "icon_1" => app
             .tray_handle()
             .set_icon(tauri::Icon::Raw(
-              include_bytes!("../../public/icon.ico").to_vec(),
+              include_bytes!("../icons/icon.ico").to_vec(),
             ))
             .unwrap(),
           _ => {}
