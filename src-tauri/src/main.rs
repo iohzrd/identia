@@ -108,7 +108,7 @@ fn main() {
       cmd::ipfs_id,
       cmd::log_operation,
       cmd::perform_request,
-      cmd::request_test_obj
+      cmd::request_test_identity
     ])
     .setup(|app| {
       let client = IpfsClient::default();

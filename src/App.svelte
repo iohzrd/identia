@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {
     Content,
     Header,
@@ -17,23 +17,16 @@
   import Feed from "./components/Feed.svelte";
   import Settings from "./components/Settings.svelte";
 
-  import { listen, emit } from "@tauri-apps/api/event";
+  import { emit, listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-  // import { writable } from "svelte/store";
-  // import { create } from "ipfs-http-client";
+  import { writable } from "svelte/store";
 
   // export let onIpfsId;
   let isSideNavOpen = false;
   let ipfs_id_unlisten;
-  let count = 1;
-  // let ipfs;
   let ipfs_id = "";
-  // let responses = writable([]);
-
-  // the `$:` means 're-run whenever these values change'
-  $: doubled = count * 2;
-  $: quadrupled = doubled * 2;
+  let responses = writable([]);
 
   const views = [
     {
@@ -48,15 +41,15 @@
       label: "Settings",
       component: Settings,
     },
+    {
+      label: "External",
+      component: Settings,
+    },
   ];
   let selected_view = views[0];
 
   function select(view) {
     selected_view = view;
-  }
-
-  function handleClick() {
-    count += 1;
   }
 
   function log() {
@@ -79,7 +72,7 @@
   }
 
   function requestTestObj() {
-    invoke("request_test_obj").then(onTestObj).catch(onTestObj);
+    invoke("request_test_identity").then(onTestObj).catch(onTestObj);
   }
 
   function onTestObj(obj) {
@@ -118,20 +111,6 @@
 
   onMount(async () => {
     ipfs_id_unlisten = await listen("ipfs-id", onIpfsId);
-
-    // try {
-    //   console.log(navigator.userAgent);
-    //   // navigator.userAgent = "Tauri";
-    //   console.log(navigator.userAgent);
-    //   ipfs = await create("/ip4/127.0.0.1/tcp/5001");
-    //   console.log("ipfs in svelte!");
-
-    //   ipfs_id = await ipfs.id();
-    //   console.log(ipfs_id);
-    //   id = ipfs_id.id;
-    // } catch (error) {
-    //   console.log(error);
-    // }
   });
 
   onDestroy(() => {
@@ -172,9 +151,5 @@
 </SideNav>
 
 <Content>
-  <button class="button" id="id" on:click={requestTestObj}>
-    Request obj (async)
-  </button>
-
   <svelte:component this={selected_view.component} />
 </Content>
