@@ -1,15 +1,16 @@
 <script lang="ts">
   import {
-    Tile,
-    TextInput,
+    Button,
+    ButtonSet,
+    ButtonSkeleton,
+    Column,
     Form,
     FormGroup,
-    Checkbox,
-    RadioButtonGroup,
-    RadioButton,
-    Select,
-    SelectItem,
-    Button,
+    Grid,
+    Row,
+    TextInput,
+    TextInputSkeleton,
+    Tile,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
 
@@ -61,31 +62,49 @@
       </FormGroup>
 
       <FormGroup>
-        <TextInput
-          inline
-          labelText="dn"
-          placeholder=""
-          bind:value={identity["dn"]}
-        />
+        {#if identity.publisher}
+          <TextInput
+            disabled
+            inline
+            labelText="id"
+            placeholder=""
+            bind:value={identity["publisher"]}
+          />
+        {:else}
+          <TextInputSkeleton />
+        {/if}
+      </FormGroup>
+
+      <FormGroup>
+        {#if identity.dn}
+          <TextInput
+            inline
+            labelText="dn"
+            placeholder=""
+            bind:value={identity["dn"]}
+          />
+        {:else}
+          <TextInputSkeleton />
+        {/if}
       </FormGroup>
 
       <FormGroup legendText="aux">
-        {#each identity.aux as obj}
-          <div>
-            <TextInput
-              inline
-              labelText="key"
-              placeholder=""
-              bind:value={obj["key"]}
-            />
-            <TextInput
-              inline
-              labelText="value"
-              placeholder=""
-              bind:value={obj["value"]}
-            />
-          </div>
-        {/each}
+        <Grid>
+          {#each identity.aux as obj}
+            <Row>
+              {#if obj}
+                <TextInput inline placeholder="" bind:value={obj["key"]} />
+                <TextInput inline placeholder="" bind:value={obj["value"]} />
+                <Button kind="primary">delete</Button>
+              {:else}
+                <TextInputSkeleton />
+                <TextInputSkeleton />
+                <ButtonSkeleton />
+              {/if}
+            </Row>
+          {/each}
+          <Button kind="primary">add</Button>
+        </Grid>
       </FormGroup>
 
       <FormGroup legendText="following">
@@ -116,13 +135,13 @@
         {/if}
       </FormGroup>
 
-      <FormGroup legendText="publisher">
-        {identity["publisher"]}
-      </FormGroup>
-
       <FormGroup legendText="ts">
         {identity["ts"]}
       </FormGroup>
     {/if}
   </Form>
+
+  <ButtonSet>
+    <Button kind="secondary">Cancel</Button>
+  </ButtonSet>
 </Tile>
