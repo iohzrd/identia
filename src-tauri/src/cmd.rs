@@ -19,9 +19,9 @@ pub struct Post {
   aux: Vec<String>,
   body: String,
   files: Vec<String>,
-  files_root: String,
+  filesRoot: Option<String>,
+  files_root: Option<String>,
   meta: Vec<String>,
-  post_cid: String,
   publisher: String,
   ts: i64,
 }
@@ -53,6 +53,12 @@ pub struct Identity {
   posts: Vec<String>,
   publisher: String,
   ts: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PostResponse {
+  cid: String,
+  post: Post,
 }
 
 #[command]
@@ -99,35 +105,34 @@ pub fn request_test_identity() -> Identity {
 }
 
 #[command]
-pub async fn ipfs_get_post(mut cid: String) -> String {
-  // if !cid.contains("/post.json") {
-  //   cid.push_str("/post.json");
-  // }
+pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
+  let mut cid_json: String = cid.clone();
+  if !cid_json.contains("/post.json") {
+    cid_json.push_str("/post.json");
+  }
   let client = IpfsClient::default();
-  let mut post = String::from("");
+
   match client
-    .get(&cid)
+    .cat(&cid_json)
     .map_ok(|chunk| chunk.to_vec())
     .try_concat()
     .await
   {
     Ok(res) => {
-      let str = match from_utf8(&res) {
-        Ok(buf) => {
-          let out = io::stdout();
-          let mut out = out.lock();
-          out.write_all(&res).unwrap();
-
-          post = buf.to_string();
-          buf
-        }
-        Err(e) => "",
+      let post_response = PostResponse {
+        cid: cid.clone(),
+        post: serde_json::from_slice(&res).unwrap(),
       };
-      println!("get: {}", str)
+      println!("{:#?}", post_response);
+      Some(post_response)
     }
-    Err(e) => eprintln!("error getting file: {}", e),
+    Err(e) => {
+      eprintln!("{:#?}", e);
+      None
+    }
   }
-  post.into()
+  // post.postCid = Some(cid.clone());
+  // post.into()
 }
 
 #[command]
