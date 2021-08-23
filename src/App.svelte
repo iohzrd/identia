@@ -13,6 +13,7 @@
   import SettingsAdjust20 from "carbon-icons-svelte/lib/SettingsAdjust20";
   import Add20 from "carbon-icons-svelte/lib/Add20";
 
+  import External from "./components/External.svelte";
   import Identity from "./components/Identity.svelte";
   import Feed from "./components/Feed.svelte";
   import Settings from "./components/Settings.svelte";
@@ -43,7 +44,7 @@
     },
     {
       label: "External",
-      component: Settings,
+      component: External,
     },
   ];
   let selected_view = views[0];

@@ -14,6 +14,8 @@
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
 
+  import Post from "./Post.svelte";
+
   import { emit, listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
@@ -59,7 +61,7 @@
   }
 </script>
 
-<Tile light>
+<Tile>
   <Form on:submit>
     <div>{window.location}</div>
 
@@ -137,9 +139,9 @@
 
       <FormGroup legendText="posts">
         {#if identity && identity.posts}
-          {#each identity.posts as post}
+          {#each identity.posts as cid}
             <div>
-              {post}
+              <Post {cid} includeFrom={false} />
             </div>
           {/each}
         {/if}
