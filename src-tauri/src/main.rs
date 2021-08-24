@@ -5,22 +5,15 @@
 
 mod identity;
 
-#[cfg(target_os = "linux")]
-use std::path::PathBuf;
-
-// use percent_encoding;
 use ipfs_api::IpfsClient;
-// use rusqlite::NO_PARAMS;
-// use rusqlite::{Connection, Result};
-use rusqlite::Result;
-use serde::Deserialize;
-use serde::Serialize;
-use std::{thread, time::Duration};
-use tauri::api::process::Command;
+use serde::{Deserialize, Serialize};
 use tauri::{
   api::dialog::ask, async_runtime, CustomMenuItem, Event, GlobalShortcutManager, Manager,
   SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
+
+#[cfg(target_os = "linux")]
+use std::path::PathBuf;
 
 use crate::identity::initialize_database;
 #[derive(Serialize, Deserialize)]
@@ -30,19 +23,18 @@ struct IpfsID {
 
 fn main() {
   tauri::Builder::default()
-    .on_page_load(|window, _| {
-      let window_ = window.clone();
-      window.listen("ipfs-id", move |event| {
-        println!("got js-event with message '{:?}'", event.payload());
-        let id = IpfsID {
-          data: "ipfs-id".to_string(),
-        };
-
-        window_
-          .emit("rust-event", Some(id))
-          .expect("failed to emit");
-      });
-    })
+    // .on_page_load(|window, _| {
+    //   let window_ = window.clone();
+    //   window.listen("ipfs-id", move |event| {
+    //     println!("got js-event with message '{:?}'", event.payload());
+    //     let id = IpfsID {
+    //       data: "ipfs-id".to_string(),
+    //     };
+    //     window_
+    //       .emit("rust-event", Some(id))
+    //       .expect("failed to emit");
+    //   });
+    // })
     .system_tray(
       SystemTray::new().with_menu(
         SystemTrayMenu::new()
@@ -110,22 +102,20 @@ fn main() {
       identity::ipfs_get_post
     ])
     .setup(|app| {
-      let mut publisher = "".to_string();
       let client = IpfsClient::default();
       let splashscreen_window = app.get_window("splash").unwrap();
       let main_window = app.get_window("main").unwrap();
 
       tauri::async_runtime::spawn(async move {
-        match identity::launch_ipfs_daemon(&client.clone()).await {
+        match identity::launch_ipfs_daemon(&client).await {
           Ok(iden) => {
-            initialize_database(publisher).await;
-            publisher = iden.clone();
+            println!("Initializing db with identity: {:?}", &iden);
+            initialize_database(&iden).await;
             let reply = IpfsID { data: iden.clone() };
             main_window
               .emit("ipfs-id", Some(reply))
               .expect("failed to emit");
 
-            // conn = Connection::open(iden.clone() + ".db");
             splashscreen_window.close().unwrap();
             main_window.show().unwrap();
           }
@@ -137,33 +127,6 @@ fn main() {
         // log::info!("Launch setup successful")
         println!("Launch setup successful")
       });
-
-      // tauri::async_runtime::block_on(async move {
-      //   match identity::initialize_database().await {
-      //     Ok(iden) => {
-      //       let reply = IpfsID { data: iden.clone() };
-      //       main_window
-      //         .emit("ipfs-id", Some(reply))
-      //         .expect("failed to emit");
-
-      //       // conn = Connection::open(iden.clone() + ".db");
-      //       splashscreen_window.close().unwrap();
-      //       main_window.show().unwrap();
-      //     }
-      //     Err(err) => {
-      //       // log::error!("There was an error launching ipfs: {:?}", err);
-      //       eprintln!("There was an error launching ipfs: {:?}", err);
-      //     }
-      //   }
-      //   // log::info!("Launch setup successful")
-      //   println!("Launch setup successful")
-      // });
-
-      // tauri::async_runtime::spawn(async move {
-      //   let conn = Connection::open("test_spawn.db");
-      //   // log::info!("Launch setup successful")
-      //   println!("Launch setup successful")
-      // });
 
       Ok(())
     })

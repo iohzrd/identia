@@ -14,23 +14,20 @@ edition = "2018"
 tauri-build = { version = "1.0.0-beta.4" }
 
 [dependencies]
-chrono = "0.4"
+chrono = { version = "0.4.19", features = ["serde"] }
 directories = "3.0.2"
 futures = "0.3.16"
 infer = "0.5.0"
 ipfs-api = "0.11.0"
 kamadak-exif = "0.5.4"
 mime = "0.3.16"
-percent-encoding = "2.1.0"
 qrcode = "0.12.0"
-rbatis = "2.0.24"
-rusqlite = { version = "0.25.1", features = ["bundled", "vtab", "array"] }
+rusqlite = { version = "0.25.3", features = ["bundled", "serde_json"] }
 rusqlite_migration = "0.4.2"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0.128", features = ["derive"] }
 serde_json = "1.0.66"
-serde_rusqlite = "0.27.0"
-tauri = { version = "1.0.0-beta.6", features = ["api-all", "cli", "system-tray", "updater"] }
-tokio = { version = "1.9", features = [ "full", "rt", "rt-multi-thread", "sync", "fs" ] }
+tauri = { version = "1.0.0-beta.8", features = ["api-all", "cli", "system-tray", "updater"] }
+tokio = { version = "1.10", features = [ "full", "rt", "rt-multi-thread", "sync", "fs" ] }
 
 [features]
 default = [ "custom-protocol" ]
