@@ -7,8 +7,6 @@ mod identity;
 
 use ipfs_api::IpfsClient;
 use serde::{Deserialize, Serialize};
-use std::{thread, time::Duration};
-use tauri::api::process::Command;
 use tauri::{
   api::dialog::ask, async_runtime, CustomMenuItem, Event, GlobalShortcutManager, Manager,
   SystemTray, SystemTrayEvent, SystemTrayMenu,

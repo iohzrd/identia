@@ -3,6 +3,7 @@ use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use rusqlite::{params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
+use serde_json::{from_slice, json};
 use std::{thread, time::Duration};
 use tauri::api::process::Command;
 use tauri::command;
@@ -23,16 +24,16 @@ pub fn request_test_identity() -> types::Identity {
     value: "1T8mM7TDWBcxKF5ZZy7B58adMsBgxivr1".to_string(),
   };
   let test_identity_object = types::Identity {
-    aux: serde_json::json!([test_aux_object]),
+    aux: json!([test_aux_object]),
     av: "".to_string(),
     dn: "iohzrd".to_string(),
-    following: serde_json::json!([
+    following: json!([
       "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
       "Qmb4zrL17TtLGnaLFuUQC4TmaVbizEfVbDnnSzNLxkZ3Zp".to_string(),
       "12D3KooWJd8q6Q9seVVA8HmSjqBN13kZaVZd4GtMxFha3VqiGfG9".to_string(),
     ]),
-    meta: serde_json::json!([]),
-    posts: serde_json::json!([
+    meta: json!([]),
+    posts: json!([
       "QmcoD56GRcE3eZZ3sFi91Ym98ZhvALxdtgPWmydRfX3sFx".to_string(),
       "QmQXHdVMMi45tDUEfNuaXMBbyeP1cAWjH7pf5V8ZPFStuj".to_string(),
       "QmRvi98hynA4qetsb9MG1HDQcLad8x9MNmGpqQFNBz59Bd".to_string(),
@@ -71,7 +72,7 @@ pub async fn ipfs_get_post(cid: String) -> Option<types::PostResponse> {
     Ok(res) => {
       let post_response = types::PostResponse {
         cid: cid.clone(),
-        post: serde_json::from_slice(&res).unwrap(),
+        post: from_slice(&res).unwrap(),
       };
       println!("{:#?}", post_response);
       Some(post_response)
@@ -177,12 +178,12 @@ pub async fn initialize_database(publisher: &String) -> Result<()> {
   }
 
   // let me = types::Identity {
-  //     aux: serde_json::json!([]),
+  //     aux: json!([]),
   //     av: "".to_string(),
   //     dn: "".to_string(),
-  //     following: serde_json::json!(["12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"]),
-  //     meta: serde_json::json!([]),
-  //     posts: serde_json::json!([]),
+  //     following: json!(["12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"]),
+  //     meta: json!([]),
+  //     posts: json!([]),
   //     publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z".to_string(),
   //     ts: DateTime::timestamp(&Utc::now()),
   //   };
