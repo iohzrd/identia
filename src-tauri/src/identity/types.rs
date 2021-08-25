@@ -31,6 +31,11 @@ pub struct Identity {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct Publisher {
+  pub publisher: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
   pub aux: Value,
   pub body: String,

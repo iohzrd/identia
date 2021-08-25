@@ -4,6 +4,10 @@
 )]
 
 mod identity;
+use crate::identity::initialize_database;
+
+#[cfg(target_os = "linux")]
+use std::path::PathBuf;
 
 use ipfs_api::IpfsClient;
 use serde::{Deserialize, Serialize};
@@ -12,10 +16,6 @@ use tauri::{
   SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
 
-#[cfg(target_os = "linux")]
-use std::path::PathBuf;
-
-use crate::identity::initialize_database;
 #[derive(Serialize, Deserialize)]
 struct IpfsID {
   data: String,
@@ -98,6 +98,7 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       identity::ipfs_id,
       // identity::log_operation,
+      identity::get_identity,
       identity::request_test_identity,
       identity::ipfs_get_post
     ])
