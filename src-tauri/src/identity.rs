@@ -1,4 +1,4 @@
-use chrono::{offset::Utc, DateTime, NaiveDate};
+use chrono::{offset::Utc, DateTime};
 use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use rusqlite::{params, Connection, Result};
@@ -16,6 +16,31 @@ pub mod types;
 // pub fn log_operation(event: String, payload: Option<String>) {
 //   println!("{} {:?}", event, payload);
 // }
+
+const create_identity_table: &str = "
+    create table if not exists identity (
+    aux         text,
+    av          text,
+    dn          text,
+    following   text,
+    meta        text,
+    posts       text,
+    publisher   text primary key,
+    ts          int
+  )";
+
+const create_post_table: &str = "
+    create table if not exists identity (
+    id          integer primary key,
+    aux         text,
+    av          text,
+    dn          text,
+    following   text,
+    meta        text,
+    posts       text,
+    publisher   text,
+    ts          int
+  )";
 
 pub async fn identity_in_db(publisher: String) -> Result<bool> {
   let mut in_db = false;
@@ -50,66 +75,43 @@ pub fn get_identity_template(publisher: String) -> Identity {
   };
 }
 
-// pub async fn get_identity_db(publisher: String) -> Result<Identity> {
-//   let conn = Connection::open("test.db")?;
+pub async fn get_identity_local(publisher: String) -> Result<Identity> {
+  let conn = Connection::open("test.db")?;
+  let mut identity = get_identity_template(publisher.clone());
+  let mut stmt = conn.prepare(
+    "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity where publisher = ?",
+  )?;
+  let identities = stmt.query_map(params![&publisher], |row| {
+    Ok(Identity {
+      aux: row.get(0)?,
+      av: row.get(1)?,
+      dn: row.get(2)?,
+      following: row.get(3)?,
+      meta: row.get(4)?,
+      posts: row.get(5)?,
+      publisher: row.get(6)?,
+      ts: row.get(7)?,
+    })
+  })?;
 
-//   let mut stmt = conn.prepare(
-//     "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity where publisher = ?",
-//   )?;
-//   let identities = stmt.query_map(params![&publisher], |row| {
-//     Ok(Identity {
-//       aux: row.get(0)?,
-//       av: row.get(1)?,
-//       dn: row.get(2)?,
-//       following: row.get(3)?,
-//       meta: row.get(4)?,
-//       posts: row.get(5)?,
-//       publisher: row.get(6)?,
-//       ts: row.get(7)?,
-//     })
-//   })?;
+  for iden in identities {
+    let iden = iden.unwrap();
+    if iden.publisher == String::from(publisher.clone()) {
+      identity = iden;
+      // Ok(identity)
+    }
+  }
 
-//   for iden in identities {
-//     let iden = iden.unwrap();
-//     if iden.publisher == String::from(publisher.clone()) {
-//       identity_in_db = true;
-//       identity = iden;
-//       // Ok(identity)
-//     }
-//   }
-
-//   if !identity_in_db {
-//     identity = types::Identity {
-//       aux: json!([]),
-//       av: "".to_string(),
-//       dn: "".to_string(),
-//       following: json!([String::from(publisher.clone())]),
-//       meta: json!([]),
-//       posts: json!([]),
-//       publisher: String::from(publisher.clone()),
-//       ts: DateTime::timestamp(&Utc::now()),
-//     };
-//   }
-
-//   Ok(identity)
-// }
+  Ok(identity)
+}
 
 // pub async fn get_identity_ipfs(publisher: String) -> Result<Identity> {
 //   let client = IpfsClient::default();
 // }
 
 #[command]
-pub async fn get_identity(publisher: String) -> types::Identity {
-  let identity_object = types::Identity {
-    aux: json!([]),
-    av: String::from(""),
-    dn: String::from(""),
-    following: json!([String::from(publisher.clone())]),
-    meta: json!([]),
-    posts: json!([]),
-    publisher: String::from(publisher.clone()),
-    ts: DateTime::timestamp(&Utc::now()),
-  };
+pub async fn get_identity(publisher: String) -> Identity {
+  let identity_object = get_identity_local(publisher.clone());
   identity_object.into()
 }
 
@@ -194,88 +196,61 @@ pub async fn ipfs_id() -> String {
 }
 
 pub async fn initialize_database(publisher: &String) -> Result<()> {
-  let mut identity_exists = false;
   println!("initialize_database: {:?}", &publisher);
-
   let mut conn = Connection::open("test.db")?;
-
-  let create_identity_table = "create table if not exists identity (
-      aux         text,
-      av          text,
-      dn          text,
-      following   text,
-      meta        text,
-      posts       text,
-      publisher   text primary key,
-      ts          int
-    )";
-
-  let create_post_table = "create table if not exists identity (
-        id          integer primary key,
-        aux         text,
-        av          text,
-        dn          text,
-        following   text,
-        meta        text,
-        posts       text,
-        publisher   text,
-        ts          int
-      )";
-
   let migrations = Migrations::new(vec![
     M::up(create_identity_table),
     M::up(create_post_table),
     // In the future, add more migrations here
   ]);
-
   migrations.to_latest(&mut conn).unwrap();
 
-  let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
-  let identities = stmt.query_map(params![&publisher], |row| {
-    Ok(Identity {
-      aux: row.get(0)?,
-      av: row.get(1)?,
-      dn: row.get(2)?,
-      following: row.get(3)?,
-      meta: row.get(4)?,
-      posts: row.get(5)?,
-      publisher: row.get(6)?,
-      ts: row.get(7)?,
-    })
-  })?;
+  // let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
+  // let identities = stmt.query_map(params![&publisher], |row| {
+  //   Ok(Identity {
+  //     aux: row.get(0)?,
+  //     av: row.get(1)?,
+  //     dn: row.get(2)?,
+  //     following: row.get(3)?,
+  //     meta: row.get(4)?,
+  //     posts: row.get(5)?,
+  //     publisher: row.get(6)?,
+  //     ts: row.get(7)?,
+  //   })
+  // })?;
 
-  //   println!("identities {:?}", &identities.);
+  // //   println!("identities {:?}", &identities.);
 
-  for identity in identities {
-    if identity.unwrap().publisher == String::from(publisher) {
-      identity_exists = true;
-    }
-  }
-  if !identity_exists {
-    let me = types::Identity {
-      aux: json!([]),
-      av: "".to_string(),
-      dn: "".to_string(),
-      following: json!([String::from(publisher)]),
-      meta: json!([]),
-      posts: json!([]),
-      publisher: String::from(publisher),
-      ts: DateTime::timestamp(&Utc::now()),
-    };
-    conn.execute(
-      "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-      params![
-          me.aux,
-          me.av,
-          me.dn,
-          me.following,
-          me.meta,
-          me.posts,
-          me.publisher,
-          me.ts,
-      ],
-  )?;
-  }
+  // for identity in identities {
+  //   if identity.unwrap().publisher == String::from(publisher) {
+  //     identity_exists = true;
+  //   }
+  // }
+  // if !identity_exists {
+  //   let me = types::Identity {
+  //     aux: json!([]),
+  //     av: "".to_string(),
+  //     dn: "".to_string(),
+  //     following: json!([String::from(publisher)]),
+  //     meta: json!([]),
+  //     posts: json!([]),
+  //     publisher: String::from(publisher),
+  //     ts: DateTime::timestamp(&Utc::now()),
+  //   };
+  //   conn.execute(
+  //     "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+  //     params![
+  //         me.aux,
+  //         me.av,
+  //         me.dn,
+  //         me.following,
+  //         me.meta,
+  //         me.posts,
+  //         me.publisher,
+  //         me.ts,
+  //     ],
+  // )?;
+  // }
 
   Ok(())
 }
