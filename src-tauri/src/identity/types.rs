@@ -1,5 +1,14 @@
+use chrono::{offset::Utc, DateTime};
+use ipfs_api::IpfsClient;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
+
+pub struct AppState {
+  pub db_pool: Pool<SqliteConnectionManager>,
+  pub ipfs_client: IpfsClient,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Comment {
@@ -21,13 +30,28 @@ pub struct AuxObj {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Identity {
   pub aux: Value,
-  pub av: String,
-  pub dn: String,
+  pub av: Value,
+  pub dn: Value,
   pub following: Value,
   pub meta: Value,
   pub posts: Value,
-  pub publisher: String,
-  pub ts: i64,
+  pub publisher: Value,
+  pub ts: Value,
+}
+
+impl Identity {
+  pub fn new(publisher: String) -> Identity {
+    Identity {
+      aux: json!([]),
+      av: json!(""),
+      dn: json!(""),
+      following: json!([json!(publisher)]),
+      meta: json!([]),
+      posts: json!([]),
+      publisher: json!(publisher),
+      ts: json!(DateTime::timestamp_millis(&Utc::now())),
+    }
+  }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

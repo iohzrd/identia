@@ -10,11 +10,14 @@ use crate::identity::initialize_database;
 use std::path::PathBuf;
 
 use ipfs_api::IpfsClient;
+use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use tauri::{
   api::dialog::ask, async_runtime, CustomMenuItem, Event, GlobalShortcutManager, Manager,
   SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
+
+use crate::identity::types::AppState;
 
 #[derive(Serialize, Deserialize)]
 struct IpfsID {
@@ -22,6 +25,10 @@ struct IpfsID {
 }
 
 fn main() {
+  let ipfs_client = IpfsClient::default();
+  let _db_manager = SqliteConnectionManager::file("test.db");
+  let db_pool = r2d2::Pool::new(_db_manager).unwrap();
+
   tauri::Builder::default()
     // .on_page_load(|window, _| {
     //   let window_ = window.clone();
@@ -95,20 +102,24 @@ fn main() {
       }
       _ => {}
     })
+    .manage(AppState {
+      ipfs_client: ipfs_client,
+      db_pool: db_pool,
+    })
     .invoke_handler(tauri::generate_handler![
       identity::ipfs_id,
-      // identity::log_operation,
       identity::get_identity,
       identity::request_test_identity,
-      identity::ipfs_get_post
+      identity::ipfs_get_post,
+      identity::test_managed_state,
     ])
     .setup(|app| {
-      let client = IpfsClient::default();
+      let daemon_client = IpfsClient::default();
       let splashscreen_window = app.get_window("splash").unwrap();
       let main_window = app.get_window("main").unwrap();
 
       tauri::async_runtime::spawn(async move {
-        match identity::launch_ipfs_daemon(&client).await {
+        match identity::launch_ipfs_daemon(&daemon_client).await {
           Ok(iden) => {
             println!("Initializing db with identity: {:?}", &iden);
             initialize_database(&iden).await;

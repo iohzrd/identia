@@ -1,18 +1,20 @@
 use chrono::{offset::Utc, DateTime};
 use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
+use r2d2::PooledConnection;
+use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
 use serde_json::{from_slice, json};
 use std::{thread, time::Duration};
+use tauri;
 use tauri::api::process::Command;
-use tauri::command;
 
-use crate::identity::types::{Identity, Publisher};
+use crate::identity::types::{AppState, AuxObj, Identity, PostResponse};
 
 pub mod types;
 
-// #[command]
+// #[tauri::command]
 // pub fn log_operation(event: String, payload: Option<String>) {
 //   println!("{} {:?}", event, payload);
 // }
@@ -42,46 +44,93 @@ const create_post_table: &str = "
     ts          int
   )";
 
-pub async fn identity_in_db(publisher: String) -> Result<bool> {
-  let mut in_db = false;
-  let conn = Connection::open("test.db")?;
-  let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
-  let identities = stmt.query_map(params![&publisher], |row| {
-    Ok(Publisher {
-      publisher: row.get(0)?,
-    })
-  })?;
+pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
+  let client = IpfsClient::default();
+  let mut identity_json: String = publisher.clone();
+  if !identity_json.contains("/identity.json") {
+    identity_json.push_str("/identity.json");
+  }
 
-  for iden in identities {
-    let iden = iden.unwrap();
-    if iden.publisher == String::from(publisher.clone()) {
-      in_db = true;
+  match client
+    .cat(&identity_json)
+    .map_ok(|chunk| chunk.to_vec())
+    .try_concat()
+    .await
+  {
+    Ok(res) => {
+      let identity: Identity = from_slice(&res).unwrap();
+      println!("identity: {:#?}", identity);
+      Some(identity)
+    }
+    Err(e) => {
+      eprintln!("{:#?}", e);
+      None
     }
   }
+}
+
+// #[tauri::command]
+// pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> String {
+//   // let ipfs_client = state.ipfs_client;
+//   let iden = match state.ipfs_client.id(None).await {
+//     Ok(id) => id.id,
+//     Err(e) => String::from(""),
+//   };
+//   println!("test_function");
+//   println!("{:?}", iden);
+//   iden
+// }
+
+#[tauri::command]
+pub async fn ipfs_id() -> Result<String, String> {
+  let client = IpfsClient::default();
+  let iden = match client.id(None).await {
+    Ok(id) => id.id,
+    Err(e) => {
+      eprintln!("error: ipfs_id(): {}", e);
+      "".into()
+    }
+  };
+  Ok(iden)
+}
+
+pub async fn identity_in_db(conn: &Connection, publisher: String) -> Result<bool> {
+  let mut in_db = false;
+  let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
+  // in_db = stmt.query_row(params![&publisher], |row| Ok(true))?;
+  in_db = stmt.query_row(params![&publisher], |_| Ok(true))?;
 
   Ok(in_db)
 }
 
-pub fn get_identity_template(publisher: String) -> Identity {
-  return Identity {
-    aux: json!([]),
-    av: "".to_string(),
-    dn: "".to_string(),
-    following: json!([String::from(publisher.clone())]),
-    meta: json!([]),
-    posts: json!([]),
-    publisher: String::from(publisher.clone()),
-    ts: DateTime::timestamp_millis(&Utc::now()),
-  };
+pub async fn insert_new_identity(
+  conn: PooledConnection<SqliteConnectionManager>,
+  identity: Identity,
+) -> Identity {
+  conn.execute(
+    "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+    &[
+      &identity.aux,
+      &identity.av,
+      &identity.dn,
+      &identity.following,
+      &identity.meta,
+      &identity.posts,
+      &identity.publisher,
+      &identity.ts,
+    ],
+  ).unwrap();
+  identity
 }
 
-pub async fn get_identity_local(publisher: String) -> Result<Identity> {
-  let conn = Connection::open("test.db")?;
-  let mut identity = get_identity_template(publisher.clone());
+pub async fn get_identity_db(
+  conn: PooledConnection<SqliteConnectionManager>,
+  publisher: String,
+) -> Result<Identity> {
   let mut stmt = conn.prepare(
     "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity where publisher = ?",
   )?;
-  let identities = stmt.query_map(params![&publisher], |row| {
+  let identity = stmt.query_row(params![&publisher], |row| {
     Ok(Identity {
       aux: row.get(0)?,
       av: row.get(1)?,
@@ -94,67 +143,84 @@ pub async fn get_identity_local(publisher: String) -> Result<Identity> {
     })
   })?;
 
-  for iden in identities {
-    let iden = iden.unwrap();
-    if iden.publisher == String::from(publisher.clone()) {
-      identity = iden;
-      // Ok(identity)
-    }
-  }
-
   Ok(identity)
 }
 
-// pub async fn get_identity_ipfs(publisher: String) -> Result<Identity> {
-//   let client = IpfsClient::default();
-// }
-
-#[command]
-pub async fn get_identity(publisher: String) -> Identity {
-  let identity_object = get_identity_local(publisher.clone());
-  identity_object.into()
+#[tauri::command]
+pub async fn get_identity(
+  state: tauri::State<'_, AppState>,
+  publisher: String,
+) -> Result<Identity, Identity> {
+  // let db_pool = state.db_pool.clone();
+  let conn = state.db_pool.get().unwrap();
+  let result = get_identity_db(conn, publisher.clone()).await;
+  let identity = match result {
+    Ok(i) => i,
+    Err(_) => {
+      let conn2 = state.db_pool.get().unwrap();
+      insert_new_identity(conn2, Identity::new(publisher.clone())).await
+    }
+  };
+  Ok(identity)
 }
 
-#[command]
-pub fn request_test_identity() -> types::Identity {
-  let test_aux_object = types::AuxObj {
-    key: "BTC".to_string(),
-    value: "1T8mM7TDWBcxKF5ZZy7B58adMsBgxivr1".to_string(),
+#[tauri::command]
+pub async fn test_managed_state(state: tauri::State<'_, AppState>) -> Result<String, String> {
+  let db_manager = state.db_pool.get().unwrap();
+  let iden = match state.ipfs_client.id(None).await {
+    Ok(id) => {
+      println!("test_managed_state(): {}", id.id);
+      id.id
+    }
+    Err(e) => {
+      eprintln!("error: test_managed_state(): {}", e);
+      "".into()
+    }
   };
-  let test_identity_object = types::Identity {
+  println!("test_managed_state(): {}", iden);
+  Ok(iden)
+}
+
+#[tauri::command]
+pub fn request_test_identity() -> Identity {
+  let test_aux_object = AuxObj {
+    key: String::from("BTC"),
+    value: String::from("1T8mM7TDWBcxKF5ZZy7B58adMsBgxivr1"),
+  };
+  let test_identity_object = Identity {
     aux: json!([test_aux_object]),
-    av: "".to_string(),
-    dn: "iohzrd".to_string(),
+    av: json!(""),
+    dn: json!("iohzrd"),
     following: json!([
       "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
-      "Qmb4zrL17TtLGnaLFuUQC4TmaVbizEfVbDnnSzNLxkZ3Zp".to_string(),
-      "12D3KooWJd8q6Q9seVVA8HmSjqBN13kZaVZd4GtMxFha3VqiGfG9".to_string(),
+      "Qmb4zrL17TtLGnaLFuUQC4TmaVbizEfVbDnnSzNLxkZ3Zp",
+      "12D3KooWJd8q6Q9seVVA8HmSjqBN13kZaVZd4GtMxFha3VqiGfG9",
     ]),
     meta: json!([]),
     posts: json!([
-      "QmcoD56GRcE3eZZ3sFi91Ym98ZhvALxdtgPWmydRfX3sFx".to_string(),
-      "QmQXHdVMMi45tDUEfNuaXMBbyeP1cAWjH7pf5V8ZPFStuj".to_string(),
-      "QmRvi98hynA4qetsb9MG1HDQcLad8x9MNmGpqQFNBz59Bd".to_string(),
-      "QmRF7xnqSJwRvmeg26TRFrr8xa9cV6Cm1nG68Wh112aF1X".to_string(),
-      "QmW5wv3HR6LEZ6TXh6W6JkwTaALdpfvCRtEqcA2iQrdfEv".to_string(),
-      "QmUvQAUr6zHQ22YMsbtoKeyGujm8qrXbe8ZLMdNy8YwzZf".to_string(),
-      "QmcEZDkisuhqMfgeFxsms9syJ4b6cPhfKHDnZ3G2mH7PLV".to_string(),
-      "QmVkwv3zGJx15wbHAfDAJ9ErjrvBGwP1cBo99t1mMben3Z".to_string(),
-      "QmVDB1cfs3m93yBZNGoS6ujsMZkDb8ySHJtF3CmGCGcyQx".to_string(),
-      "QmY4X8RtuuNig6BjJrLHeF4zURVAFFQPbLfJ4gfRHbm2wX".to_string(),
-      "QmPkVnSjBa4b7qLUUYRwhwHJunoTFWwhvENxQB8tnrbyaH".to_string(),
-      "QmWEvWXpcp9JSZ2taLhY8eby2CaBUTAojpXtJsfTab11Bh".to_string(),
-      "QmNtN4TVvx2XL3f1BNB4v5wH5yeDwrNkZap9a1r6F6KQBM".to_string(),
-      "QmQW72f51MRFj9PaJnLPcUWkZXRMcQVctf1ExJXrU3wWRs".to_string(),
+      "QmcoD56GRcE3eZZ3sFi91Ym98ZhvALxdtgPWmydRfX3sFx",
+      "QmQXHdVMMi45tDUEfNuaXMBbyeP1cAWjH7pf5V8ZPFStuj",
+      "QmRvi98hynA4qetsb9MG1HDQcLad8x9MNmGpqQFNBz59Bd",
+      "QmRF7xnqSJwRvmeg26TRFrr8xa9cV6Cm1nG68Wh112aF1X",
+      "QmW5wv3HR6LEZ6TXh6W6JkwTaALdpfvCRtEqcA2iQrdfEv",
+      "QmUvQAUr6zHQ22YMsbtoKeyGujm8qrXbe8ZLMdNy8YwzZf",
+      "QmcEZDkisuhqMfgeFxsms9syJ4b6cPhfKHDnZ3G2mH7PLV",
+      "QmVkwv3zGJx15wbHAfDAJ9ErjrvBGwP1cBo99t1mMben3Z",
+      "QmVDB1cfs3m93yBZNGoS6ujsMZkDb8ySHJtF3CmGCGcyQx",
+      "QmY4X8RtuuNig6BjJrLHeF4zURVAFFQPbLfJ4gfRHbm2wX",
+      "QmPkVnSjBa4b7qLUUYRwhwHJunoTFWwhvENxQB8tnrbyaH",
+      "QmWEvWXpcp9JSZ2taLhY8eby2CaBUTAojpXtJsfTab11Bh",
+      "QmNtN4TVvx2XL3f1BNB4v5wH5yeDwrNkZap9a1r6F6KQBM",
+      "QmQW72f51MRFj9PaJnLPcUWkZXRMcQVctf1ExJXrU3wWRs",
     ]),
-    publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z".to_string(),
-    ts: DateTime::timestamp(&Utc::now()),
+    publisher: json!("12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"),
+    ts: json!(DateTime::timestamp(&Utc::now())),
   };
   test_identity_object.into()
 }
 
-#[command]
-pub async fn ipfs_get_post(cid: String) -> Option<types::PostResponse> {
+#[tauri::command]
+pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
   let mut cid_json: String = cid.clone();
   if !cid_json.contains("/post.json") {
     cid_json.push_str("/post.json");
@@ -168,7 +234,7 @@ pub async fn ipfs_get_post(cid: String) -> Option<types::PostResponse> {
     .await
   {
     Ok(res) => {
-      let post_response = types::PostResponse {
+      let post_response = PostResponse {
         cid: cid.clone(),
         post: from_slice(&res).unwrap(),
       };
@@ -184,17 +250,6 @@ pub async fn ipfs_get_post(cid: String) -> Option<types::PostResponse> {
   // post.into()
 }
 
-#[command]
-pub async fn ipfs_id() -> String {
-  let client = IpfsClient::default();
-  let mut iden = String::from("");
-  match client.id(None).await {
-    Ok(id) => iden = id.id,
-    Err(e) => eprintln!("error getting id: {}", e),
-  }
-  iden.into()
-}
-
 pub async fn initialize_database(publisher: &String) -> Result<()> {
   println!("initialize_database: {:?}", &publisher);
   let mut conn = Connection::open("test.db")?;
@@ -204,6 +259,21 @@ pub async fn initialize_database(publisher: &String) -> Result<()> {
     // In the future, add more migrations here
   ]);
   migrations.to_latest(&mut conn).unwrap();
+
+  let me = Identity::new(publisher.clone());
+  conn.execute(
+    "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+    params![
+        me.aux,
+        me.av,
+        me.dn,
+        me.following,
+        me.meta,
+        me.posts,
+        me.publisher,
+        me.ts,
+    ],
+)?;
 
   // let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
   // let identities = stmt.query_map(params![&publisher], |row| {
@@ -219,7 +289,7 @@ pub async fn initialize_database(publisher: &String) -> Result<()> {
   //   })
   // })?;
 
-  // //   println!("identities {:?}", &identities.);
+  // println!("identities {:?}", identities);
 
   // for identity in identities {
   //   if identity.unwrap().publisher == String::from(publisher) {
@@ -229,8 +299,8 @@ pub async fn initialize_database(publisher: &String) -> Result<()> {
   // if !identity_exists {
   //   let me = types::Identity {
   //     aux: json!([]),
-  //     av: "".to_string(),
-  //     dn: "".to_string(),
+  //     av: String::from(""),
+  //     dn: String::from(""),
   //     following: json!([String::from(publisher)]),
   //     meta: json!([]),
   //     posts: json!([]),
