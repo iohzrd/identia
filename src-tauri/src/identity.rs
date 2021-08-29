@@ -97,9 +97,7 @@ pub async fn ipfs_id() -> Result<String, String> {
 pub async fn identity_in_db(conn: &Connection, publisher: String) -> Result<bool> {
   let mut in_db = false;
   let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
-  // in_db = stmt.query_row(params![&publisher], |row| Ok(true))?;
   in_db = stmt.query_row(params![&publisher], |_| Ok(true))?;
-
   Ok(in_db)
 }
 
@@ -139,20 +137,17 @@ pub async fn get_identity_db(
   conn: PooledConnection<SqliteConnectionManager>,
   publisher: String,
 ) -> Result<Identity> {
-  println!("get_identity_db()1");
-  let stmt = conn.prepare("SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity");
-  println!("get_identity_db()2");
+  let stmt = conn.prepare(
+    "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity where publisher = ?",
+  );
   let mut s = match stmt {
     Ok(stmt) => stmt,
     Err(error) => {
       panic!("There was a problem opening the file: {:?}", error)
     }
   };
-
-  println!("get_identity_db()3");
-  let identities = s
-    // .query_map(params![&publisher], |row| {
-    .query_map(NO_PARAMS, |row| {
+  let identity = s
+    .query_row(params![&publisher], |row| {
       Ok(Identity {
         aux: row.get(0)?,
         av: row.get(1)?,
@@ -165,12 +160,8 @@ pub async fn get_identity_db(
       })
     })
     .unwrap();
-
-  for i in identities {
-    println!("Found accounts {:?}", i.unwrap());
-  }
-
-  Ok(Identity::new(publisher.clone()))
+  println!("get_identity_db: {:?}", identity);
+  Ok(identity)
 }
 
 #[tauri::command]
