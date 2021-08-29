@@ -3,14 +3,14 @@ use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection, Result, NO_PARAMS};
 use rusqlite_migration::{Migrations, M};
 use serde_json::{from_slice, json};
 use std::{thread, time::Duration};
 use tauri;
 use tauri::api::process::Command;
 
-use crate::identity::types::{AppState, AuxObj, Identity, PostResponse};
+use crate::identity::types::{AppState, AuxObj, Identity, PostResponse, Publisher};
 
 pub mod types;
 
@@ -109,7 +109,7 @@ pub async fn insert_new_identity(
 ) -> Identity {
   conn.execute(
     "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-    &[
+    params![
       &identity.aux,
       &identity.av,
       &identity.dn,
@@ -123,27 +123,54 @@ pub async fn insert_new_identity(
   identity
 }
 
+#[tauri::command]
+pub async fn test_insert_identity(
+  state: tauri::State<'_, AppState>,
+  publisher: String,
+) -> Result<Identity, Identity> {
+  println!("test_insert_identity1");
+  let conn = state.db_pool.get().unwrap();
+  let identity = insert_new_identity(conn, Identity::new(publisher.clone())).await;
+
+  Ok(identity)
+}
+
 pub async fn get_identity_db(
   conn: PooledConnection<SqliteConnectionManager>,
   publisher: String,
 ) -> Result<Identity> {
-  let mut stmt = conn.prepare(
-    "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity where publisher = ?",
-  )?;
-  let identity = stmt.query_row(params![&publisher], |row| {
-    Ok(Identity {
-      aux: row.get(0)?,
-      av: row.get(1)?,
-      dn: row.get(2)?,
-      following: row.get(3)?,
-      meta: row.get(4)?,
-      posts: row.get(5)?,
-      publisher: row.get(6)?,
-      ts: row.get(7)?,
-    })
-  })?;
+  println!("get_identity_db()1");
+  let stmt = conn.prepare("SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identity");
+  println!("get_identity_db()2");
+  let mut s = match stmt {
+    Ok(stmt) => stmt,
+    Err(error) => {
+      panic!("There was a problem opening the file: {:?}", error)
+    }
+  };
 
-  Ok(identity)
+  println!("get_identity_db()3");
+  let identities = s
+    // .query_map(params![&publisher], |row| {
+    .query_map(NO_PARAMS, |row| {
+      Ok(Identity {
+        aux: row.get(0)?,
+        av: row.get(1)?,
+        dn: row.get(2)?,
+        following: row.get(3)?,
+        meta: row.get(4)?,
+        posts: row.get(5)?,
+        publisher: row.get(6)?,
+        ts: row.get(7)?,
+      })
+    })
+    .unwrap();
+
+  for i in identities {
+    println!("Found accounts {:?}", i.unwrap());
+  }
+
+  Ok(Identity::new(publisher.clone()))
 }
 
 #[tauri::command]
@@ -189,8 +216,10 @@ pub fn request_test_identity() -> Identity {
   };
   let test_identity_object = Identity {
     aux: json!([test_aux_object]),
-    av: json!(""),
-    dn: json!("iohzrd"),
+    // av: json!(""),
+    av: String::from(""),
+    // dn: json!("iohzrd"),
+    dn: String::from("iohzrd"),
     following: json!([
       "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
       "Qmb4zrL17TtLGnaLFuUQC4TmaVbizEfVbDnnSzNLxkZ3Zp",
@@ -213,8 +242,10 @@ pub fn request_test_identity() -> Identity {
       "QmNtN4TVvx2XL3f1BNB4v5wH5yeDwrNkZap9a1r6F6KQBM",
       "QmQW72f51MRFj9PaJnLPcUWkZXRMcQVctf1ExJXrU3wWRs",
     ]),
-    publisher: json!("12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"),
-    ts: json!(DateTime::timestamp(&Utc::now())),
+    // publisher: json!("12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"),
+    publisher: String::from("12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"),
+    // ts: json!(DateTime::timestamp(&Utc::now())),
+    ts: DateTime::timestamp(&Utc::now()),
   };
   test_identity_object.into()
 }
@@ -250,6 +281,7 @@ pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
   // post.into()
 }
 
+#[tauri::command]
 pub async fn initialize_database(publisher: &String) -> Result<()> {
   println!("initialize_database: {:?}", &publisher);
   let mut conn = Connection::open("test.db")?;

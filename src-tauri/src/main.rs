@@ -112,6 +112,7 @@ fn main() {
       identity::request_test_identity,
       identity::ipfs_get_post,
       identity::test_managed_state,
+      identity::test_insert_identity,
     ])
     .setup(|app| {
       let daemon_client = IpfsClient::default();

@@ -76,6 +76,17 @@
     console.log("onTestManagedState");
     console.log(obj);
   }
+  function testInsertIdentity() {
+    invoke("test_insert_identity", {
+      publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
+    })
+      .then(onTestInsertIdentity)
+      .catch(onTestInsertIdentity);
+  }
+  function onTestInsertIdentity(obj) {
+    console.log("onTestInsertIdentity");
+    console.log(obj);
+  }
 </script>
 
 <Tile>
@@ -83,21 +94,24 @@
     <div>{window.location}</div>
 
     <button class="button" id="id" on:click={requestTestIdentity}>
-      Request test identity (async)
+      requestTestIdentity
     </button>
 
     <button class="button" id="id" on:click={requestBlankIdentity}>
-      Request test identity (async)
+      requestBlankIdentity
     </button>
 
     <button class="button" id="id" on:click={requestTestPost}>
-      Request test post (async)
+      requestTestPost
     </button>
 
     <button class="button" id="id" on:click={testManagedState}>
       testManagedState
     </button>
 
+    <button class="button" id="id" on:click={testInsertIdentity}>
+      testInsertIdentity
+    </button>
     {#if identity}
       <FormGroup legendText="av">
         <!-- <UserProfile20>

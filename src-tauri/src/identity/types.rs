@@ -30,26 +30,30 @@ pub struct AuxObj {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Identity {
   pub aux: Value,
-  pub av: Value,
-  pub dn: Value,
+  pub av: String,
+  pub dn: String,
   pub following: Value,
   pub meta: Value,
   pub posts: Value,
-  pub publisher: Value,
-  pub ts: Value,
+  pub publisher: String,
+  pub ts: i64,
 }
 
 impl Identity {
   pub fn new(publisher: String) -> Identity {
     Identity {
       aux: json!([]),
-      av: json!(""),
-      dn: json!(""),
+      // av: json!(""),
+      av: String::from(""),
+      // dn: json!(""),
+      dn: String::from(""),
       following: json!([json!(publisher)]),
       meta: json!([]),
       posts: json!([]),
-      publisher: json!(publisher),
-      ts: json!(DateTime::timestamp_millis(&Utc::now())),
+      // publisher: json!(publisher),
+      publisher: String::from(publisher),
+      // ts: json!(DateTime::timestamp_millis(&Utc::now())),
+      ts: DateTime::timestamp_millis(&Utc::now()),
     }
   }
 }
