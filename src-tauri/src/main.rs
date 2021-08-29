@@ -137,8 +137,7 @@ fn main() {
         match wait_for_ipfs_id(&ipfs_client.clone()).await {
           Ok(id) => {
             let ipfs_client = IpfsClient::default();
-            println!("iden.db");
-            println!("{:?}", String::from(id.clone() + ".db"));
+            println!("opening sqlite db @ {:?}", String::from(id.clone() + ".db"));
             let db_manager = SqliteConnectionManager::file(String::from(id.clone() + ".db"));
             let db_pool = r2d2::Pool::new(db_manager).unwrap();
             let state_manager = app_handle;
@@ -149,7 +148,7 @@ fn main() {
             state_manager.manage(app_state);
           }
           Err(e) => {
-            eprintln!("failed to wait_for_ipfs_id")
+            eprintln!("failed to wait_for_ipfs_id: {:?}", e)
           }
         };
       });

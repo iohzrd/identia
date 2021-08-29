@@ -244,7 +244,7 @@ pub async fn initialize_database(publisher: String) -> Result<()> {
   migrations.to_latest(&mut conn).unwrap();
 
   let me = Identity::new(publisher.clone());
-  conn.execute(
+  match conn.execute(
       "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
       params![
           me.aux,
@@ -256,9 +256,16 @@ pub async fn initialize_database(publisher: String) -> Result<()> {
           me.publisher,
           me.ts,
       ],
-  )?;
-
-  conn.close();
+  ){
+    Ok(i) => {
+      println!("db initialized: {:?}", i);
+      println!("closing conn: {:?}", conn.close());
+    },
+    Err(e) => {
+      eprintln!("failed to initialize db: {:?}", e);
+      println!("closing conn: {:?}", conn.close());
+    }
+  };
 
   Ok(())
 }
