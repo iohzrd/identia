@@ -98,10 +98,6 @@ fn main() {
       }
       _ => {}
     })
-    // .manage(AppState {
-    //   db_pool: db_pool,
-    //   ipfs_client: ipfs_client,
-    // })
     .invoke_handler(tauri::generate_handler![
       identity::ipfs_id,
       identity::get_identity,
