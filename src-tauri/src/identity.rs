@@ -278,7 +278,6 @@ pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
 }
 
 pub async fn wait_for_ipfs_id(client: &IpfsClient) -> Result<String, String> {
-  // A counter variable
   let mut ready = false;
   let mut retries = 1;
   let mut identity = "".to_string();
@@ -290,7 +289,6 @@ pub async fn wait_for_ipfs_id(client: &IpfsClient) -> Result<String, String> {
       }
       Err(_err) => {
         if retries > 300 {
-          // Err()
           break;
         }
         retries += 1;
@@ -303,10 +301,8 @@ pub async fn wait_for_ipfs_id(client: &IpfsClient) -> Result<String, String> {
 }
 
 pub async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {
-  // A counter variable
   let mut ready = false;
   let mut retries = 1;
-  // Loop while `n` is less than 101
   while !ready {
     match client.id(None).await {
       Ok(_id) => {
@@ -314,7 +310,6 @@ pub async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {
       }
       Err(_err) => {
         if retries > 300 {
-          // Err()
           break;
         }
         retries += 1;
