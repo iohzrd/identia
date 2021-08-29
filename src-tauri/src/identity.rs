@@ -94,10 +94,12 @@ pub async fn ipfs_id() -> Result<String, String> {
   Ok(iden)
 }
 
-pub async fn identity_in_db(conn: &Connection, publisher: String) -> Result<bool> {
+pub async fn identity_in_db(conn: &Connection, publisher: String) -> Result<bool, bool> {
   let mut in_db = false;
-  let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
-  in_db = stmt.query_row(params![&publisher], |_| Ok(true))?;
+  let mut stmt = conn
+    .prepare("SELECT publisher FROM identity where publisher = ?")
+    .unwrap();
+  in_db = stmt.query_row(params![&publisher], |_| Ok(true)).unwrap();
   Ok(in_db)
 }
 
@@ -200,48 +202,6 @@ pub async fn test_managed_state(state: tauri::State<'_, AppState>) -> Result<Str
 }
 
 #[tauri::command]
-pub fn request_test_identity() -> Identity {
-  let test_aux_object = AuxObj {
-    key: String::from("BTC"),
-    value: String::from("1T8mM7TDWBcxKF5ZZy7B58adMsBgxivr1"),
-  };
-  let test_identity_object = Identity {
-    aux: json!([test_aux_object]),
-    // av: json!(""),
-    av: String::from(""),
-    // dn: json!("iohzrd"),
-    dn: String::from("iohzrd"),
-    following: json!([
-      "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
-      "Qmb4zrL17TtLGnaLFuUQC4TmaVbizEfVbDnnSzNLxkZ3Zp",
-      "12D3KooWJd8q6Q9seVVA8HmSjqBN13kZaVZd4GtMxFha3VqiGfG9",
-    ]),
-    meta: json!([]),
-    posts: json!([
-      "QmcoD56GRcE3eZZ3sFi91Ym98ZhvALxdtgPWmydRfX3sFx",
-      "QmQXHdVMMi45tDUEfNuaXMBbyeP1cAWjH7pf5V8ZPFStuj",
-      "QmRvi98hynA4qetsb9MG1HDQcLad8x9MNmGpqQFNBz59Bd",
-      "QmRF7xnqSJwRvmeg26TRFrr8xa9cV6Cm1nG68Wh112aF1X",
-      "QmW5wv3HR6LEZ6TXh6W6JkwTaALdpfvCRtEqcA2iQrdfEv",
-      "QmUvQAUr6zHQ22YMsbtoKeyGujm8qrXbe8ZLMdNy8YwzZf",
-      "QmcEZDkisuhqMfgeFxsms9syJ4b6cPhfKHDnZ3G2mH7PLV",
-      "QmVkwv3zGJx15wbHAfDAJ9ErjrvBGwP1cBo99t1mMben3Z",
-      "QmVDB1cfs3m93yBZNGoS6ujsMZkDb8ySHJtF3CmGCGcyQx",
-      "QmY4X8RtuuNig6BjJrLHeF4zURVAFFQPbLfJ4gfRHbm2wX",
-      "QmPkVnSjBa4b7qLUUYRwhwHJunoTFWwhvENxQB8tnrbyaH",
-      "QmWEvWXpcp9JSZ2taLhY8eby2CaBUTAojpXtJsfTab11Bh",
-      "QmNtN4TVvx2XL3f1BNB4v5wH5yeDwrNkZap9a1r6F6KQBM",
-      "QmQW72f51MRFj9PaJnLPcUWkZXRMcQVctf1ExJXrU3wWRs",
-    ]),
-    // publisher: json!("12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"),
-    publisher: String::from("12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z"),
-    // ts: json!(DateTime::timestamp(&Utc::now())),
-    ts: DateTime::timestamp(&Utc::now()),
-  };
-  test_identity_object.into()
-}
-
-#[tauri::command]
 pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
   let mut cid_json: String = cid.clone();
   if !cid_json.contains("/post.json") {
@@ -273,9 +233,9 @@ pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
 }
 
 #[tauri::command]
-pub async fn initialize_database(publisher: &String) -> Result<()> {
-  println!("initialize_database: {:?}", &publisher);
-  let mut conn = Connection::open("test.db")?;
+pub async fn initialize_database(publisher: String) -> Result<()> {
+  println!("initialize_database: {:?}", publisher.clone());
+  let mut conn = Connection::open(String::from(publisher.clone() + ".db"))?;
   let migrations = Migrations::new(vec![
     M::up(create_identity_table),
     M::up(create_post_table),
@@ -285,65 +245,20 @@ pub async fn initialize_database(publisher: &String) -> Result<()> {
 
   let me = Identity::new(publisher.clone());
   conn.execute(
-    "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-    params![
-        me.aux,
-        me.av,
-        me.dn,
-        me.following,
-        me.meta,
-        me.posts,
-        me.publisher,
-        me.ts,
-    ],
-)?;
+      "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+      params![
+          me.aux,
+          me.av,
+          me.dn,
+          me.following,
+          me.meta,
+          me.posts,
+          me.publisher,
+          me.ts,
+      ],
+  )?;
 
-  // let mut stmt = conn.prepare("SELECT publisher FROM identity where publisher = ?")?;
-  // let identities = stmt.query_map(params![&publisher], |row| {
-  //   Ok(Identity {
-  //     aux: row.get(0)?,
-  //     av: row.get(1)?,
-  //     dn: row.get(2)?,
-  //     following: row.get(3)?,
-  //     meta: row.get(4)?,
-  //     posts: row.get(5)?,
-  //     publisher: row.get(6)?,
-  //     ts: row.get(7)?,
-  //   })
-  // })?;
-
-  // println!("identities {:?}", identities);
-
-  // for identity in identities {
-  //   if identity.unwrap().publisher == String::from(publisher) {
-  //     identity_exists = true;
-  //   }
-  // }
-  // if !identity_exists {
-  //   let me = types::Identity {
-  //     aux: json!([]),
-  //     av: String::from(""),
-  //     dn: String::from(""),
-  //     following: json!([String::from(publisher)]),
-  //     meta: json!([]),
-  //     posts: json!([]),
-  //     publisher: String::from(publisher),
-  //     ts: DateTime::timestamp(&Utc::now()),
-  //   };
-  //   conn.execute(
-  //     "INSERT INTO identity (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-  //     params![
-  //         me.aux,
-  //         me.av,
-  //         me.dn,
-  //         me.following,
-  //         me.meta,
-  //         me.posts,
-  //         me.publisher,
-  //         me.ts,
-  //     ],
-  // )?;
-  // }
+  conn.close();
 
   Ok(())
 }
@@ -372,6 +287,31 @@ pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
     Ok(id) => Ok(id),
     Err(e) => Err(e),
   }
+}
+
+pub async fn wait_for_ipfs_id(client: &IpfsClient) -> Result<String, String> {
+  // A counter variable
+  let mut ready = false;
+  let mut retries = 1;
+  let mut identity = "".to_string();
+  while !ready {
+    match client.id(None).await {
+      Ok(id) => {
+        identity = id.id;
+        ready = true;
+      }
+      Err(_err) => {
+        if retries > 300 {
+          // Err()
+          break;
+        }
+        retries += 1;
+        thread::sleep(Duration::from_millis(100));
+      }
+    }
+  }
+
+  Ok(identity)
 }
 
 pub async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {

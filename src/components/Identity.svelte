@@ -40,12 +40,6 @@
     identity = obj;
   }
 
-  function requestTestIdentity() {
-    invoke("request_test_identity")
-      .then(onIdentityObject)
-      .catch(onIdentityObject);
-  }
-
   function requestBlankIdentity() {
     invoke("get_identity", {
       publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
@@ -92,10 +86,6 @@
 <Tile>
   <Form on:submit>
     <div>{window.location}</div>
-
-    <button class="button" id="id" on:click={requestTestIdentity}>
-      requestTestIdentity
-    </button>
 
     <button class="button" id="id" on:click={requestBlankIdentity}>
       requestBlankIdentity

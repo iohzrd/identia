@@ -4,7 +4,7 @@
 )]
 
 mod identity;
-use crate::identity::initialize_database;
+use crate::identity::{initialize_database, wait_for_ipfs_id};
 
 #[cfg(target_os = "linux")]
 use std::path::PathBuf;
@@ -25,10 +25,6 @@ struct IpfsID {
 }
 
 fn main() {
-  let ipfs_client = IpfsClient::default();
-  let _db_manager = SqliteConnectionManager::file("test.db");
-  let db_pool = r2d2::Pool::new(_db_manager).unwrap();
-
   tauri::Builder::default()
     // .on_page_load(|window, _| {
     //   let window_ = window.clone();
@@ -102,14 +98,13 @@ fn main() {
       }
       _ => {}
     })
-    .manage(AppState {
-      ipfs_client: ipfs_client,
-      db_pool: db_pool,
-    })
+    // .manage(AppState {
+    //   db_pool: db_pool,
+    //   ipfs_client: ipfs_client,
+    // })
     .invoke_handler(tauri::generate_handler![
       identity::ipfs_id,
       identity::get_identity,
-      identity::request_test_identity,
       identity::ipfs_get_post,
       identity::test_managed_state,
       identity::test_insert_identity,
@@ -118,12 +113,12 @@ fn main() {
       let daemon_client = IpfsClient::default();
       let splashscreen_window = app.get_window("splash").unwrap();
       let main_window = app.get_window("main").unwrap();
+      let app_handle = app.handle();
 
       tauri::async_runtime::spawn(async move {
         match identity::launch_ipfs_daemon(&daemon_client).await {
           Ok(iden) => {
-            println!("Initializing db with identity: {:?}", &iden);
-            initialize_database(&iden).await;
+            initialize_database(iden.clone()).await;
             let reply = IpfsID { data: iden.clone() };
             main_window
               .emit("ipfs-id", Some(reply))
@@ -139,6 +134,28 @@ fn main() {
         }
         // log::info!("Launch setup successful")
         println!("Launch setup successful")
+      });
+
+      let ipfs_client = IpfsClient::default();
+      tauri::async_runtime::block_on(async move {
+        match wait_for_ipfs_id(&ipfs_client.clone()).await {
+          Ok(id) => {
+            let ipfs_client = IpfsClient::default();
+            println!("iden.db");
+            println!("{:?}", String::from(id.clone() + ".db"));
+            let db_manager = SqliteConnectionManager::file(String::from(id.clone() + ".db"));
+            let db_pool = r2d2::Pool::new(db_manager).unwrap();
+            let state_manager = app_handle;
+            let app_state = AppState {
+              db_pool: db_pool,
+              ipfs_client: ipfs_client,
+            };
+            state_manager.manage(app_state);
+          }
+          Err(e) => {
+            eprintln!("failed to wait_for_ipfs_id")
+          }
+        };
       });
 
       Ok(())
