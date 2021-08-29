@@ -1,23 +1,18 @@
-use chrono::{offset::Utc, DateTime};
+// use chrono::{offset::Utc, DateTime};
 use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{params, Connection, Result, NO_PARAMS};
+use rusqlite::{params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
-use serde_json::{from_slice, json};
+use serde_json::from_slice;
 use std::{thread, time::Duration};
 use tauri;
 use tauri::api::process::Command;
 
-use crate::identity::types::{AppState, AuxObj, Identity, PostResponse, Publisher};
+use crate::identity::types::{AppState, Identity, PostResponse};
 
 pub mod types;
-
-// #[tauri::command]
-// pub fn log_operation(event: String, payload: Option<String>) {
-//   println!("{} {:?}", event, payload);
-// }
 
 const create_identity_table: &str = "
     create table if not exists identity (
@@ -69,22 +64,9 @@ pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
   }
 }
 
-// #[tauri::command]
-// pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> String {
-//   // let ipfs_client = state.ipfs_client;
-//   let iden = match state.ipfs_client.id(None).await {
-//     Ok(id) => id.id,
-//     Err(e) => String::from(""),
-//   };
-//   println!("test_function");
-//   println!("{:?}", iden);
-//   iden
-// }
-
 #[tauri::command]
-pub async fn ipfs_id() -> Result<String, String> {
-  let client = IpfsClient::default();
-  let iden = match client.id(None).await {
+pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> Result<String, String> {
+  let iden = match state.ipfs_client.id(None).await {
     Ok(id) => id.id,
     Err(e) => {
       eprintln!("error: ipfs_id(): {}", e);
@@ -186,7 +168,6 @@ pub async fn get_identity(
 
 #[tauri::command]
 pub async fn test_managed_state(state: tauri::State<'_, AppState>) -> Result<String, String> {
-  let db_manager = state.db_pool.get().unwrap();
   let iden = match state.ipfs_client.id(None).await {
     Ok(id) => {
       println!("test_managed_state(): {}", id.id);
