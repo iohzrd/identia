@@ -4,10 +4,8 @@
 )]
 
 mod identity;
+use crate::identity::types::AppState;
 use crate::identity::{initialize_database, wait_for_ipfs_id};
-
-#[cfg(target_os = "linux")]
-use std::path::PathBuf;
 
 use ipfs_api::IpfsClient;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -17,7 +15,8 @@ use tauri::{
   SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
 
-use crate::identity::types::AppState;
+#[cfg(target_os = "linux")]
+use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize)]
 struct IpfsID {
@@ -103,7 +102,8 @@ fn main() {
       identity::get_identity,
       identity::ipfs_get_post,
       identity::test_managed_state,
-      identity::test_insert_identity,
+      identity::test_db_insert_identity,
+      identity::post,
     ])
     .setup(|app| {
       let daemon_client = IpfsClient::default();
@@ -136,16 +136,28 @@ fn main() {
       tauri::async_runtime::block_on(async move {
         match wait_for_ipfs_id(&ipfs_client.clone()).await {
           Ok(id) => {
-            let ipfs_client = IpfsClient::default();
             println!("opening sqlite db @ {:?}", String::from(id.clone() + ".db"));
             let db_manager = SqliteConnectionManager::file(String::from(id.clone() + ".db"));
             let db_pool = r2d2::Pool::new(db_manager).unwrap();
+            let ipfs_client = IpfsClient::default();
+            let ipfs_id = match ipfs_client.id(None).await {
+              Ok(id) => Ok(id.id),
+              Err(err) => Err(String::new()),
+            }
+            .unwrap();
+            let main_window = app.get_window("main").unwrap();
             let state_manager = app_handle;
             let app_state = AppState {
+              ipfs_id: ipfs_id,
               db_pool: db_pool,
               ipfs_client: ipfs_client,
             };
             state_manager.manage(app_state);
+
+            let reply = IpfsID { data: id.clone() };
+            main_window
+              .emit("ipfs-id", Some(reply))
+              .expect("failed to emit");
           }
           Err(e) => {
             eprintln!("failed to wait_for_ipfs_id: {:?}", e)

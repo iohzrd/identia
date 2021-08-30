@@ -8,6 +8,7 @@ use serde_json::{json, Value};
 pub struct AppState {
   pub db_pool: Pool<SqliteConnectionManager>,
   pub ipfs_client: IpfsClient,
+  pub ipfs_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -29,12 +30,16 @@ pub struct AuxObj {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Identity {
-  pub aux: Value,
+  // pub aux: Value,
+  pub aux: Vec<AuxObj>,
   pub av: String,
   pub dn: String,
-  pub following: Value,
-  pub meta: Value,
-  pub posts: Value,
+  // pub following: Value,
+  pub following: Vec<String>,
+  // pub meta: Value,
+  pub meta: Vec<String>,
+  // pub posts: Value,
+  pub posts: Vec<String>,
   pub publisher: String,
   pub ts: i64,
 }
@@ -42,17 +47,17 @@ pub struct Identity {
 impl Identity {
   pub fn new(publisher: String) -> Identity {
     Identity {
-      aux: json!([]),
-      // av: json!(""),
+      // aux: json!([]),
+      aux: vec![],
       av: String::from(""),
-      // dn: json!(""),
       dn: String::from(""),
-      following: json!([json!(publisher)]),
-      meta: json!([]),
-      posts: json!([]),
-      // publisher: json!(publisher),
+      // following: json!([json!(publisher)]),
+      following: vec![publisher.clone()],
+      // meta: json!([]),
+      meta: vec![],
+      // posts: json!([]),
+      posts: vec![],
       publisher: String::from(publisher),
-      // ts: json!(DateTime::timestamp_millis(&Utc::now())),
       ts: DateTime::timestamp_millis(&Utc::now()),
     }
   }
@@ -65,18 +70,43 @@ pub struct Publisher {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
-  pub aux: Value,
+  pub aux: Vec<AuxObj>,
   pub body: String,
-  pub files: Value,
-  pub filesRoot: Option<String>,
-  pub files_root: Option<String>,
-  pub meta: Value,
+  pub files: Vec<String>,
+  pub files_cid: Option<String>,
+  pub meta: Vec<String>,
   pub publisher: String,
   pub ts: i64,
+}
+impl Post {
+  pub fn new() -> Post {
+    Post {
+      aux: vec![],
+      body: String::from(""),
+      // files: vec![publisher.clone()],
+      files: vec![],
+      files_cid: None,
+      meta: vec![],
+      // publisher: String::from(publisher),
+      publisher: String::from(""),
+      ts: DateTime::timestamp_nanos(&Utc::now()),
+    }
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PostRequest {
+  pub body: String,
+  pub files: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostResponse {
   pub cid: String,
   pub post: Post,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Feed {
+  pub feed: Vec<PostResponse>,
 }

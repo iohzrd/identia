@@ -31,12 +31,12 @@
 
   const views = [
     {
-      label: "Identity",
-      component: Identity,
-    },
-    {
       label: "Feed",
       component: Feed,
+    },
+    {
+      label: "Identity",
+      component: Identity,
     },
     {
       label: "Settings",
@@ -91,6 +91,7 @@
 
   function onIpfsId(value) {
     console.log("onIpfsId");
+    console.log(value);
     if (
       value &&
       value.payload &&
@@ -112,6 +113,7 @@
 
   onMount(async () => {
     ipfs_id_unlisten = await listen("ipfs-id", onIpfsId);
+    ipfsID();
   });
 
   onDestroy(() => {
