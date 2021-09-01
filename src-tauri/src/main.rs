@@ -99,6 +99,7 @@ fn main() {
     })
     .invoke_handler(tauri::generate_handler![
       identity::get_identity,
+      identity::get_feed,
       identity::ipfs_get_post,
       identity::ipfs_id,
       identity::post,

@@ -50,7 +50,8 @@
   }
 
   onMount(async () => {
-    ipfs_id = await invoke("wait_for_ipfs_id_cmd");
+    ipfs_id = await invoke("ipfs_id");
+    // ipfs_id = await invoke("wait_for_ipfs_id_cmd");
     console.log("ipfs_id");
     console.log(ipfs_id);
   });

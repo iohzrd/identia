@@ -51,9 +51,8 @@ pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> Result<String, String
 pub async fn wait_for_ipfs_id_cmd(state: tauri::State<'_, AppState>) -> Result<String, String> {
   match wait_for_ipfs_id(&state.ipfs_client).await {
     Ok(id) => Ok(id.clone()),
-    Err(e) => Err(String::from("")),
+    Err(_) => Err(String::from("")),
   }
-  // Ok(state.ipfs_id.clone())
 }
 
 pub async fn identity_in_db(
@@ -134,7 +133,7 @@ pub async fn get_identity_db(
   publisher: String,
 ) -> Result<Identity> {
   let stmt = conn.prepare(
-    "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identities where publisher = ?",
+    "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identities WHERE publisher = ?",
   );
   let mut s = match stmt {
     Ok(stmt) => stmt,
@@ -253,19 +252,53 @@ pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
 // }
 
 #[tauri::command]
-pub async fn get_feed(state: tauri::State<'_, AppState>) -> Vec<PostResponse> {
-  let feed = vec![];
+pub async fn get_feed(
+  state: tauri::State<'_, AppState>,
+  tsop: String,
+  ts: i64,
+  limit: i64,
+) -> Result<Vec<PostResponse>, Vec<PostResponse>> {
+  let feed: Vec<PostResponse> = vec![];
   let conn = state.db_pool.get().unwrap();
-  let stmt =
-    conn.prepare("SELECT aux,body,files,filesRoot,files_root,meta,publisher,ts FROM posts");
-  let s = match stmt {
-    Ok(stmt) => stmt,
+  let stmt_str: &str =
+    &"SELECT aux,body,files,files_cid,meta,publisher,ts FROM posts WHERE ts TSOP :ts LIMIT :limit"
+      .replace("TSOP", tsop.as_str());
+  let stmt = conn.prepare(stmt_str);
+  let mut s = match stmt {
+    Ok(stmt) => {
+      println!("stmt valid");
+      stmt
+    }
     Err(error) => {
-      panic!("There was a problem opening the file: {:?}", error)
+      panic!("invalid sql in db_update_identity: {:?}", error)
     }
   };
 
-  feed.into()
+  let posts = s
+    .query_map(
+      named_params! {
+        ":ts": &ts,
+        ":limit": &limit
+      },
+      |row| {
+        Ok(Post {
+          aux: serde_json::from_value(row.get(0)?).unwrap(),
+          body: row.get(1)?,
+          files: serde_json::from_value(row.get(2)?).unwrap(),
+          files_cid: row.get(3)?,
+          meta: serde_json::from_value(row.get(4)?).unwrap(),
+          publisher: row.get(5)?,
+          ts: row.get(6)?,
+        })
+      },
+    )
+    .unwrap();
+  println!("posts");
+  for post in posts {
+    println!("{:?}", post);
+  }
+
+  Ok(feed)
 }
 
 #[tauri::command]
