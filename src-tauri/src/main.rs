@@ -98,10 +98,11 @@ fn main() {
       _ => {}
     })
     .invoke_handler(tauri::generate_handler![
-      identity::ipfs_id,
       identity::get_identity,
       identity::ipfs_get_post,
+      identity::ipfs_id,
       identity::post,
+      identity::wait_for_ipfs_id_cmd,
     ])
     .setup(|app| {
       let daemon_client = IpfsClient::default();

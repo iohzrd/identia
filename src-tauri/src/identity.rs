@@ -44,14 +44,16 @@ pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
 
 #[tauri::command]
 pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> Result<String, String> {
-  let iden = match state.ipfs_client.id(None).await {
-    Ok(id) => id.id,
-    Err(e) => {
-      eprintln!("error: ipfs_id(): {}", e);
-      "".into()
-    }
-  };
-  Ok(iden)
+  Ok(state.ipfs_id.clone())
+}
+
+#[tauri::command]
+pub async fn wait_for_ipfs_id_cmd(state: tauri::State<'_, AppState>) -> Result<String, String> {
+  match wait_for_ipfs_id(&state.ipfs_client).await {
+    Ok(id) => Ok(id.clone()),
+    Err(e) => Err(String::from("")),
+  }
+  // Ok(state.ipfs_id.clone())
 }
 
 pub async fn identity_in_db(

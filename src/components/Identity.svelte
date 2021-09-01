@@ -32,23 +32,31 @@
     ts: number;
   };
 
-  export let identity: Identity;
+  export let ipfs_id: string;
+
+  let identity: Identity;
 
   function onIdentityObject(obj) {
-    console.log("onTestObj");
+    console.log("onIdentityObject");
     console.log(obj);
     identity = obj;
   }
 
   function getIdentity() {
+    console.log(`getIdentity: ${ipfs_id}`);
     invoke("get_identity", {
-      publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
+      publisher: ipfs_id,
     })
       .then(onIdentityObject)
       .catch(onIdentityObject);
   }
 
+  async function getIpfsId() {
+    return invoke("ipfs_id");
+  }
+
   onMount(async () => {
+    // ipfs_id = await invoke("ipfs_id");
     getIdentity();
   });
 </script>

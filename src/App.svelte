@@ -21,13 +21,9 @@
   import { emit, listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-  import { writable } from "svelte/store";
 
-  // export let onIpfsId;
   let isSideNavOpen = false;
-  let ipfs_id_unlisten;
-  let ipfs_id = "";
-  let responses = writable([]);
+  let ipfs_id: string;
 
   const views = [
     {
@@ -53,74 +49,13 @@
     selected_view = view;
   }
 
-  function log() {
-    invoke("log_operation", {
-      event: "tauri-click",
-      payload: "this payload is optional because we used Option in Rust",
-    });
-  }
-
-  function performRequest() {
-    invoke("perform_request", {
-      endpoint: "dummy endpoint arg",
-      body: {
-        id: 5,
-        name: "test",
-      },
-    })
-      .then(onIpfsId)
-      .catch(onIpfsId);
-  }
-
-  function requestTestObj() {
-    invoke("request_test_identity").then(onTestObj).catch(onTestObj);
-  }
-
-  function onTestObj(obj) {
-    console.log("onTestObj");
-    console.log(obj);
-  }
-
-  function ipfsID() {
-    invoke("ipfs_id").then(onIpfsId).catch(onIpfsId);
-  }
-
-  function emitEvent() {
-    emit("ipfs-id", "this is the payload string");
-  }
-
-  function onIpfsId(value) {
-    console.log("onIpfsId");
-    console.log(value);
-    if (
-      value &&
-      value.payload &&
-      value.payload.data &&
-      typeof value.payload.data === "string"
-    ) {
-      ipfs_id = value.payload.data;
-    }
-  }
-
-  function onMessage(value) {
-    responses.update((r) => [
-      `[${new Date().toLocaleTimeString()}]` +
-        ": " +
-        (typeof value === "string" ? value : JSON.stringify(value)),
-      ...r,
-    ]);
-  }
-
   onMount(async () => {
-    ipfs_id_unlisten = await listen("ipfs-id", onIpfsId);
-    ipfsID();
+    ipfs_id = await invoke("wait_for_ipfs_id_cmd");
+    console.log("ipfs_id");
+    console.log(ipfs_id);
   });
 
-  onDestroy(() => {
-    if (ipfs_id_unlisten) {
-      ipfs_id_unlisten();
-    }
-  });
+  onDestroy(() => {});
 </script>
 
 <Header
@@ -154,5 +89,5 @@
 </SideNav>
 
 <Content>
-  <svelte:component this={selected_view.component} />
+  <svelte:component this={selected_view.component} {ipfs_id} />
 </Content>
