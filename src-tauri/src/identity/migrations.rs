@@ -1,4 +1,4 @@
-pub const create_identities_table: &str = "
+pub const CREATE_IDENTITIES_TABLE: &str = "
     create table if not exists identities (
     aux         text,
     av          text,
@@ -10,7 +10,7 @@ pub const create_identities_table: &str = "
     ts          int
   )";
 
-pub const create_posts_table: &str = "
+pub const CREATE_POSTS_TABLE: &str = "
     create table if not exists posts (
     aux         text,
     body        text,

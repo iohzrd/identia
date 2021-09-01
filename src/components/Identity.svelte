@@ -40,7 +40,7 @@
     identity = obj;
   }
 
-  function requestBlankIdentity() {
+  function getIdentity() {
     invoke("get_identity", {
       publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
     })
@@ -48,72 +48,13 @@
       .catch(onIdentityObject);
   }
 
-  function onPostObject(obj) {
-    console.log("onPostObject");
-    console.log(obj);
-    // identity = obj;
-  }
-
-  function requestTestPost() {
-    invoke("ipfs_get_post", {
-      cid: "QmQW72f51MRFj9PaJnLPcUWkZXRMcQVctf1ExJXrU3wWRs",
-    })
-      .then(onPostObject)
-      .catch(onPostObject);
-  }
-
-  function testManagedState() {
-    invoke("test_managed_state")
-      .then(onTestManagedState)
-      .catch(onTestManagedState);
-  }
-  function onTestManagedState(obj) {
-    console.log("onTestManagedState");
-    console.log(obj);
-  }
-
-  function testInsertIdentity() {
-    invoke("test_insert_identity", {
-      publisher: "12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z",
-    })
-      .then(onTestInsertIdentity)
-      .catch(onTestInsertIdentity);
-  }
-  function onTestInsertIdentity(obj) {
-    console.log("onTestInsertIdentity");
-    console.log(obj);
-  }
-
-  function testPostNew() {
-    invoke("post_new").then(onPostNew).catch(onPostNew);
-  }
-  function onPostNew(obj) {
-    console.log("onPostNew");
-    console.log(obj);
-  }
+  onMount(async () => {
+    getIdentity();
+  });
 </script>
 
 <Tile>
   <Form on:submit>
-    <div>{window.location}</div>
-
-    <button class="button" id="id" on:click={requestBlankIdentity}>
-      requestBlankIdentity
-    </button>
-
-    <button class="button" id="id" on:click={testPostNew}> testPostNew </button>
-
-    <button class="button" id="id" on:click={requestTestPost}>
-      requestTestPost
-    </button>
-
-    <button class="button" id="id" on:click={testManagedState}>
-      testManagedState
-    </button>
-
-    <button class="button" id="id" on:click={testInsertIdentity}>
-      testInsertIdentity
-    </button>
     {#if identity}
       <FormGroup legendText="av">
         <!-- <UserProfile20>

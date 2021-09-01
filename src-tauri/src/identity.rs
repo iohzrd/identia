@@ -1,4 +1,5 @@
 use chrono::{offset::Utc, DateTime};
+use common_multipart_rfc7578::client::multipart::Form;
 use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use r2d2::PooledConnection;
@@ -13,8 +14,8 @@ use tauri::api::process::Command;
 
 pub mod migrations;
 pub mod types;
-use crate::identity::migrations::{create_identities_table, create_posts_table};
-use crate::identity::types::{AppState, AuxObj, Identity, Post, PostRequest, PostResponse};
+use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
+use crate::identity::types::{AddObj, AppState, AuxObj, Identity, Post, PostRequest, PostResponse};
 
 pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
   let client = IpfsClient::default();
@@ -94,7 +95,7 @@ pub async fn db_update_identity(
   identity: Identity,
 ) -> Identity {
   let stmt = conn.prepare(
-    "UPDATE identities SET aux=:aux, av=:av, dn=:dn, following=:following, meta=:meta, posts=:posts, publisher=:publisher, ts=:ts WHERE publisher = (:publisher)",
+    "UPDATE identities SET aux=:aux, av=:av, dn=:dn, following=:following, meta=:meta, posts=:posts, publisher=:publisher, ts=:ts WHERE publisher=:publisher",
   );
   let mut s = match stmt {
     Ok(stmt) => {
@@ -124,18 +125,6 @@ pub async fn db_update_identity(
     }
   };
   identity
-}
-
-#[tauri::command]
-pub async fn test_db_insert_identity(
-  state: tauri::State<'_, AppState>,
-  publisher: String,
-) -> Result<Identity, Identity> {
-  println!("test_db_insert_identity1");
-  let conn = state.db_pool.get().unwrap();
-  let identity = db_insert_identity(conn, Identity::new(publisher.clone())).await;
-
-  Ok(identity)
 }
 
 pub async fn get_identity_db(
@@ -203,33 +192,6 @@ pub async fn get_identity_internal(
 }
 
 #[tauri::command]
-pub async fn test_managed_state(state: tauri::State<'_, AppState>) -> Result<String, String> {
-  let iden = match state.ipfs_client.id(None).await {
-    Ok(id) => {
-      println!("test_managed_state(): {}", id.id);
-      id.id
-    }
-    Err(e) => {
-      eprintln!("error: test_managed_state(): {}", e);
-      "".into()
-    }
-  };
-  let conn = state.db_pool.get().unwrap();
-  let identity = match get_identity(state, iden.clone()).await {
-    Ok(id) => id,
-    Err(id) => id,
-  };
-
-  // let following: Vec<String> = serde_json::from_value(identity.following).unwrap();
-  for publisher in identity.following {
-    println!("{:?}", publisher.clone())
-  }
-
-  println!("test_managed_state(): {}", iden);
-  Ok(iden)
-}
-
-#[tauri::command]
 pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
   let mut cid_json: String = cid.clone();
   if !cid_json.contains("/post.json") {
@@ -294,7 +256,7 @@ pub async fn get_feed(state: tauri::State<'_, AppState>) -> Vec<PostResponse> {
   let conn = state.db_pool.get().unwrap();
   let stmt =
     conn.prepare("SELECT aux,body,files,filesRoot,files_root,meta,publisher,ts FROM posts");
-  let mut s = match stmt {
+  let s = match stmt {
     Ok(stmt) => stmt,
     Err(error) => {
       panic!("There was a problem opening the file: {:?}", error)
@@ -307,33 +269,41 @@ pub async fn get_feed(state: tauri::State<'_, AppState>) -> Vec<PostResponse> {
 #[tauri::command]
 pub async fn post(
   state: tauri::State<'_, AppState>,
-  postRequest: PostRequest,
+  post_request: PostRequest,
 ) -> Result<PostResponse, PostResponse> {
   println!("post");
-  println!("{:?}", postRequest.body);
-  println!("{:?}", postRequest.files);
+  println!("{:?}", post_request.body);
+  println!("{:?}", post_request.files);
   let mut post = Post::new();
-  post.body = postRequest.body;
+  post.body = post_request.body;
   post.publisher = state.ipfs_id.clone();
   // post.files = request.files;
   println!("{:?}", post);
 
-  let conn = state.db_pool.get().unwrap();
-  let data = serde_json::to_string(&post).unwrap();
-  let cursor = Cursor::new(data);
-  let cid = match state.ipfs_client.add(cursor).await {
+  let json = serde_json::to_vec(&post).unwrap();
+  let add = ipfs_api::request::Add::builder()
+    .wrap_with_directory(true)
+    .build();
+  let mut form = Form::default();
+  form.add_reader_file("path", Cursor::new(json), "post.json");
+  let cid = match state.ipfs_client.add_with_form(add, form).await {
     Ok(res) => {
-      println!("post success: {:?}", res.hash);
-      res.hash
+      println!("res: {:?}", res);
+      let mut cid = String::from("");
+      for add in res {
+        if add.name == String::from("") {
+          cid = add.hash
+        }
+      }
+      cid
     }
     Err(e) => {
       eprintln!("{:#?}", e);
       String::from("")
     }
   };
-  // post.postCid = Some(cid.clone());
-  // post.into()
 
+  let conn = state.db_pool.get().unwrap();
   conn.execute(
     "INSERT INTO posts (aux,body,files,files_cid,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
     params![
@@ -359,7 +329,7 @@ pub async fn post(
     }
   };
 
-  identity.posts.push(cid.clone());
+  identity.posts.insert(0, cid.clone());
 
   let conn = state.db_pool.get().unwrap();
   let identity = db_update_identity(conn, identity).await;
@@ -393,8 +363,8 @@ pub async fn initialize_database(publisher: String) -> Result<()> {
   println!("initialize_database: {:?}", publisher.clone());
   let mut conn = Connection::open(String::from(publisher.clone() + ".db"))?;
   let migrations = Migrations::new(vec![
-    M::up(create_identities_table),
-    M::up(create_posts_table),
+    M::up(CREATE_IDENTITIES_TABLE),
+    M::up(CREATE_POSTS_TABLE),
     // In the future, add more migrations here
   ]);
   println!("running migrations...");

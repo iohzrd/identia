@@ -101,8 +101,6 @@ fn main() {
       identity::ipfs_id,
       identity::get_identity,
       identity::ipfs_get_post,
-      identity::test_managed_state,
-      identity::test_db_insert_identity,
       identity::post,
     ])
     .setup(|app| {

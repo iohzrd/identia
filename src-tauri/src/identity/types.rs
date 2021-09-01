@@ -4,6 +4,7 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::io::Cursor;
 
 pub struct AppState {
   pub db_pool: Pool<SqliteConnectionManager>,
@@ -58,7 +59,7 @@ impl Identity {
       // posts: json!([]),
       posts: vec![],
       publisher: String::from(publisher),
-      ts: DateTime::timestamp_millis(&Utc::now()),
+      ts: DateTime::timestamp(&Utc::now()),
     }
   }
 }
@@ -89,7 +90,7 @@ impl Post {
       meta: vec![],
       // publisher: String::from(publisher),
       publisher: String::from(""),
-      ts: DateTime::timestamp_nanos(&Utc::now()),
+      ts: DateTime::timestamp_millis(&Utc::now()),
     }
   }
 }
@@ -109,4 +110,11 @@ pub struct PostResponse {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Feed {
   pub feed: Vec<PostResponse>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AddObj {
+  pub path: String,
+  // pub content: Vec<u8>,
+  pub content: String,
 }

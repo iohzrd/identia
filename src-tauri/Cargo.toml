@@ -18,7 +18,8 @@ chrono = { version = "0.4.19", features = ["serde"] }
 directories = "3.0.2"
 futures = "0.3.16"
 infer = "0.5.0"
-ipfs-api = "0.11.0"
+common-multipart-rfc7578 = "0.3.0"
+ipfs-api = { git = "https://github.com/iohzrd/rust-ipfs-api", features = ["with-hyper"] }
 kamadak-exif = "0.5.4"
 mime = "0.3.16"
 qrcode = "0.12.0"
