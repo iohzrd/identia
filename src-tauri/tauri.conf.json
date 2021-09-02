@@ -82,18 +82,7 @@
         "width": 1280,
         "height": 720,
         "resizable": true,
-        "visible": false
-      },
-      {
-        "label": "splash",
-        "center": true,
-        "width": 512,
-        "height": 512,
-        "decorations": false,
-        "skipTaskbar": true,
-        "resizable": false,
-        "transparent": true,
-        "url": "splash.html"
+        "visible": true
       }
     ]
   }

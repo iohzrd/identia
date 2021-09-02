@@ -4,6 +4,7 @@
     Header,
     HeaderGlobalAction,
     HeaderUtilities,
+    Loading,
     SideNav,
     SideNavDivider,
     SideNavItems,
@@ -59,36 +60,40 @@
   onDestroy(() => {});
 </script>
 
-<Header
-  persistentHamburgerMenu={true}
-  company="Identia: "
-  platformName={ipfs_id}
-  bind:isSideNavOpen
->
-  <div slot="skip-to-content">
-    <SkipToContent />
-  </div>
-  <HeaderUtilities>
-    <HeaderGlobalAction aria-label="Settings" icon={SettingsAdjust20} />
-    <HeaderGlobalAction aria-label="Follow new identity" icon={Add20} />
-  </HeaderUtilities>
-</Header>
+{#if ipfs_id}
+  <Header
+    persistentHamburgerMenu={true}
+    company="Identia: "
+    platformName={ipfs_id}
+    bind:isSideNavOpen
+  >
+    <div slot="skip-to-content">
+      <SkipToContent />
+    </div>
+    <HeaderUtilities>
+      <HeaderGlobalAction aria-label="Settings" icon={SettingsAdjust20} />
+      <HeaderGlobalAction aria-label="Follow new identity" icon={Add20} />
+    </HeaderUtilities>
+  </Header>
 
-<SideNav bind:isOpen={isSideNavOpen}>
-  <SideNavItems>
-    {#each views as view}
-      <SideNavLink
-        text={view.label}
-        class="nv noselect {selected_view === view ? 'nv_selected' : ''}"
-        on:click={() => select(view)}
-      >
-        {view.label}
-      </SideNavLink>
-    {/each}
-    <SideNavDivider />
-  </SideNavItems>
-</SideNav>
+  <SideNav bind:isOpen={isSideNavOpen}>
+    <SideNavItems>
+      {#each views as view}
+        <SideNavLink
+          text={view.label}
+          class="nv noselect {selected_view === view ? 'nv_selected' : ''}"
+          on:click={() => select(view)}
+        >
+          {view.label}
+        </SideNavLink>
+      {/each}
+      <SideNavDivider />
+    </SideNavItems>
+  </SideNav>
 
-<Content>
-  <svelte:component this={selected_view.component} {ipfs_id} />
-</Content>
+  <Content>
+    <svelte:component this={selected_view.component} {ipfs_id} />
+  </Content>
+{:else}
+  <Loading />
+{/if}

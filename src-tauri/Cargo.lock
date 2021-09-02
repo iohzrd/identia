@@ -1706,7 +1706,7 @@ dependencies = [
 [[package]]
 name = "ipfs-api"
 version = "0.11.0"
-source = "git+https://github.com/iohzrd/rust-ipfs-api#e964814abc84ebc4a87bd2a2c4ffe53db71fe752"
+source = "git+https://github.com/iohzrd/rust-ipfs-api#62454dd2d24b9234b4500fbfc6a6466030201145"
 dependencies = [
  "bytes",
  "dirs 3.0.2",
@@ -3854,9 +3854,9 @@ dependencies = [
 
 [[package]]
 name = "typenum"
-version = "1.13.0"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "879f6906492a7cd215bfa4cf595b600146ccfac0c79bcbd1f3000162af5e8b06"
+checksum = "b63708a265f51345575b27fe43f9500ad611579e764c79edbc2037b1121959ec"
 
 [[package]]
 name = "ucd-trie"

@@ -1,73 +1,63 @@
 <script lang="ts">
-  import {
-    TextInputSkeleton,
-    ClickableTile,
-    Tile,
-  } from "carbon-components-svelte";
+  import { ClickableTile } from "carbon-components-svelte";
 
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
-  //   export let post;
+  import type { Post, PostResponse } from "../types.type";
+
   export let cid: String;
-  export let includeFrom: Boolean = false;
+  export let postResponse: PostResponse;
+  export let includeFrom: Boolean = true;
+
   let post: Post;
 
-  type Post = {
-    aux: object[];
-    body: string;
-    files: string[];
-    files_root: string;
-    meta: string[];
-    publisher: string;
-    ts: number;
-  };
-
-  type PostResponse = {
-    post: Post;
-    cid: string;
-  };
-
-  function onPostObject(postResponse: PostResponse) {
+  function onPostResponseObject(pr: PostResponse) {
     console.log("onPostObject");
-    console.log(postResponse);
-    if (postResponse && postResponse.post) {
-      post = postResponse.post;
+    console.log(pr);
+    if (pr && pr.post) {
+      postResponse = pr;
     }
   }
 
-  function requestTestPost() {
+  function getPostFromCid() {
     invoke("ipfs_get_post", {
       cid: cid,
     })
-      .then(onPostObject)
-      .catch(onPostObject);
+      .then(onPostResponseObject)
+      .catch(onPostResponseObject);
   }
 
   onMount(async () => {
-    requestTestPost();
+    console.log("Post");
+    console.log(postResponse);
+    if (!postResponse) {
+      getPostFromCid();
+    }
   });
 
   onDestroy(() => {});
 </script>
 
 <ClickableTile light>
-  <div>
-    {cid}
-  </div>
-  <div>
-    {#if post && post.body}
-      {post.body}
-    {/if}
-  </div>
-  <div>
-    {#if post && post.publisher && includeFrom}
-      From: {post.publisher}
-    {/if}
-  </div>
-  <div>
-    {#if post && post.ts}
-      {post.ts}
-    {/if}
-  </div>
+  {#if postResponse}
+    <div>
+      {postResponse.cid}
+    </div>
+    <div>
+      {#if postResponse.post && postResponse.post.body}
+        {postResponse.post.body}
+      {/if}
+    </div>
+    <div>
+      {#if postResponse.post && postResponse.post.publisher && includeFrom}
+        From: {postResponse.post.publisher}
+      {/if}
+    </div>
+    <div>
+      {#if postResponse.post && postResponse.post.ts}
+        {postResponse.post.ts}
+      {/if}
+    </div>
+  {/if}
 </ClickableTile>

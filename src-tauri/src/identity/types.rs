@@ -49,15 +49,15 @@ impl Identity {
   pub fn new(publisher: String) -> Identity {
     Identity {
       // aux: json!([]),
-      aux: vec![],
+      aux: Vec::new(),
       av: String::from(""),
       dn: String::from(""),
       // following: json!([json!(publisher)]),
       following: vec![publisher.clone()],
       // meta: json!([]),
-      meta: vec![],
+      meta: Vec::new(),
       // posts: json!([]),
-      posts: vec![],
+      posts: Vec::new(),
       publisher: String::from(publisher),
       ts: DateTime::timestamp(&Utc::now()),
     }
@@ -74,22 +74,19 @@ pub struct Post {
   pub aux: Vec<AuxObj>,
   pub body: String,
   pub files: Vec<String>,
-  pub files_cid: Option<String>,
+  // pub files_cid: Option<String>,
   pub meta: Vec<String>,
   pub publisher: String,
   pub ts: i64,
 }
 impl Post {
-  pub fn new() -> Post {
+  pub fn new(body: String, publisher: String) -> Post {
     Post {
-      aux: vec![],
-      body: String::from(""),
-      // files: vec![publisher.clone()],
-      files: vec![],
-      files_cid: None,
-      meta: vec![],
-      // publisher: String::from(publisher),
-      publisher: String::from(""),
+      aux: Vec::new(),
+      body: String::from(body),
+      files: Vec::new(),
+      meta: Vec::new(),
+      publisher: String::from(publisher),
       ts: DateTime::timestamp_millis(&Utc::now()),
     }
   }

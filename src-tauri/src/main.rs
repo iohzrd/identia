@@ -107,21 +107,10 @@ fn main() {
     ])
     .setup(|app| {
       let daemon_client = IpfsClient::default();
-      let splashscreen_window = app.get_window("splash").unwrap();
-      let main_window = app.get_window("main").unwrap();
-      let app_handle = app.handle();
-
       tauri::async_runtime::spawn(async move {
         match identity::launch_ipfs_daemon(&daemon_client).await {
           Ok(iden) => {
             initialize_database(iden.clone()).await;
-            let reply = IpfsID { data: iden.clone() };
-            main_window
-              .emit("ipfs-id", Some(reply))
-              .expect("failed to emit");
-
-            splashscreen_window.close().unwrap();
-            main_window.show().unwrap();
           }
           Err(err) => {
             // log::error!("There was an error launching ipfs: {:?}", err);
@@ -132,6 +121,7 @@ fn main() {
         println!("Launch setup successful")
       });
 
+      let app_handle = app.handle();
       let ipfs_client = IpfsClient::default();
       tauri::async_runtime::block_on(async move {
         match wait_for_ipfs_id(&ipfs_client.clone()).await {

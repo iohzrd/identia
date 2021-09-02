@@ -12,10 +12,10 @@ pub const CREATE_IDENTITIES_TABLE: &str = "
 
 pub const CREATE_POSTS_TABLE: &str = "
     create table if not exists posts (
+    cid         text,
     aux         text,
     body        text,
     files       text,
-    files_cid   text,
     meta        text,
     publisher   text,
     ts          int primary key

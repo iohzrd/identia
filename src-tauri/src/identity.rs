@@ -207,9 +207,10 @@ pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
     .await
   {
     Ok(res) => {
+      let post: Post = from_slice(&res).unwrap();
       let post_response = PostResponse {
         cid: cid.clone(),
-        post: from_slice(&res).unwrap(),
+        post: post,
       };
       println!("{:#?}", post_response);
       Some(post_response)
@@ -258,11 +259,12 @@ pub async fn get_feed(
   ts: i64,
   limit: i64,
 ) -> Result<Vec<PostResponse>, Vec<PostResponse>> {
-  let feed: Vec<PostResponse> = vec![];
+  let mut feed: Vec<PostResponse> = Vec::new();
   let conn = state.db_pool.get().unwrap();
-  let stmt_str: &str =
-    &"SELECT aux,body,files,files_cid,meta,publisher,ts FROM posts WHERE ts TSOP :ts LIMIT :limit"
-      .replace("TSOP", tsop.as_str());
+  // let stmt_str: &str =
+  //   &"SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE ts TSOP :ts LIMIT :limit"
+  //     .replace("TSOP", tsop.as_str());
+  let stmt_str: &str = &"SELECT cid,aux,body,files,meta,publisher,ts FROM posts";
   let stmt = conn.prepare(stmt_str);
   let mut s = match stmt {
     Ok(stmt) => {
@@ -274,29 +276,39 @@ pub async fn get_feed(
     }
   };
 
-  let posts = s
+  let rows = s
     .query_map(
       named_params! {
-        ":ts": &ts,
-        ":limit": &limit
+        // ":ts": &ts,
+        // ":limit": &limit
       },
       |row| {
-        Ok(Post {
-          aux: serde_json::from_value(row.get(0)?).unwrap(),
-          body: row.get(1)?,
-          files: serde_json::from_value(row.get(2)?).unwrap(),
-          files_cid: row.get(3)?,
-          meta: serde_json::from_value(row.get(4)?).unwrap(),
-          publisher: row.get(5)?,
-          ts: row.get(6)?,
-        })
+        let pr = PostResponse {
+          cid: row.get(0)?,
+          post: Post {
+            aux: serde_json::from_value(row.get(1)?).unwrap(),
+            body: row.get(2)?,
+            files: serde_json::from_value(row.get(3)?).unwrap(),
+            meta: serde_json::from_value(row.get(4)?).unwrap(),
+            publisher: row.get(5)?,
+            ts: row.get(6)?,
+          },
+        };
+        println!("{:?}", pr);
+        Ok(pr)
       },
     )
     .unwrap();
-  println!("posts");
-  for post in posts {
-    println!("{:?}", post);
+
+  for pr in rows {
+    let p = pr.unwrap();
+    println!("pr");
+    println!("{:?}", p);
+    feed.push(p);
   }
+
+  println!("feed");
+  println!("{:?}", feed);
 
   Ok(feed)
 }
@@ -309,9 +321,7 @@ pub async fn post(
   println!("post");
   println!("{:?}", post_request.body);
   println!("{:?}", post_request.files);
-  let mut post = Post::new();
-  post.body = post_request.body;
-  post.publisher = state.ipfs_id.clone();
+  let mut post = Post::new(post_request.body, state.ipfs_id.clone());
   // post.files = request.files;
   println!("{:?}", post);
 
@@ -340,12 +350,12 @@ pub async fn post(
 
   let conn = state.db_pool.get().unwrap();
   conn.execute(
-    "INSERT INTO posts (aux,body,files,files_cid,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+    "INSERT INTO posts (cid,aux,body,files,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
     params![
+      &cid,
       serde_json::to_value(&post.aux).unwrap(),
       &post.body,
       serde_json::to_value(&post.files).unwrap(),
-      &post.files_cid,
       serde_json::to_value(&post.meta).unwrap(),
       &post.publisher,
       &post.ts,
@@ -377,14 +387,18 @@ pub async fn post(
   Ok(post_response)
 }
 
-pub async fn insert_post(conn: PooledConnection<SqliteConnectionManager>, post: Post) -> Post {
+pub async fn insert_post(
+  conn: PooledConnection<SqliteConnectionManager>,
+  post: Post,
+  cid: String,
+) -> Post {
   conn.execute(
-    "INSERT INTO posts (aux,body,files,files_cid,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+    "INSERT INTO posts (cid,aux,body,files,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
     params![
+      &cid,
       serde_json::to_value(&post.aux).unwrap(),
       &post.body,
       serde_json::to_value(&post.files).unwrap(),
-      &post.files_cid,
       serde_json::to_value(&post.meta).unwrap(),
       &post.publisher,
       &post.ts,

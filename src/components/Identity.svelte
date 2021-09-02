@@ -13,24 +13,11 @@
     Tile,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
-
-  import Post from "./Post.svelte";
-
-  import { emit, listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-  import { writable } from "svelte/store";
 
-  type Identity = {
-    aux: object[];
-    av: string;
-    dn: string;
-    following: string[];
-    meta: string[];
-    posts: string[];
-    publisher: string;
-    ts: number;
-  };
+  import Post from "./Post.svelte";
+  import type { Identity } from "../types.type";
 
   export let ipfs_id: string;
 
@@ -131,7 +118,7 @@
         {#if identity && identity.posts}
           {#each identity.posts as cid}
             <div>
-              <Post {cid} includeFrom={false} />
+              <Post {cid} postResponse={null} includeFrom={false} />
             </div>
           {/each}
         {/if}
