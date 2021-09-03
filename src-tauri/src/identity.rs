@@ -184,6 +184,45 @@ pub async fn get_identity_internal(
   Ok(identity)
 }
 
+pub async fn publish_identity(identity: Identity) {
+  let ipfs_client = IpfsClient::default();
+
+  let add = ipfs_api::request::Add::builder()
+    .wrap_with_directory(true)
+    .build();
+  let mut form = Form::default();
+  let json = serde_json::to_vec(&identity).unwrap();
+  form.add_reader_file("path", Cursor::new(json), "identity.json");
+  let cid = match ipfs_client.add_with_form(add, form).await {
+    Ok(res) => {
+      println!("res: {:?}", res);
+      let mut cid = String::from("");
+      for add in res {
+        if add.name == String::from("") {
+          cid = add.hash
+        }
+      }
+      cid
+    }
+    Err(e) => {
+      eprintln!("{:#?}", e);
+      String::from("")
+    }
+  };
+
+  match ipfs_client
+    .name_publish(cid.as_str(), true, Some("24h"), None, None)
+    .await
+  {
+    Ok(_) => {
+      println!("publish complete");
+    }
+    Err(e) => {
+      eprintln!("publish failed: {:#?}", e);
+    }
+  }
+}
+
 #[tauri::command]
 pub async fn get_post_ipfs(cid: String) -> Option<PostResponse> {
   let mut post_dot_json: String = cid.clone();
@@ -212,8 +251,6 @@ pub async fn get_post_ipfs(cid: String) -> Option<PostResponse> {
       None
     }
   }
-  // post.postCid = Some(cid.clone());
-  // post.into()
 }
 
 // #[tauri::command]
@@ -354,10 +391,13 @@ pub async fn post(
   };
 
   identity.posts.insert(0, cid.clone());
+  identity.ts = DateTime::timestamp(&Utc::now());
 
   let conn = state.db_pool.get().unwrap();
   let identity = update_identity_db(conn, identity).await;
   println!("identity updated with: {:?}", identity);
+  println!("publishing identity...");
+  publish_identity(identity).await;
 
   let post_response = PostResponse {
     post: post,
