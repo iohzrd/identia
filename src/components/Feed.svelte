@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Tile } from "carbon-components-svelte";
-  import { emit, listen } from "@tauri-apps/api/event";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
