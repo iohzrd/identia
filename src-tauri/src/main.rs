@@ -99,8 +99,8 @@ fn main() {
     })
     .invoke_handler(tauri::generate_handler![
       identity::get_identity,
-      identity::get_feed,
-      identity::ipfs_get_post,
+      identity::query_posts,
+      identity::get_post_ipfs,
       identity::ipfs_id,
       identity::post,
       identity::wait_for_ipfs_id_cmd,
@@ -189,7 +189,7 @@ fn main() {
         std::thread::spawn(move || {
           ask(
             Some(&window),
-            "Tauri API",
+            "Identia",
             "Are you sure that you want to close this window?",
             move |answer| {
               if answer {

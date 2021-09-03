@@ -3,7 +3,7 @@
     Button,
     ButtonSet,
     ButtonSkeleton,
-    Column,
+    ClickableTile,
     Form,
     FormGroup,
     Grid,
@@ -17,35 +17,40 @@
   import { onMount, onDestroy } from "svelte";
 
   import Post from "./Post.svelte";
-  import type { Identity } from "../types.type";
+  import type { Identity, PostResponse } from "../types.type";
 
   export let ipfs_id: string;
 
   let identity: Identity;
+  let posts: PostResponse[] = [];
+  let posts_oldest_ts: number = Math.floor(new Date().getTime());
+  let posts_limit: number = 10;
+  $: posts_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE publisher = '${ipfs_id}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
 
-  function onIdentityObject(obj) {
-    console.log("onIdentityObject");
-    console.log(obj);
-    identity = obj;
-  }
-
-  function getIdentity() {
-    console.log(`getIdentity: ${ipfs_id}`);
-    invoke("get_identity", {
-      publisher: ipfs_id,
-    })
-      .then(onIdentityObject)
-      .catch(onIdentityObject);
-  }
-
-  async function getIpfsId() {
-    return invoke("ipfs_id");
+  async function getPostsPage() {
+    console.log(`getFeedPage: ${ipfs_id}`);
+    if (identity && identity.posts) {
+      if (posts.length > 0) {
+        posts_oldest_ts = posts[posts.length - 1].post.ts;
+      }
+      let page: PostResponse[] = await invoke("query_posts", {
+        query: posts_query,
+      });
+      if (page.length > 0) {
+        posts = [...posts, ...page];
+        posts_oldest_ts = posts[posts.length - 1].post.ts;
+      }
+    }
   }
 
   onMount(async () => {
-    // ipfs_id = await invoke("ipfs_id");
-    getIdentity();
+    identity = await invoke("get_identity", {
+      publisher: ipfs_id,
+    });
+    await getPostsPage();
   });
+
+  onDestroy(() => {});
 </script>
 
 <Tile>
@@ -116,12 +121,15 @@
 
       <FormGroup legendText="posts">
         {#if identity && identity.posts}
-          {#each identity.posts as cid}
+          {#each posts as postResponse}
             <div>
-              <Post {cid} postResponse={null} includeFrom={false} />
+              <Post cid={null} {postResponse} includeFrom={false} />
             </div>
           {/each}
         {/if}
+        <ClickableTile light on:click={getPostsPage}
+          >Load more posts</ClickableTile
+        >
       </FormGroup>
 
       <FormGroup legendText="meta">

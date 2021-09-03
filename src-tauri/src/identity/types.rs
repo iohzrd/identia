@@ -13,6 +13,17 @@ pub struct AppState {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct AddObj {
+  pub path: String,
+  pub content: String,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuxObj {
+  pub key: String,
+  pub value: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Comment {
   pub body: String,
   pub cid: String,
@@ -24,22 +35,17 @@ pub struct Comment {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct AuxObj {
-  pub key: String,
-  pub value: String,
+pub struct Feed {
+  pub feed: Vec<PostResponse>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Identity {
-  // pub aux: Value,
   pub aux: Vec<AuxObj>,
   pub av: String,
   pub dn: String,
-  // pub following: Value,
   pub following: Vec<String>,
-  // pub meta: Value,
   pub meta: Vec<String>,
-  // pub posts: Value,
   pub posts: Vec<String>,
   pub publisher: String,
   pub ts: i64,
@@ -48,15 +54,11 @@ pub struct Identity {
 impl Identity {
   pub fn new(publisher: String) -> Identity {
     Identity {
-      // aux: json!([]),
       aux: Vec::new(),
       av: String::from(""),
       dn: String::from(""),
-      // following: json!([json!(publisher)]),
       following: vec![publisher.clone()],
-      // meta: json!([]),
       meta: Vec::new(),
-      // posts: json!([]),
       posts: Vec::new(),
       publisher: String::from(publisher),
       ts: DateTime::timestamp(&Utc::now()),
@@ -65,28 +67,28 @@ impl Identity {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Publisher {
-  pub publisher: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
   pub aux: Vec<AuxObj>,
   pub body: String,
   pub files: Vec<String>,
-  // pub files_cid: Option<String>,
   pub meta: Vec<String>,
   pub publisher: String,
   pub ts: i64,
 }
 impl Post {
-  pub fn new(body: String, publisher: String) -> Post {
+  pub fn new(
+    aux: Vec<AuxObj>,
+    body: String,
+    files: Vec<String>,
+    meta: Vec<String>,
+    publisher: String,
+  ) -> Post {
     Post {
-      aux: Vec::new(),
-      body: String::from(body),
-      files: Vec::new(),
-      meta: Vec::new(),
-      publisher: String::from(publisher),
+      aux: aux,
+      body: body,
+      files: files,
+      meta: meta,
+      publisher: publisher,
       ts: DateTime::timestamp_millis(&Utc::now()),
     }
   }
@@ -94,8 +96,10 @@ impl Post {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostRequest {
+  pub aux: Vec<AuxObj>,
   pub body: String,
   pub files: Vec<String>,
+  pub meta: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -105,13 +109,6 @@ pub struct PostResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Feed {
-  pub feed: Vec<PostResponse>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AddObj {
-  pub path: String,
-  // pub content: Vec<u8>,
-  pub content: String,
+pub struct Publisher {
+  pub publisher: String,
 }

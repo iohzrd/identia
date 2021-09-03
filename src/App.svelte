@@ -19,7 +19,6 @@
   import Feed from "./components/Feed.svelte";
   import Settings from "./components/Settings.svelte";
 
-  import { emit, listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 

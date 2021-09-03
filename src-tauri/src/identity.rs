@@ -4,7 +4,7 @@ use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{named_params, params, Connection, Result};
+use rusqlite::{named_params, params, Connection, Result, NO_PARAMS};
 use rusqlite_migration::{Migrations, M};
 use serde_json::{from_slice, from_value, json, to_value};
 use std::io::Cursor;
@@ -61,7 +61,7 @@ pub async fn identity_in_db(
 ) -> Result<bool, bool> {
   let mut in_db = false;
   let mut stmt = conn
-    .prepare("SELECT publisher FROM identity where publisher = ?")
+    .prepare("SELECT publisher FROM identity WHERE publisher = ?")
     .unwrap();
   in_db = stmt.query_row(params![&publisher], |_| Ok(true)).unwrap();
   Ok(in_db)
@@ -74,15 +74,11 @@ pub async fn db_insert_identity(
   conn.execute(
     "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
     params![
-      // &identity.aux,
       serde_json::to_value(&identity.aux).unwrap(),
       &identity.av,
       &identity.dn,
-      // &identity.following,
       serde_json::to_value(&identity.following).unwrap(),
-      // &identity.meta,
       serde_json::to_value(&identity.meta).unwrap(),
-      // &identity.posts,
       serde_json::to_value(&identity.posts).unwrap(),
       &identity.publisher,
       &identity.ts,
@@ -91,7 +87,7 @@ pub async fn db_insert_identity(
   identity
 }
 
-pub async fn db_update_identity(
+pub async fn update_identity_db(
   conn: PooledConnection<SqliteConnectionManager>,
   identity: Identity,
 ) -> Identity {
@@ -104,7 +100,7 @@ pub async fn db_update_identity(
       stmt
     }
     Err(error) => {
-      panic!("invalid sql in db_update_identity: {:?}", error)
+      panic!("invalid sql in update_identity_db: {:?}", error)
     }
   };
 
@@ -144,15 +140,11 @@ pub async fn get_identity_db(
   let identity = s
     .query_row(params![&publisher], |row| {
       Ok(Identity {
-        // aux: row.get(0)?,
         aux: serde_json::from_value(row.get(0)?).unwrap(),
         av: row.get(1)?,
         dn: row.get(2)?,
-        // following: row.get(3)?,
         following: serde_json::from_value(row.get(3)?).unwrap(),
-        // meta: row.get(4)?,
         meta: serde_json::from_value(row.get(4)?).unwrap(),
-        // posts: row.get(5)?,
         posts: serde_json::from_value(row.get(5)?).unwrap(),
         publisher: row.get(6)?,
         ts: row.get(7)?,
@@ -193,15 +185,15 @@ pub async fn get_identity_internal(
 }
 
 #[tauri::command]
-pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
-  let mut cid_json: String = cid.clone();
-  if !cid_json.contains("/post.json") {
-    cid_json.push_str("/post.json");
+pub async fn get_post_ipfs(cid: String) -> Option<PostResponse> {
+  let mut post_dot_json: String = cid.clone();
+  if !post_dot_json.contains("/post.json") {
+    post_dot_json.push_str("/post.json");
   }
   let client = IpfsClient::default();
 
   match client
-    .cat(&cid_json)
+    .cat(&post_dot_json)
     .map_ok(|chunk| chunk.to_vec())
     .try_concat()
     .await
@@ -225,14 +217,14 @@ pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
 }
 
 // #[tauri::command]
-// pub async fn ipfs_get_post(state: tauri::State<'_, AppState>, cid: String) -> Result<PostResponse> {
-//   let mut cid_json: String = cid.clone();
-//   if !cid_json.contains("/post.json") {
-//     cid_json.push_str("/post.json");
+// pub async fn get_post_ipfs(state: tauri::State<'_, AppState>, cid: String) -> Result<PostResponse> {
+//   let mut post_dot_json: String = cid.clone();
+//   if !post_dot_json.contains("/post.json") {
+//     post_dot_json.push_str("/post.json");
 //   }
 //   let client = IpfsClient::default();
 //   let post_response = match client
-//     .cat(&cid_json)
+//     .cat(&post_dot_json)
 //     .map_ok(|chunk| chunk.to_vec())
 //     .try_concat()
 //     .await
@@ -253,62 +245,45 @@ pub async fn ipfs_get_post(cid: String) -> Option<PostResponse> {
 // }
 
 #[tauri::command]
-pub async fn get_feed(
+pub async fn query_posts(
   state: tauri::State<'_, AppState>,
-  tsop: String,
-  ts: i64,
-  limit: i64,
+  query: String,
 ) -> Result<Vec<PostResponse>, Vec<PostResponse>> {
   let mut feed: Vec<PostResponse> = Vec::new();
   let conn = state.db_pool.get().unwrap();
-  // let stmt_str: &str =
-  //   &"SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE ts TSOP :ts LIMIT :limit"
-  //     .replace("TSOP", tsop.as_str());
-  let stmt_str: &str = &"SELECT cid,aux,body,files,meta,publisher,ts FROM posts";
-  let stmt = conn.prepare(stmt_str);
+  println!("{:?}", query);
+  // SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE...
+  let stmt = conn.prepare(&query.as_str());
   let mut s = match stmt {
     Ok(stmt) => {
-      println!("stmt valid");
+      println!("query valid");
       stmt
     }
     Err(error) => {
-      panic!("invalid sql in db_update_identity: {:?}", error)
+      panic!("query invalid: {:?}", error)
     }
   };
 
-  let rows = s
-    .query_map(
-      named_params! {
-        // ":ts": &ts,
-        // ":limit": &limit
-      },
-      |row| {
-        let pr = PostResponse {
-          cid: row.get(0)?,
-          post: Post {
-            aux: serde_json::from_value(row.get(1)?).unwrap(),
-            body: row.get(2)?,
-            files: serde_json::from_value(row.get(3)?).unwrap(),
-            meta: serde_json::from_value(row.get(4)?).unwrap(),
-            publisher: row.get(5)?,
-            ts: row.get(6)?,
-          },
-        };
-        println!("{:?}", pr);
-        Ok(pr)
-      },
-    )
+  let pr_iter = s
+    .query_map([], |row| {
+      let pr = PostResponse {
+        cid: row.get(0)?,
+        post: Post {
+          aux: serde_json::from_value(row.get(1)?).unwrap(),
+          body: row.get(2)?,
+          files: serde_json::from_value(row.get(3)?).unwrap(),
+          meta: serde_json::from_value(row.get(4)?).unwrap(),
+          publisher: row.get(5)?,
+          ts: row.get(6)?,
+        },
+      };
+      Ok(pr)
+    })
     .unwrap();
 
-  for pr in rows {
-    let p = pr.unwrap();
-    println!("pr");
-    println!("{:?}", p);
-    feed.push(p);
+  for pr in pr_iter {
+    feed.push(pr.unwrap());
   }
-
-  println!("feed");
-  println!("{:?}", feed);
 
   Ok(feed)
 }
@@ -319,17 +294,21 @@ pub async fn post(
   post_request: PostRequest,
 ) -> Result<PostResponse, PostResponse> {
   println!("post");
-  println!("{:?}", post_request.body);
-  println!("{:?}", post_request.files);
-  let mut post = Post::new(post_request.body, state.ipfs_id.clone());
-  // post.files = request.files;
+  println!("{:?}", post_request);
+  let post = Post::new(
+    post_request.aux,
+    post_request.body,
+    post_request.files,
+    post_request.meta,
+    state.ipfs_id.clone(),
+  );
   println!("{:?}", post);
 
-  let json = serde_json::to_vec(&post).unwrap();
   let add = ipfs_api::request::Add::builder()
     .wrap_with_directory(true)
     .build();
   let mut form = Form::default();
+  let json = serde_json::to_vec(&post).unwrap();
   form.add_reader_file("path", Cursor::new(json), "post.json");
   let cid = match state.ipfs_client.add_with_form(add, form).await {
     Ok(res) => {
@@ -377,7 +356,7 @@ pub async fn post(
   identity.posts.insert(0, cid.clone());
 
   let conn = state.db_pool.get().unwrap();
-  let identity = db_update_identity(conn, identity).await;
+  let identity = update_identity_db(conn, identity).await;
   println!("identity updated with: {:?}", identity);
 
   let post_response = PostResponse {
@@ -423,15 +402,11 @@ pub async fn initialize_database(publisher: String) -> Result<()> {
   match conn.execute(
       "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
       params![
-          // me.aux,
           json!(me.aux),
           me.av,
           me.dn,
-          // me.following,
           json!(me.following),
-          // me.meta,
           json!(me.meta),
-          // me.posts,
           json!(me.posts),
           me.publisher,
           me.ts,

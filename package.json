@@ -1,6 +1,10 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
+  "name": "identia",
+  "version": "0.1.0",
+  "description": "Decentralized, censorship resistant social media on IPFS",
+  "productName": "Identia",
+  "author": "iohzrd <iohzrd@gmail.com>",
+  "license": "GPL-3.0",
   "private": true,
   "scripts": {
     "build": "rollup -c",
@@ -31,7 +35,7 @@
     "file-type": "^16.5.3",
     "go-ipfs": "^0.9.1",
     "hotkeys-js": "^3.8.7",
-    "npm-check-updates": "^11.8.3",
+    "npm-check-updates": "^11.8.4",
     "rollup": "^2.56.3",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
@@ -46,6 +50,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8",
-    "sirv-cli": "^1.0.14"
+    "sirv-cli": "^1.0.14",
+    "svelte-inview": "^2.0.1"
   }
 }

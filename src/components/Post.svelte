@@ -15,13 +15,13 @@
   function onPostResponseObject(pr: PostResponse) {
     console.log("onPostObject");
     console.log(pr);
-    if (pr && pr.post) {
+    if (pr && pr.cid && pr.post) {
       postResponse = pr;
     }
   }
 
   function getPostFromCid() {
-    invoke("ipfs_get_post", {
+    invoke("get_post_ipfs", {
       cid: cid,
     })
       .then(onPostResponseObject)

@@ -3,6 +3,30 @@
 version = 3
 
 [[package]]
+name = "Identia"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "common-multipart-rfc7578",
+ "directories",
+ "futures",
+ "infer 0.5.0",
+ "ipfs-api",
+ "kamadak-exif",
+ "mime",
+ "qrcode",
+ "r2d2",
+ "r2d2_sqlite",
+ "rusqlite",
+ "rusqlite_migration",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tokio",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -48,30 +72,6 @@ name = "anyhow"
 version = "1.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28ae2b3dec75a406790005a200b1bd89785afc02517a00ca99ecfe093ee9e6cf"
-
-[[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "common-multipart-rfc7578",
- "directories",
- "futures",
- "infer 0.5.0",
- "ipfs-api",
- "kamadak-exif",
- "mime",
- "qrcode",
- "r2d2",
- "r2d2_sqlite",
- "rusqlite",
- "rusqlite_migration",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tokio",
-]
 
 [[package]]
 name = "arrayref"
@@ -3180,9 +3180,9 @@ dependencies = [
 
 [[package]]
 name = "siphasher"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "729a25c17d72b06c68cb47955d44fda88ad2d3e7d77e025663fdd69b93dd71a1"
+checksum = "533494a8f9b724d33625ab53c6c4800f7cc445895924a8ef649222dcb76e938b"
 
 [[package]]
 name = "slab"

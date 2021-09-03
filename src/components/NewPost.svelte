@@ -13,22 +13,23 @@
   import { readBinaryFile } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api/tauri";
 
-  type PostRequest = {
-    body: string;
-    files: string[];
-  };
+  import type { PostRequest } from "../types.type";
 
+  let aux = [];
   let body = "";
   let files = [];
+  let meta = [];
 
   function post() {
-    let postRequest: PostRequest = { body: body, files: files };
+    let postRequest: PostRequest = {
+      aux: aux,
+      body: body,
+      files: files,
+      meta: meta,
+    };
     invoke("post", { postRequest: postRequest })
       .then(onMessage)
       .catch(onMessage);
-    console.log("send");
-    console.log(body);
-    console.log(files);
   }
   function onMessage(msg) {
     console.log("onMessage");
@@ -50,12 +51,6 @@
         }
       })
       .catch(onMessage);
-  }
-
-  function onDelete(event, arg2) {
-    console.log("onDelete");
-    console.log(event);
-    console.log(arg2);
   }
 </script>
 

@@ -1,5 +1,10 @@
+export type AuxObj = {
+  key: string;
+  value: string;
+};
+
 export type Identity = {
-  aux: object[];
+  aux: AuxObj[];
   av: string;
   dn: string;
   following: string[];
@@ -10,12 +15,19 @@ export type Identity = {
 };
 
 export type Post = {
-  aux: object[];
+  aux: AuxObj[];
   body: string;
   files: string[];
   meta: string[];
   publisher: string;
   ts: number;
+};
+
+export type PostRequest = {
+  aux: AuxObj[];
+  body: string;
+  files: string[];
+  meta: string[];
 };
 
 export type PostResponse = {

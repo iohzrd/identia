@@ -6,7 +6,7 @@
     "distDir": "../public"
   },
   "package": {
-    "productName": "Tauri API",
+    "productName": "Identia",
     "version": "0.1.0"
   },
   "tauri": {
@@ -47,7 +47,7 @@
           "short": "v"
         }
       ],
-      "description": "Tauri API example",
+      "description": "Decentralized, censorship resistant social media on IPFS",
       "subcommands": {
         "update": {
           "args": [
@@ -78,9 +78,9 @@
     "windows": [
       {
         "label": "main",
-        "title": "Tauri",
-        "width": 1280,
-        "height": 720,
+        "title": "Identia",
+        "width": 1920,
+        "height": 1080,
         "resizable": true,
         "visible": true
       }
