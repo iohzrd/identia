@@ -10,7 +10,6 @@
   import type { PostResponse } from "../types.type";
   export let ipfs_id: string;
 
-  let isInView: boolean;
   let feed: PostResponse[] = [];
   let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
@@ -29,9 +28,6 @@
       oldest_ts = feed[feed.length - 1].post.ts;
     }
   }
-
-  const handleChange = ({ detail }) =>
-    getFeedPage() ? detail.inView : console.log("waiting");
 
   onMount(async () => {
     getFeedPage();
