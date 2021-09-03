@@ -4,8 +4,6 @@
     Form,
     FormGroup,
     TextArea,
-    FileUploader,
-    FileUploaderDropContainer,
     FileUploaderItem,
     Tile,
   } from "carbon-components-svelte";
@@ -13,27 +11,32 @@
   import { readBinaryFile } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api/tauri";
 
-  import type { PostRequest } from "../types.type";
+  import type { AuxObj, PostRequest, PostResponse } from "../types.type";
 
-  let aux = [];
-  let body = "";
-  let files = [];
-  let meta = [];
+  export let onPost: Function;
 
-  function post() {
+  let aux: AuxObj[] = [];
+  let body: string = "";
+  let files: string[] = [];
+  let meta: string[] = [];
+
+  async function post() {
     let postRequest: PostRequest = {
       aux: aux,
       body: body,
       files: files,
       meta: meta,
     };
-    invoke("post", { postRequest: postRequest })
-      .then(onMessage)
-      .catch(onMessage);
-  }
-  function onMessage(msg) {
-    console.log("onMessage");
-    console.log(msg);
+    let postResponse: PostResponse = await invoke("post", {
+      postRequest: postRequest,
+    });
+    if (postResponse) {
+      onPost(postResponse);
+      aux = [];
+      body = "";
+      files = [];
+      meta = [];
+    }
   }
 
   function openDialog() {
@@ -42,15 +45,13 @@
       filters: [],
       multiple: true,
       directory: false,
-    })
-      .then(function (res) {
-        onMessage("then");
-        onMessage(res);
-        if (Array.isArray(res)) {
-          files = res;
-        }
-      })
-      .catch(onMessage);
+    }).then(function (res) {
+      console.log("openDialog.then");
+      console.log(res);
+      if (Array.isArray(res)) {
+        files = res;
+      }
+    });
   }
 </script>
 

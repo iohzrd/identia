@@ -29,6 +29,10 @@
     }
   }
 
+  function onPost(post: PostResponse) {
+    feed = [post, ...feed];
+  }
+
   onMount(async () => {
     getFeedPage();
   });
@@ -38,7 +42,7 @@
 
 <div>
   <Tile>
-    <NewPost />
+    <NewPost {onPost} />
 
     {#each feed as postResponse}
       <Post cid={null} {postResponse} />
