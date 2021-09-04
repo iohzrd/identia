@@ -164,15 +164,17 @@ pub async fn get_identity_ipfs_cmd(
   state: tauri::State<'_, AppState>,
   publisher: String,
 ) -> Result<Identity, Identity> {
-  match get_identity_ipfs(publisher.clone()).await {
+  match get_identity_ipfs(&state.ipfs_client, publisher.clone()).await {
     Ok(identity) => Ok(identity),
     Err(_) => Err(Identity::new(String::from(""))),
   }
 }
 
-pub async fn get_identity_ipfs(publisher: String) -> Result<Identity, Identity> {
+pub async fn get_identity_ipfs(
+  client: &IpfsClient,
+  publisher: String,
+) -> Result<Identity, Identity> {
   println!("get_identity_ipfs");
-  let client = IpfsClient::default();
   match client.name_resolve(Some(&publisher), false, true).await {
     Ok(res) => {
       let identity_cid = res.path;
