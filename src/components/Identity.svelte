@@ -24,7 +24,7 @@
   let identity: Identity;
   let posts: PostResponse[] = [];
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
-  let posts_limit: number = 10;
+  let posts_limit: number = 5;
   $: posts_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE publisher = '${ipfs_id}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
 
   async function getPostsPage() {
