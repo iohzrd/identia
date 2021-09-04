@@ -17,31 +17,6 @@ pub mod types;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
 use crate::identity::types::{AddObj, AppState, AuxObj, Identity, Post, PostRequest, PostResponse};
 
-pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
-  let client = IpfsClient::default();
-  let mut identity_json: String = publisher.clone();
-  if !identity_json.contains("/identity.json") {
-    identity_json.push_str("/identity.json");
-  }
-
-  match client
-    .cat(&identity_json)
-    .map_ok(|chunk| chunk.to_vec())
-    .try_concat()
-    .await
-  {
-    Ok(res) => {
-      let identity: Identity = from_slice(&res).unwrap();
-      println!("identity: {:#?}", identity);
-      Some(identity)
-    }
-    Err(e) => {
-      eprintln!("{:#?}", e);
-      None
-    }
-  }
-}
-
 #[tauri::command]
 pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> Result<String, String> {
   Ok(state.ipfs_id.clone())
@@ -67,7 +42,7 @@ pub async fn identity_in_db(
   Ok(in_db)
 }
 
-pub async fn db_insert_identity(
+pub async fn insert_identity(
   conn: PooledConnection<SqliteConnectionManager>,
   identity: Identity,
 ) -> Identity {
@@ -166,7 +141,7 @@ pub async fn get_identity(
     Ok(i) => i,
     Err(_) => {
       let conn2 = state.db_pool.get().unwrap();
-      db_insert_identity(conn2, Identity::new(publisher.clone())).await
+      insert_identity(conn2, Identity::new(publisher.clone())).await
     }
   };
   Ok(identity)
@@ -182,6 +157,43 @@ pub async fn get_identity_internal(
     Err(_) => Identity::new(publisher.clone()),
   };
   Ok(identity)
+}
+
+pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
+  let client = IpfsClient::default();
+  match client.name_resolve(Some(&publisher), false, true).await {
+    Ok(res) => {
+      // println!("{:#?}", res);
+      let identity_cid = res.path;
+
+      let mut identity_dot_json: String = identity_cid.clone();
+      if !identity_dot_json.contains("/identity.json") {
+        identity_dot_json.push_str("/identity.json");
+      }
+
+      match client
+        .cat(&identity_dot_json)
+        .map_ok(|chunk| chunk.to_vec())
+        .try_concat()
+        .await
+      {
+        Ok(res) => {
+          let identity: Identity = from_slice(&res).unwrap();
+
+          println!("{:#?}", identity);
+          Some(identity)
+        }
+        Err(e) => {
+          eprintln!("{:#?}", e);
+          None
+        }
+      }
+    }
+    Err(e) => {
+      eprintln!("{:#?}", e);
+      None
+    }
+  }
 }
 
 pub async fn publish_identity(identity: Identity) {
