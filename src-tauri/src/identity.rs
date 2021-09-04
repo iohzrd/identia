@@ -4,9 +4,9 @@ use futures::TryStreamExt;
 use ipfs_api::IpfsClient;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{named_params, params, Connection, Result, NO_PARAMS};
+use rusqlite::{named_params, params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
-use serde_json::{from_slice, from_value, json, to_value};
+use serde_json::{from_slice, json};
 use std::io::Cursor;
 use std::{thread, time::Duration};
 use tauri;
@@ -159,12 +159,24 @@ pub async fn get_identity_internal(
   Ok(identity)
 }
 
-pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
+#[tauri::command]
+pub async fn get_identity_ipfs_cmd(
+  state: tauri::State<'_, AppState>,
+  publisher: String,
+) -> Result<Identity, Identity> {
+  match get_identity_ipfs(publisher.clone()).await {
+    Ok(identity) => Ok(identity),
+    Err(_) => Err(Identity::new(String::from(""))),
+  }
+}
+
+pub async fn get_identity_ipfs(publisher: String) -> Result<Identity, Identity> {
+  println!("get_identity_ipfs");
   let client = IpfsClient::default();
   match client.name_resolve(Some(&publisher), false, true).await {
     Ok(res) => {
-      // println!("{:#?}", res);
       let identity_cid = res.path;
+      println!("identity_cid: {:#?}", identity_cid);
 
       let mut identity_dot_json: String = identity_cid.clone();
       if !identity_dot_json.contains("/identity.json") {
@@ -179,19 +191,18 @@ pub async fn get_identity_ipfs(publisher: String) -> Option<Identity> {
       {
         Ok(res) => {
           let identity: Identity = from_slice(&res).unwrap();
-
-          println!("{:#?}", identity);
-          Some(identity)
+          println!("identity: {:#?}", identity);
+          Ok(identity)
         }
-        Err(e) => {
-          eprintln!("{:#?}", e);
-          None
+        Err(blank_identity) => {
+          eprintln!("{:#?}", blank_identity);
+          Ok(Identity::new(String::from("")))
         }
       }
     }
     Err(e) => {
       eprintln!("{:#?}", e);
-      None
+      Ok(Identity::new(String::from("")))
     }
   }
 }

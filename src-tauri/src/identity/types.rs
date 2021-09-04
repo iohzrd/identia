@@ -3,8 +3,6 @@ use ipfs_api::IpfsClient;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use std::io::Cursor;
 
 pub struct AppState {
   pub db_pool: Pool<SqliteConnectionManager>,
