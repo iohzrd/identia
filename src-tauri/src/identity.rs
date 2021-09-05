@@ -15,7 +15,7 @@ use tauri::api::process::Command;
 pub mod migrations;
 pub mod types;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
-use crate::identity::types::{AddObj, AppState, AuxObj, Identity, Post, PostRequest, PostResponse};
+use crate::identity::types::{AppState, Identity, Post, PostRequest, PostResponse};
 
 #[tauri::command]
 pub async fn ipfs_id(state: tauri::State<'_, AppState>) -> Result<String, String> {
@@ -141,20 +141,8 @@ pub async fn get_identity(
     Ok(i) => i,
     Err(_) => {
       let conn2 = state.db_pool.get().unwrap();
-      insert_identity(conn2, Identity::new(publisher.clone())).await
+      insert_identity(conn2, Identity::new(publisher.clone(), 0)).await
     }
-  };
-  Ok(identity)
-}
-
-pub async fn get_identity_internal(
-  conn: PooledConnection<SqliteConnectionManager>,
-  publisher: String,
-) -> Result<Identity, Identity> {
-  let result = get_identity_db(conn, publisher.clone()).await;
-  let identity = match result {
-    Ok(i) => i,
-    Err(_) => Identity::new(publisher.clone()),
   };
   Ok(identity)
 }
@@ -166,8 +154,39 @@ pub async fn get_identity_ipfs_cmd(
 ) -> Result<Identity, Identity> {
   match get_identity_ipfs(&state.ipfs_client, publisher.clone()).await {
     Ok(identity) => Ok(identity),
-    Err(_) => Err(Identity::new(String::from(""))),
+    Err(_) => Err(Identity::new(publisher.clone(), 0)),
   }
+}
+
+#[tauri::command]
+pub async fn update_identities(state: tauri::State<'_, AppState>) -> Result<bool, bool> {
+  let conn = state.db_pool.get().unwrap();
+  let identity = get_identity_db(conn, state.ipfs_id.clone()).await.unwrap();
+  let following = identity.following;
+  let ipfs_id = state.ipfs_id.clone();
+  for fid in following {
+    if ipfs_id.eq(&fid) {
+      let f_identity = get_identity_ipfs(&state.ipfs_client, fid.clone())
+        .await
+        .unwrap();
+      println!("got : {:?}", f_identity);
+      let conn = state.db_pool.get().unwrap();
+      let in_db = identity_in_db(conn, fid.clone()).await.unwrap();
+      if in_db {
+        let conn = state.db_pool.get().unwrap();
+        let db_identity = get_identity_db(conn, fid.clone()).await.unwrap();
+        if db_identity.ts < f_identity.ts {
+          let conn = state.db_pool.get().unwrap();
+          update_identity_db(conn, f_identity).await;
+        }
+      } else {
+        let conn = state.db_pool.get().unwrap();
+        insert_identity(conn, f_identity);
+      }
+    }
+  }
+
+  Ok(true)
 }
 
 pub async fn get_identity_ipfs(
@@ -198,13 +217,13 @@ pub async fn get_identity_ipfs(
         }
         Err(blank_identity) => {
           eprintln!("{:#?}", blank_identity);
-          Ok(Identity::new(String::from("")))
+          Ok(Identity::new(publisher.clone(), 0))
         }
       }
     }
     Err(e) => {
       eprintln!("{:#?}", e);
-      Ok(Identity::new(String::from("")))
+      Ok(Identity::new(publisher.clone(), 0))
     }
   }
 }
@@ -411,7 +430,7 @@ pub async fn post(
     }
     Err(e) => {
       eprintln!("{:#?}", e);
-      Identity::new(state.ipfs_id.clone())
+      Identity::new(state.ipfs_id.clone(), 0)
     }
   };
 
@@ -463,7 +482,7 @@ pub async fn initialize_database(publisher: String) -> Result<()> {
   println!("running migrations...");
   migrations.to_latest(&mut conn).unwrap();
 
-  let me = Identity::new(publisher.clone());
+  let me = Identity::new(publisher.clone(), DateTime::timestamp(&Utc::now()));
   match conn.execute(
       "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
       params![

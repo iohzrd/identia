@@ -50,16 +50,16 @@ pub struct Identity {
 }
 
 impl Identity {
-  pub fn new(publisher: String) -> Identity {
+  pub fn new(publisher: String, ts: i64) -> Identity {
     Identity {
       aux: Vec::new(),
       av: String::from(""),
       dn: String::from(""),
-      following: vec![publisher.clone()],
+      following: Vec::new(),
       meta: Vec::new(),
       posts: Vec::new(),
       publisher: String::from(publisher),
-      ts: DateTime::timestamp(&Utc::now()),
+      ts: ts,
     }
   }
 }
