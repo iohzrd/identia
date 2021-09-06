@@ -605,7 +605,8 @@ pub async fn initialize_database(publisher: String, db_file_path: PathBuf) -> Re
 pub fn initialize_ipfs() -> bool {
   config::create_initial_config_if_necessary();
   println!("Initializing IPFS");
-  let cmd = Command::new("ipfs")
+  let cmd = Command::new_sidecar("ipfs")
+    .unwrap()
     .args(&[
       "init",
       "-c",
@@ -614,7 +615,8 @@ pub fn initialize_ipfs() -> bool {
         .to_str()
         .unwrap(),
     ])
-    .output();
+    .output()
+    .unwrap();
   format!("ipfs init: {:?}", cmd);
   true
 }
