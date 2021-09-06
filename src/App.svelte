@@ -1,15 +1,18 @@
 <script lang="ts">
   import {
+    Button,
     Content,
     Header,
     HeaderGlobalAction,
     HeaderUtilities,
     Loading,
+    Modal,
     SideNav,
     SideNavDivider,
     SideNavItems,
     SideNavLink,
     SkipToContent,
+    TextInput,
   } from "carbon-components-svelte";
   import SettingsAdjust20 from "carbon-icons-svelte/lib/SettingsAdjust20";
   import Add20 from "carbon-icons-svelte/lib/Add20";
@@ -22,8 +25,10 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
+  let add_diaglog_open = false;
   let isSideNavOpen = false;
   let ipfs_id: string;
+  let publisher_to_follow: string;
 
   const views = [
     {
@@ -49,9 +54,16 @@
     selected_view = view;
   }
 
+  async function followPublisher() {
+    let success = await invoke("follow_publisher", {
+      publisher: publisher_to_follow,
+    });
+    publisher_to_follow = "";
+    console.log(`followPublisher: ${success}`);
+  }
+
   onMount(async () => {
     ipfs_id = await invoke("ipfs_id");
-    // ipfs_id = await invoke("wait_for_ipfs_id_cmd");
     console.log("ipfs_id");
     console.log(ipfs_id);
   });
@@ -71,7 +83,11 @@
     </div>
     <HeaderUtilities>
       <HeaderGlobalAction aria-label="Settings" icon={SettingsAdjust20} />
-      <HeaderGlobalAction aria-label="Follow new identity" icon={Add20} />
+      <HeaderGlobalAction
+        aria-label="Follow new identity"
+        icon={Add20}
+        on:click={() => (add_diaglog_open = !add_diaglog_open)}
+      />
     </HeaderUtilities>
   </Header>
 
@@ -91,6 +107,24 @@
   </SideNav>
 
   <Content>
+    <Modal
+      size="lg"
+      bind:open={add_diaglog_open}
+      modalHeading="Create database"
+      primaryButtonText="Confirm"
+      secondaryButtonText="Cancel"
+      on:click:button--secondary
+      on:open
+      on:close={() => (add_diaglog_open = false)}
+      on:submit={followPublisher}
+    >
+      <TextInput
+        labelText="publisher to follow"
+        placeholder="Q..."
+        bind:value={publisher_to_follow}
+      />
+    </Modal>
+
     <svelte:component this={selected_view.component} {ipfs_id} />
   </Content>
 {:else}

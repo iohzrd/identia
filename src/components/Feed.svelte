@@ -9,21 +9,26 @@
   import type { PostResponse } from "../types.type";
   export let ipfs_id: string;
 
+  let update_feed_interval = null;
   let feed: PostResponse[] = [];
+  let newest_ts: number = Math.floor(new Date().getTime());
   let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
-  $: query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE ts < ${oldest_ts} ORDER BY ts DESC LIMIT ${limit}`;
+  $: feed_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE ts < ${oldest_ts} ORDER BY ts DESC LIMIT ${limit}`;
+  $: new_posts_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE ts > ${newest_ts} ORDER BY ts DESC`;
 
   async function getFeedPage() {
     console.log(`getFeedPage: ${ipfs_id}`);
     if (feed.length > 0) {
+      newest_ts = feed[0].post.ts;
       oldest_ts = feed[feed.length - 1].post.ts;
     }
     let page: PostResponse[] = await invoke("query_posts", {
-      query: query,
+      query: feed_query,
     });
     if (page.length > 0) {
       feed = [...feed, ...page];
+      newest_ts = feed[0].post.ts;
       oldest_ts = feed[feed.length - 1].post.ts;
     }
   }
@@ -32,11 +37,30 @@
     feed = [post, ...feed];
   }
 
+  async function updateIdentities() {
+    console.log(`updateIdentities: ${ipfs_id}`);
+    if (feed.length > 0) {
+      newest_ts = feed[0].post.ts;
+      oldest_ts = feed[feed.length - 1].post.ts;
+    }
+    let new_posts: PostResponse[] = await invoke("update_feed", {
+      query: new_posts_query,
+    });
+    if (new_posts.length > 0) {
+      feed = [...new_posts, ...feed];
+      newest_ts = feed[0].post.ts;
+      oldest_ts = feed[feed.length - 1].post.ts;
+    }
+  }
+
   onMount(async () => {
     getFeedPage();
+    update_feed_interval = setInterval(updateIdentities, 60 * 1000);
   });
 
-  onDestroy(() => {});
+  onDestroy(() => {
+    clearInterval(update_feed_interval);
+  });
 </script>
 
 <div>

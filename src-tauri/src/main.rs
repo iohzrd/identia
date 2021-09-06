@@ -98,12 +98,14 @@ fn main() {
       _ => {}
     })
     .invoke_handler(tauri::generate_handler![
+      identity::follow_publisher,
       identity::get_identity,
-      identity::query_posts,
+      identity::get_identity_ipfs_cmd,
       identity::get_post_ipfs,
       identity::ipfs_id,
       identity::post,
-      identity::get_identity_ipfs_cmd,
+      identity::query_posts,
+      identity::update_feed,
       identity::wait_for_ipfs_id_cmd,
     ])
     .setup(|app| {

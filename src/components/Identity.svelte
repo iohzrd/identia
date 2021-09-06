@@ -49,11 +49,11 @@
     });
     await getPostsPage();
 
-    console.log("get_identity_ipfs_cmd");
-    let test = await invoke("get_identity_ipfs_cmd", {
-      publisher: ipfs_id,
-    });
-    console.log(test);
+    // console.log("get_identity_ipfs_cmd");
+    // let test = await invoke("get_identity_ipfs_cmd", {
+    //   publisher: ipfs_id,
+    // });
+    // console.log(test);
   });
 
   onDestroy(() => {});

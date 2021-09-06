@@ -34,18 +34,25 @@ pub async fn identity_in_db(
   conn: PooledConnection<SqliteConnectionManager>,
   publisher: String,
 ) -> Result<bool, bool> {
-  let mut in_db = false;
   let mut stmt = conn
-    .prepare("SELECT publisher FROM identity WHERE publisher = ?")
+    .prepare("SELECT publisher FROM identities WHERE publisher = ?")
     .unwrap();
-  in_db = stmt.query_row(params![&publisher], |_| Ok(true)).unwrap();
-  Ok(in_db)
+  Ok(stmt.exists(params![&publisher]).unwrap())
+}
+
+pub async fn post_in_db(
+  conn: PooledConnection<SqliteConnectionManager>,
+  cid: String,
+) -> Result<bool, bool> {
+  let mut stmt = conn.prepare("SELECT cid FROM posts WHERE cid = ?").unwrap();
+  Ok(stmt.exists(params![&cid]).unwrap())
 }
 
 pub async fn insert_identity(
   conn: PooledConnection<SqliteConnectionManager>,
   identity: Identity,
 ) -> Identity {
+  println!("insert_identity: {:?}", identity);
   conn.execute(
     "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
     params![
@@ -159,34 +166,118 @@ pub async fn get_identity_ipfs_cmd(
 }
 
 #[tauri::command]
-pub async fn update_identities(state: tauri::State<'_, AppState>) -> Result<bool, bool> {
+pub async fn update_feed(
+  state: tauri::State<'_, AppState>,
+  query: String,
+) -> Result<Vec<PostResponse>, Vec<PostResponse>> {
+  println!("update_feed");
   let conn = state.db_pool.get().unwrap();
   let identity = get_identity_db(conn, state.ipfs_id.clone()).await.unwrap();
   let following = identity.following;
   let ipfs_id = state.ipfs_id.clone();
   for fid in following {
-    if ipfs_id.eq(&fid) {
+    if !ipfs_id.eq(&fid) {
       let f_identity = get_identity_ipfs(&state.ipfs_client, fid.clone())
         .await
         .unwrap();
-      println!("got : {:?}", f_identity);
+      println!("got identity from ipfs");
       let conn = state.db_pool.get().unwrap();
-      let in_db = identity_in_db(conn, fid.clone()).await.unwrap();
-      if in_db {
-        let conn = state.db_pool.get().unwrap();
-        let db_identity = get_identity_db(conn, fid.clone()).await.unwrap();
-        if db_identity.ts < f_identity.ts {
+      let result = get_identity_db(conn, fid.clone()).await;
+      let db_identity = match result {
+        Ok(i) => i,
+        Err(_) => {
           let conn = state.db_pool.get().unwrap();
-          update_identity_db(conn, f_identity).await;
+          insert_identity(conn, Identity::new(fid.clone(), 0)).await
         }
-      } else {
+      };
+      let posts = f_identity.posts.clone();
+      if f_identity.ts > db_identity.ts {
         let conn = state.db_pool.get().unwrap();
-        insert_identity(conn, f_identity);
+        println!("identity is new than one in db...");
+        println!("inserting new identity: {:?}", f_identity);
+        update_identity_db(conn, f_identity).await;
+        for post_cid in posts {
+          println!("attempting to get new post: {:?}", post_cid.clone());
+          match get_post_ipfs(post_cid.clone()).await {
+            Some(postResponse) => {
+              let conn = state.db_pool.get().unwrap();
+              let post_in_db = post_in_db(conn, postResponse.cid.clone()).await.unwrap();
+              if !post_in_db {
+                let conn = state.db_pool.get().unwrap();
+                insert_post(conn, postResponse.post, postResponse.cid.clone()).await;
+              }
+            }
+            None => (),
+          };
+        }
       }
     }
   }
 
-  Ok(true)
+  // REFACTOR ME
+  let mut new_posts: Vec<PostResponse> = Vec::new();
+  let conn = state.db_pool.get().unwrap();
+  println!("{:?}", query);
+  // SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE...
+  let stmt = conn.prepare(&query.as_str());
+  let mut s = match stmt {
+    Ok(stmt) => {
+      println!("query valid");
+      stmt
+    }
+    Err(error) => {
+      panic!("query invalid: {:?}", error)
+    }
+  };
+
+  let pr_iter = s
+    .query_map([], |row| {
+      let pr = PostResponse {
+        cid: row.get(0)?,
+        post: Post {
+          aux: serde_json::from_value(row.get(1)?).unwrap(),
+          body: row.get(2)?,
+          files: serde_json::from_value(row.get(3)?).unwrap(),
+          meta: serde_json::from_value(row.get(4)?).unwrap(),
+          publisher: row.get(5)?,
+          ts: row.get(6)?,
+        },
+      };
+      Ok(pr)
+    })
+    .unwrap();
+
+  for pr in pr_iter {
+    new_posts.push(pr.unwrap());
+  }
+
+  Ok(new_posts)
+}
+
+#[tauri::command]
+pub async fn follow_publisher(
+  state: tauri::State<'_, AppState>,
+  publisher: String,
+) -> Result<bool, bool> {
+  let mut success = false;
+  let conn = state.db_pool.get().unwrap();
+  let mut identity = get_identity_db(conn, state.ipfs_id.clone()).await.unwrap();
+  let ipfs_id = state.ipfs_id.clone();
+  if !identity.following.contains(&publisher) && !ipfs_id.eq(&publisher) {
+    identity.following.push(publisher.clone());
+
+    println!("publisher added, updating identity: {:?}", identity);
+    let conn = state.db_pool.get().unwrap();
+    update_identity_db(conn, identity).await;
+    success = true;
+  } else {
+    println!(
+      "already following publisher {:?}, skipping... {:?}",
+      publisher, identity
+    );
+  }
+
+  Ok(success)
 }
 
 pub async fn get_identity_ipfs(
