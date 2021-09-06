@@ -8,12 +8,14 @@ use rusqlite::{named_params, params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
 use serde_json::{from_slice, json};
 use std::io::Cursor;
+use std::path::PathBuf;
 use std::{thread, time::Duration};
 use tauri;
 use tauri::api::process::Command;
 
 pub mod migrations;
 pub mod types;
+use crate::config;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
 use crate::identity::types::{AppState, Identity, Post, PostRequest, PostResponse};
 
@@ -562,9 +564,9 @@ pub async fn insert_post(
 }
 
 #[tauri::command]
-pub async fn initialize_database(publisher: String) -> Result<()> {
+pub async fn initialize_database(publisher: String, db_file_path: PathBuf) -> Result<()> {
   println!("initialize_database: {:?}", publisher.clone());
-  let mut conn = Connection::open(String::from(publisher.clone() + ".db"))?;
+  let mut conn = Connection::open(db_file_path.into_os_string().to_str().unwrap())?;
   let migrations = Migrations::new(vec![
     M::up(CREATE_IDENTITIES_TABLE),
     M::up(CREATE_POSTS_TABLE),
@@ -600,17 +602,34 @@ pub async fn initialize_database(publisher: String) -> Result<()> {
   Ok(())
 }
 
+pub fn initialize_ipfs() -> bool {
+  config::create_initial_config_if_necessary();
+  println!("Initializing IPFS");
+  let cmd = Command::new("ipfs")
+    .args(&[
+      "init",
+      "-c",
+      config::identia_app_data_path()
+        .into_os_string()
+        .to_str()
+        .unwrap(),
+    ])
+    .output();
+  format!("ipfs init: {:?}", cmd);
+  true
+}
+
 pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
-  // config::create_initial_config_if_necessary();
   println!("Starting IPFS.");
   Command::new_sidecar("ipfs")
     .or(Err(String::from("Can't find ipfs binary")))?
     .args(&[
       "daemon",
-      // config::conductor_config_path()
-      //   .into_os_string()
-      //   .to_str()
-      //   .unwrap(),
+      "-c",
+      config::identia_app_data_path()
+        .into_os_string()
+        .to_str()
+        .unwrap(),
     ])
     .spawn()
     .map_err(|err| format!("Failed to execute ipfs: {:?}", err))?;
@@ -637,7 +656,7 @@ pub async fn wait_for_ipfs_id(client: &IpfsClient) -> Result<String, String> {
         ready = true;
       }
       Err(_err) => {
-        if retries > 300 {
+        if retries > 600 {
           break;
         }
         retries += 1;

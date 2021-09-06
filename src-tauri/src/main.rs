@@ -3,6 +3,7 @@
   windows_subsystem = "windows"
 )]
 
+mod config;
 mod identity;
 use crate::identity::types::AppState;
 use crate::identity::{initialize_database, wait_for_ipfs_id};
@@ -109,11 +110,15 @@ fn main() {
       identity::wait_for_ipfs_id_cmd,
     ])
     .setup(|app| {
+      identity::initialize_ipfs();
+
       let daemon_client = IpfsClient::default();
       tauri::async_runtime::spawn(async move {
         match identity::launch_ipfs_daemon(&daemon_client).await {
-          Ok(iden) => {
-            initialize_database(iden.clone()).await;
+          Ok(id) => {
+            config::create_db_file_if_necessary(id.clone());
+            let db_file_path = config::identia_db_file_path(id.clone());
+            initialize_database(id.clone(), db_file_path).await;
           }
           Err(err) => {
             // log::error!("There was an error launching ipfs: {:?}", err);
@@ -129,8 +134,9 @@ fn main() {
       tauri::async_runtime::block_on(async move {
         match wait_for_ipfs_id(&ipfs_client.clone()).await {
           Ok(id) => {
-            println!("opening sqlite db @ {:?}", String::from(id.clone() + ".db"));
-            let db_manager = SqliteConnectionManager::file(String::from(id.clone() + ".db"));
+            let db_file_path = config::identia_db_file_path(id.clone());
+            println!("opening sqlite db @ {:?}", db_file_path);
+            let db_manager = SqliteConnectionManager::file(db_file_path);
             let db_pool = r2d2::Pool::new(db_manager).unwrap();
             let ipfs_client = IpfsClient::default();
             let ipfs_id = match ipfs_client.id(None).await {

@@ -17,7 +17,7 @@
   import { onMount, onDestroy } from "svelte";
 
   import Post from "./Post.svelte";
-  import type { Identity, PostResponse } from "../types.type";
+  import type { AuxObj, Identity, PostResponse } from "../types.type";
 
   export let ipfs_id: string;
 
@@ -41,6 +41,15 @@
         posts_oldest_ts = posts[posts.length - 1].post.ts;
       }
     }
+  }
+
+  function addAuxObj() {
+    console.log(`addAuxObj`);
+    let obj: AuxObj = {
+      key: "",
+      value: "",
+    };
+    identity.aux = [...identity.aux, obj];
   }
 
   onMount(async () => {
@@ -84,34 +93,24 @@
       </FormGroup>
 
       <FormGroup>
-        {#if identity.dn}
-          <TextInput
-            inline
-            labelText="dn"
-            placeholder=""
-            bind:value={identity["dn"]}
-          />
-        {:else}
-          <TextInputSkeleton />
-        {/if}
+        <TextInput
+          inline
+          labelText="dn"
+          placeholder=""
+          bind:value={identity["dn"]}
+        />
       </FormGroup>
 
       <FormGroup legendText="aux">
         <Grid>
           {#each identity.aux as obj}
             <Row>
-              {#if obj}
-                <TextInput inline placeholder="" bind:value={obj["key"]} />
-                <TextInput inline placeholder="" bind:value={obj["value"]} />
-                <Button kind="primary">delete</Button>
-              {:else}
-                <TextInputSkeleton />
-                <TextInputSkeleton />
-                <ButtonSkeleton />
-              {/if}
+              <TextInput inline placeholder="" bind:value={obj["key"]} />
+              <TextInput inline placeholder="" bind:value={obj["value"]} />
+              <Button kind="primary">delete</Button>
             </Row>
           {/each}
-          <Button kind="primary">add</Button>
+          <Button kind="primary" on:click={addAuxObj}>add</Button>
         </Grid>
       </FormGroup>
 

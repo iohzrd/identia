@@ -120,7 +120,7 @@
     >
       <TextInput
         labelText="publisher to follow"
-        placeholder="Q..."
+        placeholder="12D3KooW..."
         bind:value={publisher_to_follow}
       />
     </Modal>

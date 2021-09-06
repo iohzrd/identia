@@ -16,7 +16,6 @@ tauri-build = { version = "1.0.0-beta.4" }
 [dependencies]
 chrono = { version = "0.4.19", features = ["serde"] }
 common-multipart-rfc7578 = "0.3.0"
-directories = "3.0.2"
 futures = "0.3.17"
 infer = "0.5.0"
 ipfs-api = { git = "https://github.com/iohzrd/rust-ipfs-api", features = ["with-hyper"] }
