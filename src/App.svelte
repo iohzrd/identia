@@ -110,7 +110,7 @@
     <Modal
       size="lg"
       bind:open={add_diaglog_open}
-      modalHeading="Create database"
+      modalHeading="Follow publisher"
       primaryButtonText="Confirm"
       secondaryButtonText="Cancel"
       on:click:button--secondary

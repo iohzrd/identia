@@ -111,7 +111,8 @@ pub async fn update_identity_db(
 pub async fn get_identity_db(
   conn: PooledConnection<SqliteConnectionManager>,
   publisher: String,
-) -> Result<Identity> {
+) -> Result<Identity, Identity> {
+  println!("get_identity_db: {:?}", publisher.clone());
   let stmt = conn.prepare(
     "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identities WHERE publisher = ?",
   );
@@ -134,7 +135,8 @@ pub async fn get_identity_db(
         ts: row.get(7)?,
       })
     })
-    .unwrap();
+    .unwrap_or(Identity::new(publisher.clone(), 0));
+
   println!("get_identity_db: {:?}", identity);
   Ok(identity)
 }
@@ -184,16 +186,16 @@ pub async fn update_feed(
         .unwrap();
       println!("got identity from ipfs");
       let conn = state.db_pool.get().unwrap();
-      let result = get_identity_db(conn, fid.clone()).await;
-      let db_identity = match result {
-        Ok(i) => i,
-        Err(_) => {
-          let conn = state.db_pool.get().unwrap();
-          insert_identity(conn, Identity::new(fid.clone(), 0)).await
-        }
-      };
+      let db_identity = get_identity_db(conn, fid.clone()).await.unwrap();
       let posts = f_identity.posts.clone();
       if f_identity.ts > db_identity.ts {
+        let conn = state.db_pool.get().unwrap();
+        let in_db = identity_in_db(conn, fid.clone()).await.unwrap();
+        if !in_db {
+          let conn = state.db_pool.get().unwrap();
+          insert_identity(conn, db_identity).await;
+        }
+
         let conn = state.db_pool.get().unwrap();
         println!("identity is new than one in db...");
         println!("inserting new identity: {:?}", f_identity);
@@ -528,7 +530,7 @@ pub async fn post(
   };
 
   identity.posts.insert(0, cid.clone());
-  identity.ts = DateTime::timestamp(&Utc::now());
+  identity.ts = DateTime::timestamp_millis(&Utc::now());
 
   let conn = state.db_pool.get().unwrap();
   let identity = update_identity_db(conn, identity).await;
@@ -575,7 +577,7 @@ pub async fn initialize_database(publisher: String, db_file_path: PathBuf) -> Re
   println!("running migrations...");
   migrations.to_latest(&mut conn).unwrap();
 
-  let me = Identity::new(publisher.clone(), DateTime::timestamp(&Utc::now()));
+  let me = Identity::new(publisher.clone(), DateTime::timestamp_millis(&Utc::now()));
   match conn.execute(
       "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
       params![
