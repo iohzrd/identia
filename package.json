@@ -19,7 +19,7 @@
     "tauri:build": "tauri build",
     "tauri:build-debug": "tauri build -- --debug",
     "tauri:dev": "tauri dev",
-    "update": "ncu -u; npm install; cd src-tauri; cargo update; cd .."
+    "update": "cd src-tauri && cargo update && cd .. && ncu -u && npm install"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
@@ -28,8 +28,8 @@
     "@tauri-apps/cli": "^1.0.0-beta.10",
     "@tsconfig/svelte": "^2.0.1",
     "buffer": "^6.0.3",
-    "carbon-components-svelte": "^0.42.2",
-    "carbon-icons-svelte": "^10.36.0",
+    "carbon-components-svelte": "^0.42.3",
+    "carbon-icons-svelte": "^10.38.0",
     "carbon-preprocess-svelte": "^0.6.0",
     "exifremove": "^1.0.1",
     "file-type": "^16.5.3",
@@ -44,7 +44,7 @@
     "svelte": "^3.42.4",
     "svelte-check": "^2.2.5",
     "svelte-inview": "^2.0.1",
-    "svelte-preprocess": "^4.9.0",
+    "svelte-preprocess": "^4.9.1",
     "timeago.js": "^4.0.2",
     "tslib": "^2.3.1",
     "typescript": "^4.4.2"
