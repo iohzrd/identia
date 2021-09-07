@@ -1,10 +1,11 @@
 <script lang="ts">
   import {
     Button,
+    FileUploaderItem,
     Form,
     FormGroup,
+    ProgressBar,
     TextArea,
-    FileUploaderItem,
     Tile,
   } from "carbon-components-svelte";
   import { open } from "@tauri-apps/api/dialog";
@@ -19,8 +20,10 @@
   let body: string = "";
   let files: string[] = [];
   let meta: string[] = [];
+  let awaiting_response = false;
 
   async function post() {
+    awaiting_response = true;
     let postRequest: PostRequest = {
       aux: aux,
       body: body,
@@ -37,6 +40,7 @@
       files = [];
       meta = [];
     }
+    awaiting_response = false;
   }
 
   function openDialog() {
@@ -62,13 +66,21 @@
         labelText="New post"
         placeholder="What's happening?"
         bind:value={body}
+        bind:disabled={awaiting_response}
       />
+      <Button on:click={openDialog} bind:disabled={awaiting_response}
+        >Add files</Button
+      >
 
-      <Button on:click={openDialog}>Add files</Button>
+      {#if !awaiting_response}
+        <Button on:click={post} bind:disabled={awaiting_response}>Post</Button>
+      {:else}
+        <ProgressBar helperText="Publishing..." />
+      {/if}
+
       {#each files as file}
         <FileUploaderItem status="complete" name={file} />
       {/each}
     </FormGroup>
-    <Button on:click={post}>Post</Button>
   </Form>
 </Tile>
