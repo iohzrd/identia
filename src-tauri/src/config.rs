@@ -16,7 +16,7 @@ pub fn create_initial_config_if_necessary() -> () {
   create_dir_if_necessary(identia_app_data_path());
 }
 pub fn create_db_file_if_necessary(id: String) -> () {
-  create_dir_if_necessary(identia_db_file_path(id));
+  create_file_if_necessary(identia_db_file_path(id));
 }
 
 fn create_dir_if_necessary(path: PathBuf) {
