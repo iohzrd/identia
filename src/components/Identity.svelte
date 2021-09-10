@@ -17,7 +17,7 @@
   import { onMount, onDestroy } from "svelte";
 
   import Post from "./Post.svelte";
-  import type { AuxObj, Identity, PostResponse } from "../types.type";
+  import type { Identity, PostResponse } from "../types.type";
 
   export let ipfs_id: string;
 
@@ -25,7 +25,7 @@
   let posts: PostResponse[] = [];
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
   let posts_limit: number = 5;
-  $: posts_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE publisher = '${ipfs_id}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
+  $: posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher = '${ipfs_id}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
 
   async function getPostsPage() {
     console.log(`getFeedPage: ${ipfs_id}`);
@@ -41,15 +41,6 @@
         posts_oldest_ts = posts[posts.length - 1].post.ts;
       }
     }
-  }
-
-  function addAuxObj() {
-    console.log(`addAuxObj`);
-    let obj: AuxObj = {
-      key: "",
-      value: "",
-    };
-    identity.aux = [...identity.aux, obj];
   }
 
   onMount(async () => {
@@ -79,6 +70,15 @@
       </FormGroup>
 
       <FormGroup>
+        <TextInput
+          inline
+          labelText="dn"
+          placeholder=""
+          bind:value={identity["dn"]}
+        />
+      </FormGroup>
+
+      <FormGroup>
         {#if identity.publisher}
           <TextInput
             disabled
@@ -92,28 +92,6 @@
         {/if}
       </FormGroup>
 
-      <FormGroup>
-        <TextInput
-          inline
-          labelText="dn"
-          placeholder=""
-          bind:value={identity["dn"]}
-        />
-      </FormGroup>
-
-      <FormGroup legendText="aux">
-        <Grid>
-          {#each identity.aux as obj}
-            <Row>
-              <TextInput inline placeholder="" bind:value={obj["key"]} />
-              <TextInput inline placeholder="" bind:value={obj["value"]} />
-              <Button kind="primary">delete</Button>
-            </Row>
-          {/each}
-          <Button kind="primary" on:click={addAuxObj}>add</Button>
-        </Grid>
-      </FormGroup>
-
       <FormGroup legendText="following">
         {#if identity && identity.following}
           {#each identity.following as id}
@@ -121,6 +99,14 @@
               {id}
             </div>
           {/each}
+        {/if}
+      </FormGroup>
+
+      <FormGroup legendText="meta">
+        {#if identity && identity.meta}
+          <!-- {#each identity.meta as meta}
+            {meta}
+          {/each} -->
         {/if}
       </FormGroup>
 
@@ -135,14 +121,6 @@
         <ClickableTile light on:click={getPostsPage}
           >Load more posts</ClickableTile
         >
-      </FormGroup>
-
-      <FormGroup legendText="meta">
-        {#if identity && identity.meta}
-          {#each identity.meta as meta}
-            {meta}
-          {/each}
-        {/if}
       </FormGroup>
 
       <FormGroup legendText="ts">

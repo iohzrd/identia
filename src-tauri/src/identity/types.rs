@@ -3,6 +3,8 @@ use ipfs_api::IpfsClient;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
+use serde_json;
+use serde_json::{from_slice, json, Value};
 
 pub struct AppState {
   pub db_pool: Pool<SqliteConnectionManager>,
@@ -14,11 +16,6 @@ pub struct AppState {
 pub struct AddObj {
   pub path: String,
   pub content: String,
-}
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AuxObj {
-  pub key: String,
-  pub value: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -39,11 +36,10 @@ pub struct Feed {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Identity {
-  pub aux: Vec<AuxObj>,
   pub av: String,
   pub dn: String,
   pub following: Vec<String>,
-  pub meta: Vec<String>,
+  pub meta: Value,
   pub posts: Vec<String>,
   pub publisher: String,
   pub ts: i64,
@@ -52,11 +48,10 @@ pub struct Identity {
 impl Identity {
   pub fn new(publisher: String, ts: i64) -> Identity {
     Identity {
-      aux: Vec::new(),
       av: String::from(""),
       dn: String::from(""),
       following: Vec::new(),
-      meta: Vec::new(),
+      meta: json!({}),
       posts: Vec::new(),
       publisher: String::from(publisher),
       ts: ts,
@@ -66,23 +61,15 @@ impl Identity {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
-  pub aux: Vec<AuxObj>,
   pub body: String,
   pub files: Vec<String>,
-  pub meta: Vec<String>,
+  pub meta: Value,
   pub publisher: String,
   pub ts: i64,
 }
 impl Post {
-  pub fn new(
-    aux: Vec<AuxObj>,
-    body: String,
-    files: Vec<String>,
-    meta: Vec<String>,
-    publisher: String,
-  ) -> Post {
+  pub fn new(body: String, files: Vec<String>, meta: Value, publisher: String) -> Post {
     Post {
-      aux: aux,
       body: body,
       files: files,
       meta: meta,
@@ -94,10 +81,9 @@ impl Post {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostRequest {
-  pub aux: Vec<AuxObj>,
   pub body: String,
   pub files: Vec<String>,
-  pub meta: Vec<String>,
+  pub meta: Value,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

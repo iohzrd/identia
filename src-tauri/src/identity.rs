@@ -56,9 +56,8 @@ pub async fn insert_identity(
 ) -> Identity {
   println!("insert_identity: {:?}", identity);
   conn.execute(
-    "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+    "INSERT INTO identities (av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
     params![
-      serde_json::to_value(&identity.aux).unwrap(),
       &identity.av,
       &identity.dn,
       serde_json::to_value(&identity.following).unwrap(),
@@ -76,7 +75,7 @@ pub async fn update_identity_db(
   identity: Identity,
 ) -> Identity {
   let stmt = conn.prepare(
-    "UPDATE identities SET aux=:aux, av=:av, dn=:dn, following=:following, meta=:meta, posts=:posts, publisher=:publisher, ts=:ts WHERE publisher=:publisher",
+    "UPDATE identities SET av=:av, dn=:dn, following=:following, meta=:meta, posts=:posts, publisher=:publisher, ts=:ts WHERE publisher=:publisher",
   );
   let mut s = match stmt {
     Ok(stmt) => {
@@ -88,16 +87,15 @@ pub async fn update_identity_db(
     }
   };
 
-  match s.execute(
-    named_params! {":aux": serde_json::to_value(&identity.aux).unwrap(),
-    ":av": &identity.av,
-    ":dn": &identity.dn,
-    ":following": serde_json::to_value(&identity.following).unwrap(),
-    ":meta": serde_json::to_value(&identity.meta).unwrap(),
-    ":posts": serde_json::to_value(&identity.posts).unwrap(),
-    ":publisher": &identity.publisher,
-    ":ts": &identity.ts},
-  ) {
+  match s.execute(named_params! {
+  ":av": &identity.av,
+  ":dn": &identity.dn,
+  ":following": serde_json::to_value(&identity.following).unwrap(),
+  ":meta": serde_json::to_value(&identity.meta).unwrap(),
+  ":posts": serde_json::to_value(&identity.posts).unwrap(),
+  ":publisher": &identity.publisher,
+  ":ts": &identity.ts})
+  {
     Ok(i) => {
       println!("execute success: {:?}", i);
     }
@@ -113,9 +111,8 @@ pub async fn get_identity_db(
   publisher: String,
 ) -> Result<Identity, Identity> {
   println!("get_identity_db: {:?}", publisher.clone());
-  let stmt = conn.prepare(
-    "SELECT aux,av,dn,following,meta,posts,publisher,ts FROM identities WHERE publisher = ?",
-  );
+  let stmt = conn
+    .prepare("SELECT av,dn,following,meta,posts,publisher,ts FROM identities WHERE publisher = ?");
   let mut s = match stmt {
     Ok(stmt) => stmt,
     Err(error) => {
@@ -125,14 +122,13 @@ pub async fn get_identity_db(
   let identity = s
     .query_row(params![&publisher], |row| {
       Ok(Identity {
-        aux: serde_json::from_value(row.get(0)?).unwrap(),
-        av: row.get(1)?,
-        dn: row.get(2)?,
-        following: serde_json::from_value(row.get(3)?).unwrap(),
-        meta: serde_json::from_value(row.get(4)?).unwrap(),
-        posts: serde_json::from_value(row.get(5)?).unwrap(),
-        publisher: row.get(6)?,
-        ts: row.get(7)?,
+        av: row.get(0)?,
+        dn: row.get(1)?,
+        following: serde_json::from_value(row.get(2)?).unwrap(),
+        meta: serde_json::from_value(row.get(3)?).unwrap(),
+        posts: serde_json::from_value(row.get(4)?).unwrap(),
+        publisher: row.get(5)?,
+        ts: row.get(6)?,
       })
     })
     .unwrap_or(Identity::new(publisher.clone(), 0));
@@ -170,6 +166,21 @@ pub async fn get_identity_ipfs_cmd(
 }
 
 #[tauri::command]
+pub async fn pin_cid(state: tauri::State<'_, AppState>, cid: String) -> Result<bool, bool> {
+  println!("pin_cid: {:?}", cid);
+  match state.ipfs_client.pin_add(cid.as_str(), true).await {
+    Ok(res) => Ok({
+      println!("pinAddResponse: {:?}", res);
+      true
+    }),
+    Err(e) => Err({
+      eprintln!("pinAddResponseError: {:?}", e);
+      false
+    }),
+  }
+}
+
+#[tauri::command]
 pub async fn update_feed(
   state: tauri::State<'_, AppState>,
   query: String,
@@ -201,6 +212,7 @@ pub async fn update_feed(
         println!("inserting new identity: {:?}", f_identity);
         update_identity_db(conn, f_identity).await;
         for post_cid in posts {
+          pin_cid(state.clone(), post_cid.clone()).await;
           println!("attempting to get new post: {:?}", post_cid.clone());
           match get_post_ipfs(post_cid.clone()).await {
             Some(postResponse) => {
@@ -222,7 +234,7 @@ pub async fn update_feed(
   let mut new_posts: Vec<PostResponse> = Vec::new();
   let conn = state.db_pool.get().unwrap();
   println!("{:?}", query);
-  // SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE...
+  // SELECT cid,body,files,meta,publisher,ts FROM posts WHERE...
   let stmt = conn.prepare(&query.as_str());
   let mut s = match stmt {
     Ok(stmt) => {
@@ -239,12 +251,11 @@ pub async fn update_feed(
       let pr = PostResponse {
         cid: row.get(0)?,
         post: Post {
-          aux: serde_json::from_value(row.get(1)?).unwrap(),
-          body: row.get(2)?,
-          files: serde_json::from_value(row.get(3)?).unwrap(),
-          meta: serde_json::from_value(row.get(4)?).unwrap(),
-          publisher: row.get(5)?,
-          ts: row.get(6)?,
+          body: row.get(1)?,
+          files: serde_json::from_value(row.get(2)?).unwrap(),
+          meta: serde_json::from_value(row.get(3)?).unwrap(),
+          publisher: row.get(4)?,
+          ts: row.get(5)?,
         },
       };
       Ok(pr)
@@ -428,7 +439,7 @@ pub async fn query_posts(
   let mut feed: Vec<PostResponse> = Vec::new();
   let conn = state.db_pool.get().unwrap();
   println!("{:?}", query);
-  // SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE...
+  // SELECT cid,body,files,meta,publisher,ts FROM posts WHERE...
   let stmt = conn.prepare(&query.as_str());
   let mut s = match stmt {
     Ok(stmt) => {
@@ -445,12 +456,11 @@ pub async fn query_posts(
       let pr = PostResponse {
         cid: row.get(0)?,
         post: Post {
-          aux: serde_json::from_value(row.get(1)?).unwrap(),
-          body: row.get(2)?,
-          files: serde_json::from_value(row.get(3)?).unwrap(),
-          meta: serde_json::from_value(row.get(4)?).unwrap(),
-          publisher: row.get(5)?,
-          ts: row.get(6)?,
+          body: row.get(1)?,
+          files: serde_json::from_value(row.get(2)?).unwrap(),
+          meta: serde_json::from_value(row.get(3)?).unwrap(),
+          publisher: row.get(4)?,
+          ts: row.get(5)?,
         },
       };
       Ok(pr)
@@ -472,7 +482,6 @@ pub async fn post(
   println!("post");
   println!("{:?}", post_request);
   let post = Post::new(
-    post_request.aux,
     post_request.body,
     post_request.files,
     post_request.meta,
@@ -504,18 +513,19 @@ pub async fn post(
   };
 
   let conn = state.db_pool.get().unwrap();
-  conn.execute(
-    "INSERT INTO posts (cid,aux,body,files,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-    params![
-      &cid,
-      serde_json::to_value(&post.aux).unwrap(),
-      &post.body,
-      serde_json::to_value(&post.files).unwrap(),
-      serde_json::to_value(&post.meta).unwrap(),
-      &post.publisher,
-      &post.ts,
-    ],
-  ).unwrap();
+  conn
+    .execute(
+      "INSERT INTO posts (cid,body,files,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+      params![
+        &cid,
+        &post.body,
+        serde_json::to_value(&post.files).unwrap(),
+        serde_json::to_value(&post.meta).unwrap(),
+        &post.publisher,
+        &post.ts,
+      ],
+    )
+    .unwrap();
 
   let conn = state.db_pool.get().unwrap();
   let mut identity = match get_identity_db(conn, state.ipfs_id.clone()).await {
@@ -550,18 +560,19 @@ pub async fn insert_post(
   post: Post,
   cid: String,
 ) -> Post {
-  conn.execute(
-    "INSERT INTO posts (cid,aux,body,files,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-    params![
-      &cid,
-      serde_json::to_value(&post.aux).unwrap(),
-      &post.body,
-      serde_json::to_value(&post.files).unwrap(),
-      serde_json::to_value(&post.meta).unwrap(),
-      &post.publisher,
-      &post.ts,
-    ],
-  ).unwrap();
+  conn
+    .execute(
+      "INSERT INTO posts (cid,body,files,meta,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+      params![
+        &cid,
+        &post.body,
+        serde_json::to_value(&post.files).unwrap(),
+        serde_json::to_value(&post.meta).unwrap(),
+        &post.publisher,
+        &post.ts,
+      ],
+    )
+    .unwrap();
   post
 }
 
@@ -579,9 +590,8 @@ pub async fn initialize_database(publisher: String, db_file_path: PathBuf) -> Re
 
   let me = Identity::new(publisher.clone(), DateTime::timestamp_millis(&Utc::now()));
   match conn.execute(
-      "INSERT INTO identities (aux,av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+      "INSERT INTO identities (av,dn,following,meta,posts,publisher,ts) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
       params![
-          json!(me.aux),
           me.av,
           me.dn,
           json!(me.following),

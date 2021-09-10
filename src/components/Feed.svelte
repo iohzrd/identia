@@ -14,8 +14,8 @@
   let newest_ts: number = Math.floor(new Date().getTime());
   let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
-  $: feed_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE ts < ${oldest_ts} ORDER BY ts DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT cid,aux,body,files,meta,publisher,ts FROM posts WHERE publisher != '${ipfs_id}' AND ts > ${newest_ts} ORDER BY ts DESC`;
+  $: feed_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE ts < ${oldest_ts} ORDER BY ts DESC LIMIT ${limit}`;
+  $: new_posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher != '${ipfs_id}' AND ts > ${newest_ts} ORDER BY ts DESC`;
 
   async function getFeedPage() {
     console.log(`getFeedPage: ${ipfs_id}`);

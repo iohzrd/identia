@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { PostRequest, PostResponse } from "../types.type";
   import {
     Button,
     FileUploaderItem,
@@ -8,24 +9,21 @@
     TextArea,
     Tile,
   } from "carbon-components-svelte";
+  import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
   import { readBinaryFile } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api/tauri";
 
-  import type { AuxObj, PostRequest, PostResponse } from "../types.type";
-
   export let onPost: Function;
 
-  let aux: AuxObj[] = [];
   let body: string = "";
   let files: string[] = [];
-  let meta: string[] = [];
+  let meta: object = {};
   let awaiting_response = false;
 
   async function post() {
     awaiting_response = true;
     let postRequest: PostRequest = {
-      aux: aux,
       body: body,
       files: files,
       meta: meta,
@@ -35,10 +33,9 @@
     });
     if (postResponse) {
       onPost(postResponse);
-      aux = [];
       body = "";
       files = [];
-      meta = [];
+      meta = {};
     }
     awaiting_response = false;
   }
@@ -57,6 +54,10 @@
       }
     });
   }
+
+  onMount(async () => {});
+
+  onDestroy(() => {});
 </script>
 
 <Tile>
