@@ -7,7 +7,11 @@
   import NewPost from "./NewPost.svelte";
   import Post from "./Post.svelte";
   import type { PostResponse } from "../types.type";
-  export let ipfs_id: string;
+
+  // export let ipfs_id: string;
+
+  export let params = {};
+  $: publisher = params["publisher"];
 
   let update_feed_interval = null;
   let feed: PostResponse[] = [];
@@ -15,10 +19,10 @@
   let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
   $: feed_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE ts < ${oldest_ts} ORDER BY ts DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher != '${ipfs_id}' AND ts > ${newest_ts} ORDER BY ts DESC`;
+  $: new_posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher != '${publisher}' AND ts > ${newest_ts} ORDER BY ts DESC`;
 
   async function getFeedPage() {
-    console.log(`getFeedPage: ${ipfs_id}`);
+    console.log(`getFeedPage: ${publisher}`);
     if (feed.length > 0) {
       newest_ts = feed[0].post.ts;
       oldest_ts = feed[feed.length - 1].post.ts;
@@ -38,7 +42,7 @@
   }
 
   async function updateIdentities() {
-    console.log(`updateIdentities: ${ipfs_id}`);
+    console.log(`updateIdentities: ${publisher}`);
     if (feed.length > 0) {
       newest_ts = feed[0].post.ts;
       oldest_ts = feed[feed.length - 1].post.ts;

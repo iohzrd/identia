@@ -4,7 +4,7 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use serde_json::{from_slice, json, Value};
+use serde_json::{json, Value};
 
 pub struct AppState {
   pub db_pool: Pool<SqliteConnectionManager>,

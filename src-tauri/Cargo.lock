@@ -4821,9 +4821,9 @@ dependencies = [
 
 [[package]]
 name = "webview2"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fab1ccfdabb098b047293c8d496c1914d1c654b68fdaa3bb77cfa47c4bca2c7"
+checksum = "de01183077c69d730880f9aa99f5f91915ccd9b4383e9dc47643be01233017b9"
 dependencies = [
  "com",
  "once_cell",

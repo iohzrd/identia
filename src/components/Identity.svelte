@@ -19,16 +19,17 @@
   import Post from "./Post.svelte";
   import type { Identity, PostResponse } from "../types.type";
 
-  export let ipfs_id: string;
+  export let params = {};
 
+  $: publisher = params["publisher"];
   let identity: Identity;
   let posts: PostResponse[] = [];
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
   let posts_limit: number = 5;
-  $: posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher = '${ipfs_id}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
+  $: posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher = '${publisher}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
 
   async function getPostsPage() {
-    console.log(`getFeedPage: ${ipfs_id}`);
+    console.log(`getFeedPage: ${publisher}`);
     if (identity && identity.posts) {
       if (posts.length > 0) {
         posts_oldest_ts = posts[posts.length - 1].post.ts;
@@ -44,9 +45,13 @@
   }
 
   onMount(async () => {
-    identity = await invoke("get_identity", {
-      publisher: ipfs_id,
-    });
+    console.log("onMount");
+    console.log(params);
+    if (params["publisher"]) {
+      identity = await invoke("get_identity", {
+        publisher: params["publisher"],
+      });
+    }
     await getPostsPage();
 
     // console.log("get_identity_ipfs_cmd");

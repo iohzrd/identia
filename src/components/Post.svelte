@@ -51,7 +51,9 @@
     </div>
     <div>
       {#if postResponse.post && postResponse.post.publisher && includeFrom}
-        From: {postResponse.post.publisher}
+        publisher: <a href="#/identity/{postResponse.post.publisher}"
+          >{postResponse.post.publisher}</a
+        >
       {/if}
     </div>
     <div>

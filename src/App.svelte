@@ -24,6 +24,12 @@
 
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
+  import Router from "svelte-spa-router";
+  import active from "svelte-spa-router/active";
+  import { push, link } from "svelte-spa-router";
+  import { location, querystring } from "svelte-spa-router";
+
+  export let params = {};
 
   let add_diaglog_open = false;
   let isSideNavOpen = false;
@@ -33,26 +39,19 @@
   const views = [
     {
       label: "Feed",
-      component: Feed,
+      path: "/",
     },
     {
       label: "Identity",
-      component: Identity,
-    },
-    {
-      label: "Settings",
-      component: Settings,
-    },
-    {
-      label: "External",
-      component: External,
+      path: "/identity/",
     },
   ];
-  let selected_view = views[0];
 
-  function select(view) {
-    selected_view = view;
-  }
+  const routes = {
+    "/:publisher?": Feed,
+    "/identity/:publisher?": Identity,
+    // "*": NotFound,
+  };
 
   async function followPublisher() {
     let success = await invoke("follow_publisher", {
@@ -95,14 +94,20 @@
     <SideNavItems>
       {#each views as view}
         <SideNavLink
+          href="#{view.path}{ipfs_id}"
           text={view.label}
-          class="nv noselect {selected_view === view ? 'nv_selected' : ''}"
-          on:click={() => select(view)}
+          isSelected={$location === view.path + ipfs_id}
         >
           {view.label}
         </SideNavLink>
       {/each}
       <SideNavDivider />
+      <SideNavItems>
+        <p>The current page is: {$location}</p>
+      </SideNavItems>
+      <SideNavItems>
+        <p>The querystring is: {$querystring}</p>
+      </SideNavItems>
     </SideNavItems>
   </SideNav>
 
@@ -125,7 +130,7 @@
       />
     </Modal>
 
-    <svelte:component this={selected_view.component} {ipfs_id} />
+    <Router {routes} />
   </Content>
 {:else}
   <Loading />

@@ -1,8 +1,7 @@
 use std::{fs, path::PathBuf};
-use tauri::api::path::{config_dir, data_dir};
+use tauri::api::path::config_dir;
 
 pub fn identia_app_data_path() -> PathBuf {
-  //   data_dir()
   config_dir()
     .expect("Could not get config dir")
     .join("identia")

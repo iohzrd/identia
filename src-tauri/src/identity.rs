@@ -215,12 +215,12 @@ pub async fn update_feed(
           pin_cid(state.clone(), post_cid.clone()).await;
           println!("attempting to get new post: {:?}", post_cid.clone());
           match get_post_ipfs(post_cid.clone()).await {
-            Some(postResponse) => {
+            Some(post_response) => {
               let conn = state.db_pool.get().unwrap();
-              let post_in_db = post_in_db(conn, postResponse.cid.clone()).await.unwrap();
+              let post_in_db = post_in_db(conn, post_response.cid.clone()).await.unwrap();
               if !post_in_db {
                 let conn = state.db_pool.get().unwrap();
-                insert_post(conn, postResponse.post, postResponse.cid.clone()).await;
+                insert_post(conn, post_response.post, post_response.cid.clone()).await;
               }
             }
             None => (),

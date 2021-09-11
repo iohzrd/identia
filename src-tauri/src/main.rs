@@ -141,7 +141,7 @@ fn main() {
             let ipfs_client = IpfsClient::default();
             let ipfs_id = match ipfs_client.id(None).await {
               Ok(id) => Ok(id.id),
-              Err(err) => Err(String::new()),
+              Err(_err) => Err(String::new()),
             }
             .unwrap();
             let main_window = app.get_window("main").unwrap();
