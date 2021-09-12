@@ -14,9 +14,9 @@
   let new_meta_key = "";
   let new_meta_index = 0;
   let meta_types = [
-    { id: "1", text: "array", value: [] },
+    { id: "1", text: "string", value: "" },
     { id: "2", text: "object", value: {} },
-    { id: "3", text: "string", value: "" },
+    { id: "3", text: "array", value: [] },
   ];
 
   function addMeta() {
@@ -38,12 +38,18 @@
   onDestroy(() => {});
 </script>
 
-<Tile light>
-  {#each Object.keys(meta) as k}
+{#each Object.keys(meta) as k}
+  <ListItem>
     <ButtonSet>
-      <TextInput size="sm" inline placeholder="" bind:value={k} disabled />
+      <div>
+        {k}:
+      </div>
       {#if isObject(meta[k])}
-        <svelte:self meta={meta[k]} />
+        <UnorderedList nested>
+          <svelte:self meta={meta[k]} />
+        </UnorderedList>
+      {:else if Array.isArray(meta[k])}
+        {meta[k]}
       {:else if typeof meta[k] === "string"}
         <TextInput size="sm" inline placeholder="" bind:value={meta[k]} />
       {:else}
@@ -51,8 +57,8 @@
       {/if}
       <Button on:click={() => removeMeta(k)}>delete</Button>
     </ButtonSet>
-  {/each}
-</Tile>
+  </ListItem>
+{/each}
 <ButtonSet>
   <TextInput size="sm" placeholder="key" bind:value={new_meta_key} />
   <Dropdown

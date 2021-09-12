@@ -7,6 +7,7 @@
     FormGroup,
     TextInput,
     Tile,
+    UnorderedList,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -100,10 +101,14 @@
         {/if}
       </FormGroup>
 
-      {#if identity && identity.meta}
-        <Meta meta={identity.meta} />
-        <Button on:click={() => console.log(identity.meta)}>print</Button>
-      {/if}
+      <FormGroup legendText="meta">
+        {#if identity && identity.meta}
+          <UnorderedList>
+            <Meta meta={identity.meta} />
+          </UnorderedList>
+          <Button on:click={() => console.log(identity.meta)}>print</Button>
+        {/if}
+      </FormGroup>
 
       <FormGroup legendText="posts">
         {#if identity && identity.posts}

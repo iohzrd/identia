@@ -67,23 +67,19 @@
   });
 </script>
 
-<div>
-  <Tile>
-    <NewPost {onPost} />
+<NewPost {onPost} />
 
-    {#each feed as postResponse}
-      <Post cid={null} {postResponse} />
-    {/each}
-  </Tile>
+{#each feed as postResponse}
+  <Post cid={null} {postResponse} />
+{/each}
 
-  {#if feed.length >= limit}
-    <div
-      use:inview={{}}
-      on:enter={(event) => {
-        if (event.detail.inView) {
-          getFeedPage();
-        }
-      }}
-    />
-  {/if}
-</div>
+{#if feed.length >= limit}
+  <div
+    use:inview={{}}
+    on:enter={(event) => {
+      if (event.detail.inView) {
+        getFeedPage();
+      }
+    }}
+  />
+{/if}
