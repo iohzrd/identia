@@ -50,6 +50,11 @@
       {/if}
     </div>
     <div>
+      {#if postResponse.post && postResponse.post.meta}
+        meta: {postResponse.post.meta}
+      {/if}
+    </div>
+    <div>
       {#if postResponse.post && postResponse.post.publisher && includeFrom}
         publisher: <a href="#/identity/{postResponse.post.publisher}"
           >{postResponse.post.publisher}</a
