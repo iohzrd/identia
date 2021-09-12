@@ -2,14 +2,10 @@
   import {
     Button,
     ButtonSet,
-    ButtonSkeleton,
     ClickableTile,
     Form,
     FormGroup,
-    Grid,
-    Row,
     TextInput,
-    TextInputSkeleton,
     Tile,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
@@ -17,15 +13,16 @@
   import { onMount, onDestroy } from "svelte";
 
   import Post from "./Post.svelte";
+  import Meta from "./Meta.svelte";
   import type { Identity, PostResponse } from "../types.type";
 
   export let params = {};
 
-  $: publisher = params["publisher"];
   let identity: Identity;
   let posts: PostResponse[] = [];
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
   let posts_limit: number = 5;
+  $: publisher = params["publisher"];
   $: posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher = '${publisher}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
 
   async function getPostsPage() {
@@ -54,11 +51,11 @@
     }
     await getPostsPage();
 
-    // console.log("get_identity_ipfs_cmd");
-    // let test = await invoke("get_identity_ipfs_cmd", {
-    //   publisher: ipfs_id,
-    // });
-    // console.log(test);
+    if (identity && identity.meta) {
+      if (Array.isArray(identity.meta)) {
+        identity.meta = {};
+      }
+    }
   });
 
   onDestroy(() => {});
@@ -67,12 +64,12 @@
 <Tile light>
   <Form on:submit>
     {#if identity}
-      <FormGroup legendText="av">
-        <!-- <UserProfile20>
+      <!-- <FormGroup legendText="av">
+        <UserProfile20>
           <title>Avitar</title>
-        </UserProfile20> -->
-        <!-- {identity["av"]} -->
-      </FormGroup>
+        </UserProfile20>
+        {identity["av"]}
+      </FormGroup> -->
 
       <FormGroup>
         <TextInput
@@ -84,17 +81,13 @@
       </FormGroup>
 
       <FormGroup>
-        {#if identity.publisher}
-          <TextInput
-            disabled
-            inline
-            labelText="id"
-            placeholder=""
-            bind:value={identity["publisher"]}
-          />
-        {:else}
-          <TextInputSkeleton />
-        {/if}
+        <TextInput
+          disabled
+          inline
+          labelText="id"
+          placeholder=""
+          bind:value={identity["publisher"]}
+        />
       </FormGroup>
 
       <FormGroup legendText="following">
@@ -107,13 +100,10 @@
         {/if}
       </FormGroup>
 
-      <FormGroup legendText="meta">
-        {#if identity && identity.meta}
-          <!-- {#each identity.meta as meta}
-            {meta}
-          {/each} -->
-        {/if}
-      </FormGroup>
+      {#if identity && identity.meta}
+        <Meta meta={identity.meta} />
+        <Button on:click={() => console.log(identity.meta)}>print</Button>
+      {/if}
 
       <FormGroup legendText="posts">
         {#if identity && identity.posts}
