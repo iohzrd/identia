@@ -60,7 +60,7 @@
   onDestroy(() => {});
 </script>
 
-<Tile>
+<Tile light>
   <Form>
     <FormGroup>
       <TextArea

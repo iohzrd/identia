@@ -64,7 +64,7 @@
   onDestroy(() => {});
 </script>
 
-<Tile>
+<Tile light>
   <Form on:submit>
     {#if identity}
       <FormGroup legendText="av">

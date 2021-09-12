@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ClickableTile } from "carbon-components-svelte";
+  import { Link } from "carbon-components-svelte";
 
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
@@ -51,8 +52,8 @@
     </div>
     <div>
       {#if postResponse.post && postResponse.post.publisher && includeFrom}
-        publisher: <a href="#/identity/{postResponse.post.publisher}"
-          >{postResponse.post.publisher}</a
+        publisher: <Link href="#/identity/{postResponse.post.publisher}"
+          >{postResponse.post.publisher}</Link
         >
       {/if}
     </div>
