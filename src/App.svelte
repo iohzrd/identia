@@ -16,6 +16,9 @@
     SideNavItems,
     SideNavLink,
     SkipToContent,
+    HeaderNav,
+    HeaderNavItem,
+    HeaderNavMenu,
     TextInput,
   } from "carbon-components-svelte";
   import Add20 from "carbon-icons-svelte/lib/Add20";
@@ -31,7 +34,6 @@
   export let params = {};
 
   let add_diaglog_open = false;
-  let isSideNavOpen = false;
   let ipfs_id: string;
   let publisher_to_follow: string;
 
@@ -70,15 +72,22 @@
 </script>
 
 {#if ipfs_id}
-  <Header
-    persistentHamburgerMenu={true}
-    company="Identia: "
-    platformName={ipfs_id}
-    bind:isSideNavOpen
-  >
+  <Header company="Identia: " platformName={ipfs_id}>
     <div slot="skip-to-content">
       <SkipToContent />
     </div>
+
+    <HeaderNav>
+      {#each views as view}
+        <HeaderNavItem
+          href="#{view.path}{ipfs_id}"
+          text={view.label}
+          isSelected={$location === view.path + ipfs_id}
+        >
+          {view.label}
+        </HeaderNavItem>
+      {/each}
+    </HeaderNav>
 
     <HeaderUtilities>
       <HeaderGlobalAction
@@ -88,30 +97,6 @@
       />
     </HeaderUtilities>
   </Header>
-
-  <SideNav bind:isOpen={isSideNavOpen}>
-    <SideNavItems>
-      {#each views as view}
-        <SideNavLink
-          href="#{view.path}{ipfs_id}"
-          text={view.label}
-          isSelected={$location === view.path + ipfs_id}
-        >
-          {view.label}
-        </SideNavLink>
-      {/each}
-      <Theme
-        persist
-        persistKey="__carbon-theme"
-        render="select"
-        select={{
-          themes: ["g100", "g90", "g80", "g10", "white"],
-          labelText: "Theme",
-          inline: true,
-        }}
-      />
-    </SideNavItems>
-  </SideNav>
 
   <Modal
     size="lg"
@@ -132,13 +117,7 @@
   </Modal>
 
   <Content>
-    <Grid>
-      <Row>
-        <Column>
-          <Router {routes} />
-        </Column>
-      </Row>
-    </Grid>
+    <Router {routes} />
   </Content>
 {:else}
   <Loading />

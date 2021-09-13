@@ -43,9 +43,6 @@
 <ClickableTile>
   {#if postResponse}
     <div>
-      {postResponse.cid}
-    </div>
-    <div>
       {#if postResponse.post && postResponse.post.body}
         {postResponse.post.body}
       {/if}
