@@ -5,6 +5,7 @@
     ClickableTile,
     Form,
     FormGroup,
+    TextArea,
     TextInput,
     Tile,
     UnorderedList,
@@ -24,20 +25,20 @@
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
   let posts_limit: number = 5;
   $: publisher = params["publisher"];
-  $: posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher = '${publisher}' AND ts < ${posts_oldest_ts} ORDER BY ts DESC LIMIT ${posts_limit}`;
+  $: posts_query = `SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE publisher = '${publisher}' AND timestamp < ${posts_oldest_ts} ORDER BY timestamp DESC LIMIT ${posts_limit}`;
 
   async function getPostsPage() {
     console.log(`getFeedPage: ${publisher}`);
     if (identity && identity.posts) {
       if (posts.length > 0) {
-        posts_oldest_ts = posts[posts.length - 1].post.ts;
+        posts_oldest_ts = posts[posts.length - 1].post.timestamp;
       }
       let page: PostResponse[] = await invoke("query_posts", {
         query: posts_query,
       });
       if (page.length > 0) {
         posts = [...posts, ...page];
-        posts_oldest_ts = posts[posts.length - 1].post.ts;
+        posts_oldest_ts = posts[posts.length - 1].post.timestamp;
       }
     }
   }
@@ -62,74 +63,73 @@
   onDestroy(() => {});
 </script>
 
-<Tile light>
-  <Form on:submit>
-    {#if identity}
-      <!-- <FormGroup legendText="av">
+<Form on:submit>
+  {#if identity}
+    <!-- <FormGroup legendText="avatar">
         <UserProfile20>
           <title>Avitar</title>
         </UserProfile20>
-        {identity["av"]}
+        {identity["avatar"]}
       </FormGroup> -->
 
-      <FormGroup>
-        <TextInput
-          inline
-          labelText="dn"
-          placeholder=""
-          bind:value={identity["dn"]}
-        />
-      </FormGroup>
+    <FormGroup>
+      <TextArea
+        labelText="description"
+        placeholder="Enter a description..."
+        bind:value={identity["description"]}
+      />
+    </FormGroup>
 
-      <FormGroup>
-        <TextInput
-          disabled
-          inline
-          labelText="id"
-          placeholder=""
-          bind:value={identity["publisher"]}
-        />
-      </FormGroup>
+    <FormGroup>
+      <TextInput
+        inline
+        labelText="display name"
+        placeholder=""
+        bind:value={identity["display_name"]}
+      />
+    </FormGroup>
 
-      <FormGroup legendText="following">
-        {#if identity && identity.following}
-          {#each identity.following as id}
-            <div>
-              {id}
-            </div>
-          {/each}
-        {/if}
-      </FormGroup>
+    <FormGroup>
+      <TextInput
+        readonly
+        inline
+        labelText="publisher"
+        placeholder=""
+        bind:value={identity["publisher"]}
+      />
+    </FormGroup>
 
-      <FormGroup legendText="meta">
-        {#if identity && identity.meta}
-          <UnorderedList>
-            <Meta meta={identity.meta} />
-          </UnorderedList>
-          <Button on:click={() => console.log(identity.meta)}>print</Button>
-        {/if}
-      </FormGroup>
+    <FormGroup legendText="following">
+      {#if identity && identity.following}
+        {#each identity.following as id}
+          <div>
+            {id}
+          </div>
+        {/each}
+      {/if}
+    </FormGroup>
 
-      <FormGroup legendText="posts">
-        {#if identity && identity.posts}
-          {#each posts as postResponse}
-            <div>
-              <Post cid={null} {postResponse} includeFrom={false} />
-            </div>
-          {/each}
-        {/if}
-        <ClickableTile light on:click={getPostsPage}
-          >Load more posts</ClickableTile
-        >
-      </FormGroup>
+    <FormGroup legendText="meta">
+      {#if identity && identity.meta}
+        <UnorderedList>
+          <Meta meta={identity.meta} />
+        </UnorderedList>
+      {/if}
+    </FormGroup>
 
-      <FormGroup legendText="ts">
-        {identity["ts"]}
-      </FormGroup>
-    {/if}
-  </Form>
+    <FormGroup legendText="posts">
+      {#if identity && identity.posts}
+        {#each posts as postResponse}
+          <div>
+            <Post cid={null} {postResponse} includeFrom={false} />
+          </div>
+        {/each}
+      {/if}
+      <ClickableTile on:click={getPostsPage}>Load more posts</ClickableTile>
+    </FormGroup>
 
-  <ButtonSet>
-    <Button kind="secondary">Cancel</Button>
-  </ButtonSet>
-</Tile>
+    <FormGroup legendText="timestamp">
+      {identity["timestamp"]}
+    </FormGroup>
+  {/if}
+</Form>

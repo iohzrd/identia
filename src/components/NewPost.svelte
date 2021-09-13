@@ -4,6 +4,7 @@
     Button,
     FileUploaderItem,
     Form,
+    FluidForm,
     FormGroup,
     ProgressBar,
     TextArea,
@@ -60,28 +61,22 @@
   onDestroy(() => {});
 </script>
 
-<Tile light>
-  <Form>
-    <FormGroup>
-      <TextArea
-        labelText="New post"
-        placeholder="What's happening?"
-        bind:value={body}
-        bind:disabled={awaiting_response}
-      />
-      <Button on:click={openDialog} bind:disabled={awaiting_response}
-        >Add files</Button
-      >
+<TextArea
+  labelText="New post"
+  placeholder="What's happening?"
+  bind:value={body}
+  bind:disabled={awaiting_response}
+/>
+<Button on:click={openDialog} bind:disabled={awaiting_response}
+  >Add files</Button
+>
 
-      {#if !awaiting_response}
-        <Button on:click={post} bind:disabled={awaiting_response}>Post</Button>
-      {:else}
-        <ProgressBar helperText="Publishing..." />
-      {/if}
+{#if !awaiting_response}
+  <Button on:click={post} bind:disabled={awaiting_response}>Post</Button>
+{:else}
+  <ProgressBar helperText="Publishing..." />
+{/if}
 
-      {#each files as file}
-        <FileUploaderItem status="complete" name={file} />
-      {/each}
-    </FormGroup>
-  </Form>
-</Tile>
+{#each files as file}
+  <FileUploaderItem status="complete" name={file} />
+{/each}

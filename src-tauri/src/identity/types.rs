@@ -36,25 +36,27 @@ pub struct Feed {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Identity {
-  pub av: String,
-  pub dn: String,
+  pub avatar: String,
+  pub description: String,
+  pub display_name: String,
   pub following: Vec<String>,
   pub meta: Value,
   pub posts: Vec<String>,
   pub publisher: String,
-  pub ts: i64,
+  pub timestamp: i64,
 }
 
 impl Identity {
-  pub fn new(publisher: String, ts: i64) -> Identity {
+  pub fn new(publisher: String, timestamp: i64) -> Identity {
     Identity {
-      av: String::from(""),
-      dn: String::from(""),
+      avatar: String::from(""),
+      description: String::from(""),
+      display_name: String::from(""),
       following: Vec::new(),
       meta: json!({}),
       posts: Vec::new(),
       publisher: String::from(publisher),
-      ts: ts,
+      timestamp: timestamp,
     }
   }
 }
@@ -65,7 +67,7 @@ pub struct Post {
   pub files: Vec<String>,
   pub meta: Value,
   pub publisher: String,
-  pub ts: i64,
+  pub timestamp: i64,
 }
 impl Post {
   pub fn new(body: String, files: Vec<String>, meta: Value, publisher: String) -> Post {
@@ -74,7 +76,7 @@ impl Post {
       files: files,
       meta: meta,
       publisher: publisher,
-      ts: DateTime::timestamp_millis(&Utc::now()),
+      timestamp: DateTime::timestamp_millis(&Utc::now()),
     }
   }
 }

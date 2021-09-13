@@ -40,7 +40,7 @@
   onDestroy(() => {});
 </script>
 
-<ClickableTile light>
+<ClickableTile>
   {#if postResponse}
     <div>
       {postResponse.cid}
@@ -63,8 +63,8 @@
       {/if}
     </div>
     <div>
-      {#if postResponse.post && postResponse.post.ts}
-        {postResponse.post.ts}
+      {#if postResponse.post && postResponse.post.timestamp}
+        {postResponse.post.timestamp}
       {/if}
     </div>
   {/if}

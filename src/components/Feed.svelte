@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Tile } from "carbon-components-svelte";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
@@ -18,22 +17,22 @@
   let newest_ts: number = Math.floor(new Date().getTime());
   let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
-  $: feed_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE ts < ${oldest_ts} ORDER BY ts DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT cid,body,files,meta,publisher,ts FROM posts WHERE publisher != '${publisher}' AND ts > ${newest_ts} ORDER BY ts DESC`;
+  $: feed_query = `SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE timestamp < ${oldest_ts} ORDER BY timestamp DESC LIMIT ${limit}`;
+  $: new_posts_query = `SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE publisher != '${publisher}' AND timestamp > ${newest_ts} ORDER BY timestamp DESC`;
 
   async function getFeedPage() {
     console.log(`getFeedPage: ${publisher}`);
     if (feed.length > 0) {
-      newest_ts = feed[0].post.ts;
-      oldest_ts = feed[feed.length - 1].post.ts;
+      newest_ts = feed[0].post.timestamp;
+      oldest_ts = feed[feed.length - 1].post.timestamp;
     }
     let page: PostResponse[] = await invoke("query_posts", {
       query: feed_query,
     });
     if (page.length > 0) {
       feed = [...feed, ...page];
-      newest_ts = feed[0].post.ts;
-      oldest_ts = feed[feed.length - 1].post.ts;
+      newest_ts = feed[0].post.timestamp;
+      oldest_ts = feed[feed.length - 1].post.timestamp;
     }
   }
 
@@ -44,16 +43,16 @@
   async function updateIdentities() {
     console.log(`updateIdentities: ${publisher}`);
     if (feed.length > 0) {
-      newest_ts = feed[0].post.ts;
-      oldest_ts = feed[feed.length - 1].post.ts;
+      newest_ts = feed[0].post.timestamp;
+      oldest_ts = feed[feed.length - 1].post.timestamp;
     }
     let new_posts: PostResponse[] = await invoke("update_feed", {
       query: new_posts_query,
     });
     if (new_posts.length > 0) {
       feed = [...new_posts, ...feed];
-      newest_ts = feed[0].post.ts;
-      oldest_ts = feed[feed.length - 1].post.ts;
+      newest_ts = feed[0].post.timestamp;
+      oldest_ts = feed[feed.length - 1].post.timestamp;
     }
   }
 

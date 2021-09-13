@@ -13,14 +13,20 @@
   export let meta = {};
   let new_meta_key = "";
   let new_meta_index = 0;
-  let meta_types = [
+  let meta_types_custom = [
     { id: "1", text: "string", value: "" },
     { id: "2", text: "object", value: {} },
     { id: "3", text: "array", value: [] },
   ];
 
+  let meta_types = [
+    { id: "1", text: "string", value: "" },
+    { id: "2", text: "object", value: {} },
+    { id: "3", text: "custom", value: [] },
+  ];
+
   function addMeta() {
-    meta[new_meta_key] = meta_types[new_meta_index].value;
+    meta[new_meta_key] = meta_types_custom[new_meta_index].value;
   }
 
   function removeMeta(k) {
@@ -60,13 +66,20 @@
   </ListItem>
 {/each}
 <ButtonSet>
-  <TextInput size="sm" placeholder="key" bind:value={new_meta_key} />
   <Dropdown
     type="inline"
     size="sm"
     titleText="entry type"
     bind:selectedIndex={new_meta_index}
     items={meta_types}
+  />
+  <TextInput size="sm" placeholder="key" bind:value={new_meta_key} />
+  <Dropdown
+    type="inline"
+    size="sm"
+    titleText="entry type"
+    bind:selectedIndex={new_meta_index}
+    items={meta_types_custom}
   />
   <Button on:click={addMeta}>add entry</Button>
 </ButtonSet>

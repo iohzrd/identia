@@ -1,11 +1,12 @@
 export type Identity = {
-  av: string;
-  dn: string;
+  avatar: string;
+  description: string;
+  display_name: string;
   following: string[];
   meta: object;
   posts: string[];
   publisher: string;
-  ts: number;
+  timestamp: number;
 };
 
 export type Post = {
@@ -13,7 +14,7 @@ export type Post = {
   files: string[];
   meta: object;
   publisher: string;
-  ts: number;
+  timestamp: number;
 };
 
 export type PostRequest = {

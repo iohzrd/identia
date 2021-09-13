@@ -30,13 +30,14 @@ Most of the identity logic is contained in:
 
 ```
 {
-    "av": "", // base64 encoded image or ipfs CID for "avatar"
-    "dn": "", // user-defined display name
+    "avatar": "", // base64 encoded image or ipfs CID for "avatar"
+    "description": "", // user-defined description / bio
+    "display_name": "", // user-defined display name
     "following": [""], // a list of ID's the user follows
     "meta": {}, // graph time!
     "posts": [""], // a list of CIDs that represent post objects
     "publisher": "", // users IPNS ID
-    "ts": 1608271880058, // UTC adjusted UNIX timestamp of the identities last alteration
+    "timestamp": 1608271880058, // UTC adjusted UNIX timestamp of the identities last alteration
 }
 ```
 
@@ -48,7 +49,7 @@ Most of the identity logic is contained in:
     "files": [], // a list of file paths, relative to the post root
     "meta": {}, // graph time!
     "publisher": "", // original publisher, will be used for "re-post" functionality
-    "ts": 1608271880058 // UTC adjusted UNIX timestamp of the post
+    "timestamp": 1608271880058 // UTC adjusted UNIX timestamp of the post
 }
 ```
 
@@ -65,12 +66,7 @@ These relationships can be stored in a post object to add context to a specific 
 
 ```
 12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z
-```
-
-and
-
-```
-Qmb4zrL17TtLGnaLFuUQC4TmaVbizEfVbDnnSzNLxkZ3Zp
+12D3KooWQoQ3QUPezmCv2w8JJ5RXPqtjupkLB4JtV9obVfc5PZMX
 ```
 
 ## Support me

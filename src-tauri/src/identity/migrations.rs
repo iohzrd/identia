@@ -1,12 +1,13 @@
 pub const CREATE_IDENTITIES_TABLE: &str = "
     create table if not exists identities (
-    av          text,
-    dn          text,
-    following   text,
-    meta        text,
-    posts       text,
-    publisher   text primary key,
-    ts          int
+    avatar        text,
+    description   text,
+    display_name  text,
+    following     text,
+    meta          text,
+    posts         text,
+    publisher     text primary key,
+    timestamp     int
   )";
 
 pub const CREATE_POSTS_TABLE: &str = "
@@ -16,5 +17,5 @@ pub const CREATE_POSTS_TABLE: &str = "
     files       text,
     meta        text,
     publisher   text,
-    ts          int primary key
+    timestamp   int primary key
   )";
