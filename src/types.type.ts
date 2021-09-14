@@ -9,6 +9,15 @@ export type Identity = {
   timestamp: number;
 };
 
+export type IdentityRequest = {
+  publisher: string;
+};
+
+export type IdentityResponse = {
+  cid: string;
+  identity: Identity;
+};
+
 export type Post = {
   body: string;
   files: string[];

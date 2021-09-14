@@ -1,24 +1,14 @@
 <script lang="ts">
   import {
-    Theme,
-    Button,
-    Column,
     Content,
-    Grid,
     Header,
     HeaderGlobalAction,
     HeaderUtilities,
     Loading,
     Modal,
-    Row,
-    SideNav,
-    SideNavDivider,
-    SideNavItems,
-    SideNavLink,
     SkipToContent,
     HeaderNav,
     HeaderNavItem,
-    HeaderNavMenu,
     TextInput,
   } from "carbon-components-svelte";
   import Add20 from "carbon-icons-svelte/lib/Add20";
@@ -29,9 +19,7 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import Router from "svelte-spa-router";
-  import { location, querystring } from "svelte-spa-router";
-
-  export let params = {};
+  import { location } from "svelte-spa-router";
 
   let add_diaglog_open = false;
   let ipfs_id: string;

@@ -10,6 +10,7 @@
   } from "carbon-components-svelte";
   import { onMount, onDestroy } from "svelte";
 
+  export let readonly: boolean;
   export let meta = {};
   let new_meta_key = "";
   let new_meta_index = 0;
@@ -52,34 +53,46 @@
       </div>
       {#if isObject(meta[k])}
         <UnorderedList nested>
-          <svelte:self meta={meta[k]} />
+          <svelte:self meta={meta[k]} {readonly} />
         </UnorderedList>
       {:else if Array.isArray(meta[k])}
         {meta[k]}
       {:else if typeof meta[k] === "string"}
-        <TextInput size="sm" inline placeholder="" bind:value={meta[k]} />
+        <TextInput
+          size="sm"
+          inline
+          placeholder=""
+          bind:value={meta[k]}
+          {readonly}
+        />
       {:else}
         else: {meta[k]}
       {/if}
-      <Button on:click={() => removeMeta(k)}>delete</Button>
+
+      {#if !readonly}
+        <Button on:click={() => removeMeta(k)}>delete</Button>
+      {/if}
     </ButtonSet>
   </ListItem>
 {/each}
-<ButtonSet>
-  <Dropdown
-    type="inline"
-    size="sm"
-    titleText="entry type"
-    bind:selectedIndex={new_meta_index}
-    items={meta_types}
-  />
-  <TextInput size="sm" placeholder="key" bind:value={new_meta_key} />
-  <Dropdown
-    type="inline"
-    size="sm"
-    titleText="entry type"
-    bind:selectedIndex={new_meta_index}
-    items={meta_types_custom}
-  />
-  <Button on:click={addMeta}>add entry</Button>
-</ButtonSet>
+
+{#if !readonly}
+  <ButtonSet>
+    <Dropdown
+      type="inline"
+      size="sm"
+      titleText="entry type"
+      bind:selectedIndex={new_meta_index}
+      items={meta_types}
+    />
+    <TextInput size="sm" placeholder="key" bind:value={new_meta_key} />
+    <Dropdown
+      type="inline"
+      size="sm"
+      titleText="entry type"
+      bind:selectedIndex={new_meta_index}
+      items={meta_types_custom}
+    />
+    <Button on:click={addMeta}>add entry</Button>
+  </ButtonSet>
+{/if}

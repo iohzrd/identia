@@ -46,6 +46,17 @@ pub struct Identity {
   pub timestamp: i64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct IdentityRequest {
+  pub publisher: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct IdentityResponse {
+  pub cid: String,
+  pub identity: Identity,
+}
+
 impl Identity {
   pub fn new(publisher: String, timestamp: i64) -> Identity {
     Identity {

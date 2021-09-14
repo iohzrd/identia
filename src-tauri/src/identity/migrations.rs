@@ -1,6 +1,7 @@
 pub const CREATE_IDENTITIES_TABLE: &str = "
     create table if not exists identities (
     avatar        text,
+    cid           text,
     description   text,
     display_name  text,
     following     text,

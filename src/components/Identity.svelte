@@ -8,6 +8,7 @@
     TextArea,
     TextInput,
     Tile,
+    Link,
     UnorderedList,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
@@ -16,10 +17,12 @@
 
   import Post from "./Post.svelte";
   import Meta from "./Meta.svelte";
-  import type { Identity, PostResponse } from "../types.type";
+  import type { Identity, IdentityResponse, PostResponse } from "../types.type";
 
   export let params = {};
 
+  let ipfs_id = "";
+  let identity_res: IdentityResponse;
   let identity: Identity;
   let posts: PostResponse[] = [];
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
@@ -46,10 +49,12 @@
   onMount(async () => {
     console.log("onMount");
     console.log(params);
+    ipfs_id = await invoke("ipfs_id");
     if (params["publisher"]) {
-      identity = await invoke("get_identity", {
+      identity_res = await invoke("get_identity", {
         publisher: params["publisher"],
       });
+      identity = identity_res.identity;
     }
     await getPostsPage();
 
@@ -60,7 +65,10 @@
     }
   });
 
-  onDestroy(() => {});
+  onDestroy(() => {
+    ipfs_id = "";
+    params = {};
+  });
 </script>
 
 <Form on:submit>
@@ -74,18 +82,22 @@
 
     <FormGroup>
       <TextArea
-        labelText="description"
-        placeholder="Enter a description..."
         bind:value={identity["description"]}
+        labelText="description"
+        placeholder={ipfs_id === identity.publisher
+          ? "Enter a description..."
+          : ""}
+        readonly={ipfs_id !== identity.publisher}
       />
     </FormGroup>
 
     <FormGroup>
       <TextInput
+        bind:value={identity["display_name"]}
         inline
         labelText="display name"
         placeholder=""
-        bind:value={identity["display_name"]}
+        readonly={ipfs_id !== identity.publisher}
       />
     </FormGroup>
 
@@ -103,7 +115,7 @@
       {#if identity && identity.following}
         {#each identity.following as id}
           <div>
-            {id}
+            <Link href="#/identity/{id}">{id}</Link>
           </div>
         {/each}
       {/if}
@@ -112,7 +124,10 @@
     <FormGroup legendText="meta">
       {#if identity && identity.meta}
         <UnorderedList>
-          <Meta meta={identity.meta} />
+          <Meta
+            meta={identity.meta}
+            readonly={ipfs_id !== identity.publisher}
+          />
         </UnorderedList>
       {/if}
     </FormGroup>
@@ -131,5 +146,11 @@
     <FormGroup legendText="timestamp">
       {identity["timestamp"]}
     </FormGroup>
+
+    <FormGroup legendText="last known cid">
+      {identity_res["cid"]}
+    </FormGroup>
+
+    <Button on:click={() => console.log(identity)}>print</Button>
   {/if}
 </Form>

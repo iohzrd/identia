@@ -10,8 +10,7 @@
   export let cid: String;
   export let postResponse: PostResponse;
   export let includeFrom: Boolean = true;
-
-  let post: Post;
+  $: post = postResponse.post;
 
   function onPostResponseObject(pr: PostResponse) {
     console.log("onPostObject");
@@ -41,28 +40,24 @@
 </script>
 
 <ClickableTile>
-  {#if postResponse}
-    <div>
-      {#if postResponse.post && postResponse.post.body}
-        {postResponse.post.body}
-      {/if}
-    </div>
-    <div>
-      {#if postResponse.post && postResponse.post.meta}
-        meta: {postResponse.post.meta}
-      {/if}
-    </div>
-    <div>
-      {#if postResponse.post && postResponse.post.publisher && includeFrom}
-        publisher: <Link href="#/identity/{postResponse.post.publisher}"
-          >{postResponse.post.publisher}</Link
-        >
-      {/if}
-    </div>
-    <div>
-      {#if postResponse.post && postResponse.post.timestamp}
-        {postResponse.post.timestamp}
-      {/if}
-    </div>
+  {#if post}
+    {#if post && post.body}
+      <div>
+        <!-- {@html post.body.replace(/\n/g, "<br>")} -->
+        {post.body}
+      </div>
+    {/if}
+    {#if post && post.publisher && includeFrom}
+      <div>
+        publisher: <Link href="#/identity/{post.publisher}">
+          {post.publisher}
+        </Link>
+      </div>
+    {/if}
+    {#if post && post.timestamp}
+      <div>
+        {post.timestamp}
+      </div>
+    {/if}
   {/if}
 </ClickableTile>

@@ -7,8 +7,6 @@
   import Post from "./Post.svelte";
   import type { PostResponse } from "../types.type";
 
-  // export let ipfs_id: string;
-
   export let params = {};
   $: publisher = params["publisher"];
 
