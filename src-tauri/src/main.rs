@@ -107,6 +107,7 @@ fn main() {
       identity::post,
       identity::query_posts,
       identity::update_feed,
+      identity::update_identity_aux,
       identity::wait_for_ipfs_id_cmd,
     ])
     .setup(|app| {

@@ -6,7 +6,7 @@ use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{named_params, params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
-use serde_json::{from_slice, json};
+use serde_json::{from_slice, json, Value};
 use std::io::Cursor;
 use std::path::PathBuf;
 use std::{thread, time::Duration};
@@ -343,6 +343,26 @@ pub async fn follow_publisher(
   }
 
   Ok(success)
+}
+
+#[tauri::command]
+pub async fn update_identity_aux(
+  state: tauri::State<'_, AppState>,
+  desc: String,
+  dn: String,
+  meta: Value,
+) -> Result<IdentityResponse, IdentityResponse> {
+  let conn = state.db_pool.get().unwrap();
+  let mut db_identity_res = get_identity_db(conn, state.ipfs_id.clone()).await.unwrap();
+  db_identity_res.identity.description = desc;
+  db_identity_res.identity.display_name = dn;
+  db_identity_res.identity.meta = meta;
+  db_identity_res.identity.timestamp = DateTime::timestamp_millis(&Utc::now());
+  println!("updating identity meta: {:?}", db_identity_res.identity);
+  let conn = state.db_pool.get().unwrap();
+  let identity_res = publish_identity(db_identity_res.identity).await.unwrap();
+  update_identity_db(conn, &identity_res).await;
+  Ok(identity_res)
 }
 
 pub async fn get_identity_ipfs(

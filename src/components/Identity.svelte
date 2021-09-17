@@ -4,6 +4,7 @@
     ButtonSet,
     ClickableTile,
     Form,
+    Grid,
     FormGroup,
     TextArea,
     TextInput,
@@ -46,6 +47,16 @@
     }
   }
 
+  async function updateIdentityAux() {
+    console.log(`updateMeta`);
+    let identity_res: IdentityResponse[] = await invoke("update_identity_aux", {
+      desc: identity.description,
+      dn: identity.display_name,
+      meta: identity.meta,
+    });
+    console.log(identity_res);
+  }
+
   onMount(async () => {
     console.log("onMount");
     console.log(params);
@@ -81,14 +92,19 @@
       </FormGroup> -->
 
     <FormGroup>
-      <TextArea
-        bind:value={identity["description"]}
-        labelText="description"
-        placeholder={ipfs_id === identity.publisher
-          ? "Enter a description..."
-          : ""}
-        readonly={ipfs_id !== identity.publisher}
-      />
+      {#if ipfs_id !== identity.publisher}
+        <div>
+          {identity["description"]}
+        </div>
+      {:else}
+        <TextArea
+          bind:value={identity["description"]}
+          labelText="description"
+          placeholder={ipfs_id === identity.publisher
+            ? "Enter a description..."
+            : ""}
+        />
+      {/if}
     </FormGroup>
 
     <FormGroup>
@@ -123,12 +139,7 @@
 
     <FormGroup legendText="meta">
       {#if identity && identity.meta}
-        <UnorderedList>
-          <Meta
-            meta={identity.meta}
-            readonly={ipfs_id !== identity.publisher}
-          />
-        </UnorderedList>
+        <Meta meta={identity.meta} readonly={ipfs_id !== identity.publisher} />
       {/if}
     </FormGroup>
 
@@ -151,6 +162,10 @@
       {identity_res["cid"]}
     </FormGroup>
 
-    <Button on:click={() => console.log(identity)}>print</Button>
+    <Button
+      on:click={() => {
+        updateIdentityAux();
+      }}>Save</Button
+    >
   {/if}
 </Form>
