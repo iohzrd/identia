@@ -199,6 +199,28 @@ pub async fn pin_cid(state: tauri::State<'_, AppState>, cid: String) -> Result<b
 }
 
 #[tauri::command]
+pub async fn get_binary_data(
+  state: tauri::State<'_, AppState>,
+  cid: String,
+) -> Result<Vec<u8>, Vec<u8>> {
+  println!("get_binary_data: {:?}", cid);
+  let res = state
+    .ipfs_client
+    .cat(cid.as_str())
+    .map_ok(|chunk| chunk.to_vec())
+    .try_concat()
+    .await;
+
+  match res {
+    Ok(res) => Ok(res),
+    Err(err) => Err({
+      eprintln!("error getting file from ipfs: {:?}", err);
+      Vec::new()
+    }),
+  }
+}
+
+#[tauri::command]
 pub async fn update_feed(
   state: tauri::State<'_, AppState>,
   query: String,
