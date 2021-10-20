@@ -18,6 +18,12 @@ export type IdentityResponse = {
   identity: Identity;
 };
 
+export type MediaResponse = {
+  data: any[];
+  ext: string;
+  mime: string;
+};
+
 export type Post = {
   body: string;
   files: string[];

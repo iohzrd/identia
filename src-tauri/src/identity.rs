@@ -7,8 +7,9 @@ use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{named_params, params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
 use serde_json::{from_slice, json, Value};
+use std::fs;
 use std::io::Cursor;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{thread, time::Duration};
 use tauri;
 use tauri::api::process::Command;
@@ -18,7 +19,7 @@ pub mod types;
 use crate::config;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
 use crate::identity::types::{
-  AppState, Identity, IdentityRequest, IdentityResponse, Post, PostRequest, PostResponse,
+  AppState, Identity, IdentityResponse, MediaResponse, Post, PostRequest, PostResponse,
 };
 
 #[tauri::command]
@@ -199,23 +200,34 @@ pub async fn pin_cid(state: tauri::State<'_, AppState>, cid: String) -> Result<b
 }
 
 #[tauri::command]
-pub async fn get_binary_data(
+pub async fn get_file_ipfs(
   state: tauri::State<'_, AppState>,
   cid: String,
-) -> Result<Vec<u8>, Vec<u8>> {
-  println!("get_binary_data: {:?}", cid);
-  let res = state
+) -> Result<MediaResponse, MediaResponse> {
+  println!("get_file_ipfs: {:?}", cid);
+  let buf = state
     .ipfs_client
     .cat(cid.as_str())
     .map_ok(|chunk| chunk.to_vec())
     .try_concat()
     .await;
 
-  match res {
-    Ok(res) => Ok(res),
+  match buf {
+    Ok(buf) => Ok({
+      let kind = infer::get(&buf).expect("file type is known");
+      MediaResponse {
+        data: buf,
+        ext: String::from(kind.extension()),
+        mime: String::from(kind.mime_type()),
+      }
+    }),
     Err(err) => Err({
       eprintln!("error getting file from ipfs: {:?}", err);
-      Vec::new()
+      MediaResponse {
+        data: vec![],
+        ext: String::from(""),
+        mime: String::from(""),
+      }
     }),
   }
 }
@@ -252,7 +264,7 @@ pub async fn update_feed(
         println!("inserting new identity: {:?}", f_identity);
         update_identity_db(conn, &f_identity).await;
         for post_cid in posts {
-          pin_cid(state.clone(), post_cid.clone()).await;
+          let _ = pin_cid(state.clone(), post_cid.clone()).await;
           println!("attempting to get new post: {:?}", post_cid.clone());
           match get_post_ipfs(post_cid.clone()).await {
             Some(post_response) => {
@@ -309,30 +321,30 @@ pub async fn update_feed(
   Ok(new_posts)
 }
 
-#[tauri::command]
-pub async fn publish_identity_cmd(
-  state: tauri::State<'_, AppState>,
-  mut identity: Identity,
-) -> Result<bool, bool> {
-  let mut success = false;
-  let ipfs_id = state.ipfs_id.clone();
-  if ipfs_id.eq(&identity.publisher.clone()) {
-    identity.timestamp = DateTime::timestamp_millis(&Utc::now());
+// #[tauri::command]
+// pub async fn publish_identity_cmd(
+//   state: tauri::State<'_, AppState>,
+//   mut identity: Identity,
+// ) -> Result<bool, bool> {
+//   let mut success = false;
+//   let ipfs_id = state.ipfs_id.clone();
+//   if ipfs_id.eq(&identity.publisher.clone()) {
+//     identity.timestamp = DateTime::timestamp_millis(&Utc::now());
 
-    println!("publisher added, updating identity: {:?}", identity);
-    let conn = state.db_pool.get().unwrap();
+//     println!("publisher added, updating identity: {:?}", identity);
+//     let conn = state.db_pool.get().unwrap();
 
-    let identity = identity;
-    let identity_res = publish_identity(identity).await.unwrap();
-    update_identity_db(conn, &identity_res).await;
+//     let identity = identity;
+//     let identity_res = publish_identity(identity).await.unwrap();
+//     update_identity_db(conn, &identity_res).await;
 
-    success = true;
-  } else {
-    println!("cannot publish non-self identity: {:?}", identity);
-  }
+//     success = true;
+//   } else {
+//     println!("cannot publish non-self identity: {:?}", identity);
+//   }
 
-  Ok(success)
-}
+//   Ok(success)
+// }
 
 #[tauri::command]
 pub async fn follow_publisher(
@@ -586,20 +598,31 @@ pub async fn post(
 ) -> Result<PostResponse, PostResponse> {
   println!("post");
   println!("{:?}", post_request);
-  let post = Post::new(
-    post_request.body,
-    post_request.files,
-    post_request.meta,
-    state.ipfs_id.clone(),
-  );
-  println!("{:?}", post);
+  let file_paths: Vec<String> = post_request.files.clone();
+  let mut file_names: Vec<String> = Vec::new();
 
   let add = ipfs_api::request::Add::builder()
     .wrap_with_directory(true)
     .build();
   let mut form = Form::default();
+
+  for filepath in file_paths {
+    let data = fs::read(filepath.clone()).expect("Something went wrong reading the file");
+    let filename = String::from(Path::new(&filepath).file_name().unwrap().to_str().unwrap());
+    file_names.push(filename.clone());
+    form.add_reader_file("path", Cursor::new(data), filename);
+  }
+
+  let post = Post::new(
+    post_request.body,
+    file_names,
+    post_request.meta,
+    state.ipfs_id.clone(),
+  );
+  println!("{:?}", post);
   let json = serde_json::to_vec(&post).unwrap();
   form.add_reader_file("path", Cursor::new(json), "post.json");
+
   let cid = match state.ipfs_client.add_with_form(add, form).await {
     Ok(res) => {
       println!("res: {:?}", res);

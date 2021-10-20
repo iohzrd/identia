@@ -73,6 +73,13 @@ impl Identity {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct MediaResponse {
+  pub data: Vec<u8>,
+  pub ext: String,
+  pub mime: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Post {
   pub body: String,
   pub files: Vec<String>,

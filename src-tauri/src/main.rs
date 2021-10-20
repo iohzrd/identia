@@ -100,7 +100,7 @@ fn main() {
     })
     .invoke_handler(tauri::generate_handler![
       identity::follow_publisher,
-      identity::get_binary_data,
+      identity::get_file_ipfs,
       identity::get_identity,
       identity::get_identity_ipfs_cmd,
       identity::get_post_ipfs,
@@ -120,7 +120,7 @@ fn main() {
           Ok(id) => {
             config::create_db_file_if_necessary(id.clone());
             let db_file_path = config::identia_db_file_path(id.clone());
-            initialize_database(id.clone(), db_file_path).await;
+            let _ = initialize_database(id.clone(), db_file_path).await;
           }
           Err(err) => {
             // log::error!("There was an error launching ipfs: {:?}", err);
