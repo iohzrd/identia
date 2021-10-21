@@ -30,13 +30,14 @@
     "@tsconfig/svelte": "^2.0.1",
     "@vime/svelte": "^5.0.34",
     "buffer": "^6.0.3",
-    "carbon-components-svelte": "^0.47.0",
+    "carbon-components-svelte": "^0.47.1",
     "carbon-icons-svelte": "^10.38.0",
     "carbon-preprocess-svelte": "^0.6.0",
     "exifremove": "^1.0.1",
     "file-type": "^16.5.3",
     "go-ipfs": "^0.10.0",
     "hotkeys-js": "^3.8.7",
+    "ipfs-http-client": "^53.0.1",
     "npm-check-updates": "^11.8.5",
     "rollup": "^2.58.0",
     "rollup-plugin-css-only": "^3.1.0",
@@ -50,11 +51,11 @@
     "svelte-spa-router": "^3.2.0",
     "timeago.js": "^4.0.2",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.4"
+    "typescript": "^4.4.4",
+    "webcam-easy": "^1.0.5"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8",
-    "sirv-cli": "^1.0.14",
-    "webcam-easy": "^1.0.5"
+    "sirv-cli": "^1.0.14"
   }
 }
