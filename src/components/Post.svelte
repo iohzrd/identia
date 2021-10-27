@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type { PostResponse, MediaResponse } from "../types.type";
+  import type { PostResponse, MediaResponse, MimeRequest } from "../types.type";
   import { Buffer } from "buffer/index";
   import { ClickableTile } from "carbon-components-svelte";
   import { Link } from "carbon-components-svelte";
-  // import { Player, Video, DefaultUi } from "@vime/svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-  // import { create } from "ipfs-http-client";
+  import { create } from "ipfs-http-client/index";
+  // import VideoPlayer from "svelte-video-player";
+  // import { fromBuffer } from "file-type";
 
-  // let player: Player;
   export let cid: String;
   export let postResponse: PostResponse;
   export let includeFrom: Boolean = true;
-  $: post = postResponse.post;
+  let blobs = [];
 
   async function getPostFromCid() {
     console.log("getPostFromCid");
@@ -21,44 +21,69 @@
     });
   }
 
-  async function getFile(filename) {
-    const root_cid = postResponse.cid || cid;
-    const path = root_cid + "/" + filename;
-    const mr: MediaResponse = await invoke("get_file_ipfs", {
-      cid: path,
-    });
-    const buf = Buffer.from(mr.data);
-    const blob = new Blob([buf], { type: mr.mime });
-    const urlCreator = window.URL || window.webkitURL;
-    return {
-      blob: urlCreator.createObjectURL(blob),
-      mime: mr.mime,
-    };
-  }
-
+  // // this version is much slower and less efficient
   // async function getFile(filename) {
-  //   // this might be more efficient but,
-  //   // doesn't work because tauri CORS bug...
-  //   let bufs = [];
   //   const root_cid = postResponse.cid || cid;
   //   const path = root_cid + "/" + filename;
-  //   const ipfs = await create("/ip4/127.0.0.1/tcp/5001");
-  //   for await (const buf of ipfs.cat(path)) {
-  //     bufs.push(buf);
-  //   }
-  //   const buf = Buffer.concat(bufs);
-  //   // get mime here...
-  //   const blob = new Blob([buf], { type: "image/png" });
+  //   const mr: MediaResponse = await invoke("get_file_ipfs", {
+  //     cid: path,
+  //   });
+  //   const buf = Buffer.from(mr.data);
+  //   const blob = new Blob([buf], { type: mr.mime });
   //   const urlCreator = window.URL || window.webkitURL;
-  //   return {
+  //   const mediaObj = {
   //     blob: urlCreator.createObjectURL(blob),
-  //     mime: "image/png",
+  //     mime: mr.mime,
   //   };
+  //   blobs = [...blobs, mediaObj];
+  //   return mediaObj;
   // }
+
+  // this version is more efficient but,
+  // currently doesn't work because webkit2gtk CORS bug...
+  // fixed in webkit2gtk 2.34.0
+  async function getFile(filename) {
+    console.log("getFile");
+    let bufs = [];
+    let mime: string;
+    const root_cid = postResponse.cid || cid;
+    const path = root_cid + "/" + filename;
+    const ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    for await (const buf of ipfs.cat(path)) {
+      bufs.push(buf);
+    }
+    const buf = Buffer.concat(bufs);
+
+    // this is sub-optimal but is required because
+    // file-type doesn't work in svelte currently
+    mime = await invoke("get_mime", {
+      buf: buf.slice(0, 16),
+    });
+    // mime = (await fromBuffer(buf)).mime;
+
+    const blob = new Blob([buf], { type: mime });
+    const urlCreator = window.URL || window.webkitURL;
+    const mediaObj = {
+      blob: urlCreator.createObjectURL(blob),
+      mime: mime,
+    };
+    blobs = [...blobs, mediaObj];
+    return mediaObj;
+  }
 
   onMount(async () => {
     if (!postResponse) {
       await getPostFromCid();
+    }
+
+    // postResponse.post.files.forEach((filename) => {
+    //   getFile(filename);
+    // });
+
+    for await (const filename of postResponse.post.files) {
+      // blobs = [...blobs, await getFile(filename)];
+      await getFile(filename);
+      // getFile(filename);
     }
   });
 
@@ -66,34 +91,35 @@
 </script>
 
 <ClickableTile>
-  {#if post}
-    {#if post.body}
+  {#if postResponse.post}
+    {#if postResponse.post.body}
       <div>
-        {@html post.body.replace(/\n/g, "<br>")}
+        {@html postResponse.post.body.replace(/\n/g, "<br>")}
         <!-- {post.body} -->
       </div>
     {/if}
-    {#if post.files}
-      {#each post.files as file}
-        {#await getFile(file)}
-          <p>file loading...</p>
-        {:then media}
+    {#if blobs}
+      {#each blobs as media}
+        {#if media.mime && media.mime.includes("image")}
           <img src={media.blob} alt="" />
-        {:catch error}
-          <p style="color: red">{error.message}</p>
-        {/await}
+        {:else if media.mime && media.mime.includes("video")}
+          <video src={media.blob} width="640" height="480" controls />
+          <!-- <VideoPlayer source={media.blob} /> -->
+        {/if}
       {/each}
+    {:else if postResponse.post.files}
+      loading files...
     {/if}
-    {#if post.publisher && includeFrom}
+    {#if postResponse.post.publisher && includeFrom}
       <div>
-        publisher: <Link href="#/identity/{post.publisher}">
-          {post.publisher}
+        publisher: <Link href="#/identity/{postResponse.post.publisher}">
+          {postResponse.post.publisher}
         </Link>
       </div>
     {/if}
-    {#if post.timestamp}
+    {#if postResponse.post.timestamp}
       <div>
-        {post.timestamp}
+        {postResponse.post.timestamp}
       </div>
     {/if}
   {/if}

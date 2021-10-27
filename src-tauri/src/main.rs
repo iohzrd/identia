@@ -101,6 +101,7 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       identity::follow_publisher,
       identity::get_file_ipfs,
+      identity::get_mime,
       identity::get_identity,
       identity::get_identity_ipfs_cmd,
       identity::get_post_ipfs,

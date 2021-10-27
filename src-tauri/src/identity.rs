@@ -1,6 +1,7 @@
 use chrono::{offset::Utc, DateTime};
 use common_multipart_rfc7578::client::multipart::Form;
 use futures::TryStreamExt;
+use infer;
 use ipfs_api::IpfsClient;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -19,7 +20,7 @@ pub mod types;
 use crate::config;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
 use crate::identity::types::{
-  AppState, Identity, IdentityResponse, MediaResponse, Post, PostRequest, PostResponse,
+  AppState, Identity, IdentityResponse, MediaResponse, MimeRequest, Post, PostRequest, PostResponse,
 };
 
 #[tauri::command]
@@ -230,6 +231,13 @@ pub async fn get_file_ipfs(
       }
     }),
   }
+}
+
+#[tauri::command]
+pub async fn get_mime(buf: MimeRequest) -> Result<String, String> {
+  println!("get_mime: {:?}", &buf.data);
+  let kind = infer::get(&buf.data).expect("failed to get mime");
+  Ok(kind.mime_type().into())
 }
 
 #[tauri::command]

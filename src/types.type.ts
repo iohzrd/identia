@@ -24,6 +24,10 @@ export type MediaResponse = {
   mime: string;
 };
 
+export type MimeRequest = {
+  data: any[];
+};
+
 export type Post = {
   body: string;
   files: string[];
