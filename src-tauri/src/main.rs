@@ -114,6 +114,7 @@ fn main() {
     ])
     .setup(|app| {
       identity::initialize_ipfs();
+      identity::initialize_ipfs_config();
 
       let daemon_client = IpfsClient::default();
       tauri::async_runtime::spawn(async move {

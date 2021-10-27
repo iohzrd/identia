@@ -774,6 +774,43 @@ pub fn initialize_ipfs() -> bool {
   true
 }
 
+pub fn initialize_ipfs_config() -> bool {
+  println!("configuring IPFS");
+  let cmd = Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "-c",
+      config::identia_app_data_path()
+        .into_os_string()
+        .to_str()
+        .unwrap(),
+      "config",
+      "--json",
+      "API.HTTPHeaders.Access-Control-Allow-Origin",
+      r#"["tauri://localhost"]"#,
+    ])
+    .output()
+    .unwrap();
+  println!("ipfs config: {:?}", cmd);
+  let cmd = Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "-c",
+      config::identia_app_data_path()
+        .into_os_string()
+        .to_str()
+        .unwrap(),
+      "config",
+      "--json",
+      "API.HTTPHeaders.Access-Control-Allow-Methods",
+      r#"["GET","POST","PUT"]"#,
+    ])
+    .output()
+    .unwrap();
+  println!("ipfs config: {:?}", cmd);
+  true
+}
+
 pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
   println!("Starting IPFS.");
   Command::new_sidecar("ipfs")
