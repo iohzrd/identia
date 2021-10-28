@@ -774,9 +774,9 @@ pub fn initialize_ipfs() -> bool {
   true
 }
 
-pub fn initialize_ipfs_config() -> bool {
+pub fn initialize_ipfs_config() {
   println!("configuring IPFS");
-  let cmd = Command::new_sidecar("ipfs")
+  Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "-c",
@@ -787,12 +787,11 @@ pub fn initialize_ipfs_config() -> bool {
       "config",
       "--json",
       "API.HTTPHeaders.Access-Control-Allow-Origin",
-      r#"["tauri://localhost"]"#,
+      r#"["tauri://localhost","https://tauri.localhost"]"#,
     ])
     .output()
     .unwrap();
-  println!("ipfs config: {:?}", cmd);
-  let cmd = Command::new_sidecar("ipfs")
+   Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "-c",
@@ -807,8 +806,6 @@ pub fn initialize_ipfs_config() -> bool {
     ])
     .output()
     .unwrap();
-  println!("ipfs config: {:?}", cmd);
-  true
 }
 
 pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {

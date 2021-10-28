@@ -41,8 +41,6 @@ fn main() {
     .system_tray(
       SystemTray::new().with_menu(
         SystemTrayMenu::new()
-          .add_item(CustomMenuItem::new("toggle", "Toggle"))
-          .add_item(CustomMenuItem::new("icon_1", "Tray Icon 1"))
           .add_item(CustomMenuItem::new("exit_app", "Quit")),
       ),
     )
@@ -57,20 +55,8 @@ fn main() {
         window.set_focus().unwrap();
       }
       SystemTrayEvent::MenuItemClick { id, .. } => {
-        let item_handle = app.tray_handle().get_item(&id);
         match id.as_str() {
           "exit_app" => app.exit(0),
-          "toggle" => {
-            let window = app.get_window("main").unwrap();
-            let new_title = if window.is_visible().unwrap() {
-              window.hide().unwrap();
-              "Show"
-            } else {
-              window.show().unwrap();
-              "Hide"
-            };
-            item_handle.set_title(new_title).unwrap();
-          }
           #[cfg(target_os = "linux")]
           "icon_1" => app
             .tray_handle()
