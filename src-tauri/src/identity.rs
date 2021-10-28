@@ -787,7 +787,7 @@ pub fn initialize_ipfs_config() -> bool {
       "config",
       "--json",
       "API.HTTPHeaders.Access-Control-Allow-Origin",
-      r#"["tauri://localhost"]"#,
+      r#"["tauri://localhost","https://tauri.localhost"]"#,
     ])
     .output()
     .unwrap();
