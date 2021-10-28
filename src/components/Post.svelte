@@ -1,18 +1,15 @@
 <script lang="ts">
   import type { PostResponse, MediaResponse, MimeRequest } from "../types.type";
   import { Buffer } from "buffer/index";
-  import { ClickableTile } from "carbon-components-svelte";
-  import { Link } from "carbon-components-svelte";
+  import { ClickableTile, Tile, Loading, Link } from "carbon-components-svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { create } from "ipfs-http-client/index";
-  // import VideoPlayer from "svelte-video-player";
-  // import { fromBuffer } from "file-type";
 
   export let cid: String;
   export let postResponse: PostResponse;
   export let includeFrom: Boolean = true;
-  let blobs = [];
+  let media = [];
 
   async function getPostFromCid() {
     console.log("getPostFromCid");
@@ -21,53 +18,25 @@
     });
   }
 
-  // // this version is much slower and less efficient
-  // async function getFile(filename) {
-  //   const root_cid = postResponse.cid || cid;
-  //   const path = root_cid + "/" + filename;
-  //   const mr: MediaResponse = await invoke("get_file_ipfs", {
-  //     cid: path,
-  //   });
-  //   const buf = Buffer.from(mr.data);
-  //   const blob = new Blob([buf], { type: mr.mime });
-  //   const urlCreator = window.URL || window.webkitURL;
-  //   const mediaObj = {
-  //     blob: urlCreator.createObjectURL(blob),
-  //     mime: mr.mime,
-  //   };
-  //   blobs = [...blobs, mediaObj];
-  //   return mediaObj;
-  // }
-
-  // this version is more efficient but,
-  // currently doesn't work because webkit2gtk CORS bug...
-  // fixed in webkit2gtk 2.34.0
-  async function getFile(filename) {
-    console.log("getFile");
+  async function getMediaObject(filename) {
+    console.log("getMediaObject");
     let bufs = [];
-    let mime: string;
     const root_cid = postResponse.cid || cid;
-    const path = root_cid + "/" + filename;
+    const path: string = root_cid + "/" + filename;
     const ipfs = await create("/ip4/127.0.0.1/tcp/5001");
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }
-    const buf = Buffer.concat(bufs);
-
-    // this is sub-optimal but is required because
-    // file-type doesn't work in svelte currently
-    mime = await invoke("get_mime", {
+    const buf: Buffer = Buffer.concat(bufs);
+    const mime: string = await invoke("get_mime", {
       buf: buf.slice(0, 16),
     });
-    // mime = (await fromBuffer(buf)).mime;
-
     const blob = new Blob([buf], { type: mime });
     const urlCreator = window.URL || window.webkitURL;
     const mediaObj = {
-      blob: urlCreator.createObjectURL(blob),
+      blobUrl: urlCreator.createObjectURL(blob),
       mime: mime,
     };
-    blobs = [...blobs, mediaObj];
     return mediaObj;
   }
 
@@ -76,14 +45,8 @@
       await getPostFromCid();
     }
 
-    // postResponse.post.files.forEach((filename) => {
-    //   getFile(filename);
-    // });
-
     for await (const filename of postResponse.post.files) {
-      // blobs = [...blobs, await getFile(filename)];
-      await getFile(filename);
-      // getFile(filename);
+      media = [...media, await getMediaObject(filename)];
     }
   });
 
@@ -98,17 +61,18 @@
         <!-- {post.body} -->
       </div>
     {/if}
-    {#if blobs}
-      {#each blobs as media}
-        {#if media.mime && media.mime.includes("image")}
-          <img src={media.blob} alt="" />
-        {:else if media.mime && media.mime.includes("video")}
-          <video src={media.blob} width="640" height="480" controls />
-          <!-- <VideoPlayer source={media.blob} /> -->
+    {#if postResponse.post.files.length > 0 && media.length == 0}
+      <Loading withOverlay={false} small />loading media...
+    {:else if postResponse.post.files.length > 0 && media.length > 0}
+      {#each media as mediaObj}
+        {#if mediaObj.mime && mediaObj.mime.includes("image")}
+          <img src={mediaObj.blobUrl} alt="" />
+        {:else if mediaObj.mime && mediaObj.mime.includes("video")}
+          <video src={mediaObj.blobUrl} height="360" controls>
+            <track kind="captions" />
+          </video>
         {/if}
       {/each}
-    {:else if postResponse.post.files}
-      loading files...
     {/if}
     {#if postResponse.post.publisher && includeFrom}
       <div>
