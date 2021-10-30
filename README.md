@@ -65,6 +65,16 @@ Most of the identity logic is contained in:
 The meta object is a store for arbitrary data that can be used to describe complex relationships between various types of data.
 These relationships can be stored in a post object to add context to a specific post or in the identity object to provide an identity-wide context scope.
 
+## Community:
+
+```
+Matrix:
+#general:identia.io
+
+Discord:
+https://discord.gg/aErhA6TBPS
+```
+
 ## Follow me
 
 ```

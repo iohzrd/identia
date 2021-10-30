@@ -71,6 +71,10 @@
           <video src={mediaObj.blobUrl} height="360" controls>
             <track kind="captions" />
           </video>
+        {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
+          <video src={mediaObj.blobUrl} height="360" controls>
+            <track kind="captions" />
+          </video>
         {/if}
       {/each}
     {/if}

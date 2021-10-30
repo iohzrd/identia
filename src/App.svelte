@@ -44,7 +44,7 @@
 
   async function followPublisher() {
     let success = await invoke("follow_publisher", {
-      publisher: publisher_to_follow,
+      publisher: publisher_to_follow.trim(),
     });
     publisher_to_follow = "";
     console.log(`followPublisher: ${success}`);
