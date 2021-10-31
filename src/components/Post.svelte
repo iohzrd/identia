@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PostResponse, MediaResponse, MimeRequest } from "../types.type";
+  import type { PostResponse, MediaObj } from "../types.type";
   import { Buffer } from "buffer/index";
   import { ClickableTile, Tile, Loading, Link } from "carbon-components-svelte";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -33,9 +33,10 @@
     });
     const blob = new Blob([buf], { type: mime });
     const urlCreator = window.URL || window.webkitURL;
-    const mediaObj = {
+    const mediaObj: MediaObj = {
       blobUrl: urlCreator.createObjectURL(blob),
       mime: mime,
+      element: null,
     };
     return mediaObj;
   }
@@ -50,7 +51,14 @@
     }
   });
 
-  onDestroy(() => {});
+  onDestroy(() => {
+    media.forEach((mediaObj) => {
+      mediaObj.element.src = "";
+      mediaObj.element.removeAttribute("src");
+    });
+    media = media;
+    media = [];
+  });
 </script>
 
 <ClickableTile>
@@ -66,13 +74,23 @@
     {:else if postResponse.post.files.length > 0 && media.length > 0}
       {#each media as mediaObj}
         {#if mediaObj.mime && mediaObj.mime.includes("image")}
-          <img src={mediaObj.blobUrl} alt="" />
+          <img src={mediaObj.blobUrl} alt="" bind:this={mediaObj.element} />
         {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-          <video src={mediaObj.blobUrl} height="360" controls>
+          <video
+            src={mediaObj.blobUrl}
+            height="360"
+            controls
+            bind:this={mediaObj.element}
+          >
             <track kind="captions" />
           </video>
         {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-          <video src={mediaObj.blobUrl} height="360" controls>
+          <video
+            src={mediaObj.blobUrl}
+            height="360"
+            controls
+            bind:this={mediaObj.element}
+          >
             <track kind="captions" />
           </video>
         {/if}
