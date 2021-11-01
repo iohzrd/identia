@@ -52,9 +52,12 @@
   });
 
   onDestroy(() => {
+    // this is required to avoid a memory leak...
     media.forEach((mediaObj) => {
-      mediaObj.element.src = "";
-      mediaObj.element.removeAttribute("src");
+      if (mediaObj.element && mediaObj.element.src) {
+        mediaObj.element.src = "";
+        mediaObj.element.removeAttribute("src");
+      }
     });
     media = media;
     media = [];
