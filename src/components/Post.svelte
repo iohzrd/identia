@@ -1,7 +1,16 @@
 <script lang="ts">
   import type { PostResponse, MediaObj } from "../types.type";
   import { Buffer } from "buffer/index";
-  import { ClickableTile, Tile, Loading, Link } from "carbon-components-svelte";
+  import {
+    Column,
+    Grid,
+    Link,
+    Loading,
+    OverflowMenu,
+    OverflowMenuItem,
+    Row,
+    Tile,
+  } from "carbon-components-svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { create } from "ipfs-http-client/index";
@@ -64,52 +73,71 @@
   });
 </script>
 
-<ClickableTile>
-  {#if postResponse.post}
-    {#if postResponse.post.body}
-      <div>
-        {@html postResponse.post.body.replace(/\n/g, "<br>")}
-        <!-- {post.body} -->
-      </div>
-    {/if}
+{#if postResponse.post}
+  <Tile style="outline: 1px solid black">
+    <div>
+      <Link href="#/identity/{postResponse.post.publisher}">
+        {postResponse.display_name || postResponse.post.publisher}
+      </Link>
+      -
+      {new Date(Number(postResponse.post.timestamp)).toLocaleString()}
+
+      <OverflowMenu flipped style="float:right;">
+        <OverflowMenuItem text="Delete post" />
+      </OverflowMenu>
+    </div>
+    <br />
+    <div>
+      {@html postResponse.post.body.replace(/\n/g, "<br>")}
+    </div>
     {#if postResponse.post.files.length > 0 && media.length == 0}
-      <Loading withOverlay={false} small />loading media...
+      <Loading withOverlay={false} />
     {:else if postResponse.post.files.length > 0 && media.length > 0}
-      {#each media as mediaObj}
-        {#if mediaObj.mime && mediaObj.mime.includes("image")}
-          <img src={mediaObj.blobUrl} alt="" bind:this={mediaObj.element} />
-        {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-          <video
-            src={mediaObj.blobUrl}
-            height="360"
-            controls
-            bind:this={mediaObj.element}
-          >
-            <track kind="captions" />
-          </video>
-        {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-          <video
-            src={mediaObj.blobUrl}
-            height="360"
-            controls
-            bind:this={mediaObj.element}
-          >
-            <track kind="captions" />
-          </video>
-        {/if}
-      {/each}
-    {/if}
-    {#if postResponse.post.publisher && includeFrom}
       <div>
-        publisher: <Link href="#/identity/{postResponse.post.publisher}">
-          {postResponse.post.publisher}
-        </Link>
+        <Grid fullWidth>
+          <Row>
+            {#each media as mediaObj}
+              <Column sm={4} md={4} lg={4}>
+                {#if mediaObj.mime && mediaObj.mime.includes("image")}
+                  <img
+                    class="thumbnail"
+                    src={mediaObj.blobUrl}
+                    alt=""
+                    bind:this={mediaObj.element}
+                  />
+                {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
+                  <video
+                    class="thumbnail"
+                    src={mediaObj.blobUrl}
+                    height="300"
+                    controls
+                    bind:this={mediaObj.element}
+                  >
+                    <track kind="captions" />
+                  </video>
+                {:else if mediaObj.mime && mediaObj.mime.includes("video")}
+                  <video
+                    src={mediaObj.blobUrl}
+                    height="300"
+                    controls
+                    bind:this={mediaObj.element}
+                  >
+                    <track kind="captions" />
+                  </video>
+                {/if}
+              </Column>
+            {/each}
+          </Row>
+        </Grid>
       </div>
     {/if}
-    {#if postResponse.post.timestamp}
-      <div>
-        {postResponse.post.timestamp}
-      </div>
-    {/if}
-  {/if}
-</ClickableTile>
+  </Tile>
+{/if}
+
+<style>
+  .thumbnail {
+    width: auto;
+    height: 300px;
+    object-fit: cover;
+  }
+</style>

@@ -152,6 +152,25 @@ pub async fn get_identity_db(
 }
 
 #[tauri::command]
+pub async fn get_display_name_db(
+  state: tauri::State<'_, AppState>,
+  publisher: String,
+) -> Result<String, String> {
+  let conn = state.db_pool.get().unwrap();
+  let stmt = conn.prepare("SELECT display_name FROM identities WHERE publisher = ?");
+  let mut s = match stmt {
+    Ok(stmt) => stmt,
+    Err(error) => {
+      panic!("There was a problem opening the file: {:?}", error)
+    }
+  };
+  let display_name = s
+    .query_row(params![&publisher], |row| Ok(row.get(0)?))
+    .unwrap_or(String::from(""));
+  Ok(display_name)
+}
+
+#[tauri::command]
 pub async fn get_identity(
   state: tauri::State<'_, AppState>,
   publisher: String,
@@ -274,8 +293,8 @@ pub async fn update_feed(
         for post_cid in posts {
           let _ = pin_cid(state.clone(), post_cid.clone()).await;
           println!("attempting to get new post: {:?}", post_cid.clone());
-          match get_post_ipfs(post_cid.clone()).await {
-            Some(post_response) => {
+          match get_post_ipfs(state.clone(), post_cid.clone()).await {
+            Ok(post_response) => {
               let conn = state.db_pool.get().unwrap();
               let post_in_db = post_in_db(conn, post_response.cid.clone()).await.unwrap();
               if !post_in_db {
@@ -283,7 +302,9 @@ pub async fn update_feed(
                 insert_post(conn, post_response.post, post_response.cid.clone()).await;
               }
             }
-            None => (),
+            Err(err) => {
+              panic!("get_post_ipfs: {:?}", err);
+            }
           };
         }
       }
@@ -317,6 +338,7 @@ pub async fn update_feed(
           publisher: row.get(4)?,
           timestamp: row.get(5)?,
         },
+        display_name: row.get(6)?,
       };
       Ok(pr)
     })
@@ -499,7 +521,10 @@ pub async fn publish_identity(identity: Identity) -> Result<IdentityResponse, Id
 }
 
 #[tauri::command]
-pub async fn get_post_ipfs(cid: String) -> Option<PostResponse> {
+pub async fn get_post_ipfs(
+  state: tauri::State<'_, AppState>,
+  cid: String,
+) -> Result<PostResponse, PostResponse> {
   let mut post_dot_json: String = cid.clone();
   if !post_dot_json.contains("/post.json") {
     post_dot_json.push_str("/post.json");
@@ -514,16 +539,31 @@ pub async fn get_post_ipfs(cid: String) -> Option<PostResponse> {
   {
     Ok(res) => {
       let post: Post = from_slice(&res).unwrap();
+      let display_name = get_display_name_db(state.clone(), post.publisher.clone())
+        .await
+        .unwrap();
       let post_response = PostResponse {
         cid: cid.clone(),
         post: post,
+        display_name: display_name,
       };
       println!("{:#?}", post_response);
-      Some(post_response)
+      Ok(post_response)
     }
     Err(e) => {
       eprintln!("{:#?}", e);
-      None
+      let post_response = PostResponse {
+        cid: String::from(""),
+        post: Post {
+          body: String::from(""),
+          files: Vec::new(),
+          meta: serde_json::to_value("{}").unwrap(),
+          publisher: String::from(""),
+          timestamp: 0,
+        },
+        display_name: String::from(""),
+      };
+      Ok(post_response)
     }
   }
 }
@@ -587,6 +627,7 @@ pub async fn query_posts(
           publisher: row.get(4)?,
           timestamp: row.get(5)?,
         },
+        display_name: row.get(6)?,
       };
       Ok(pr)
     })
@@ -687,9 +728,11 @@ pub async fn post(
   let identity_res = publish_identity(identity_res.identity).await.unwrap();
   update_identity_db(conn, &identity_res).await;
 
+  let display_name = 0;
   let post_response = PostResponse {
-    post: post,
     cid: cid,
+    post: post,
+    display_name: identity_res.identity.display_name,
   };
   Ok(post_response)
 }
@@ -791,7 +834,7 @@ pub fn initialize_ipfs_config() {
     ])
     .output()
     .unwrap();
-   Command::new_sidecar("ipfs")
+  Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "-c",

@@ -60,7 +60,7 @@
 </script>
 
 {#if ipfs_id}
-  <Header company="Identia: " platformName={ipfs_id}>
+  <Header company="Identia">
     <div slot="skip-to-content">
       <SkipToContent />
     </div>

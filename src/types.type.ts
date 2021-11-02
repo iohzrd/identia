@@ -48,6 +48,7 @@ export type PostRequest = {
 };
 
 export type PostResponse = {
-  post: Post;
   cid: string;
+  display_name: string;
+  post: Post;
 };

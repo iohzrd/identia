@@ -39,10 +39,8 @@ fn main() {
     //   });
     // })
     .system_tray(
-      SystemTray::new().with_menu(
-        SystemTrayMenu::new()
-          .add_item(CustomMenuItem::new("exit_app", "Quit")),
-      ),
+      SystemTray::new()
+        .with_menu(SystemTrayMenu::new().add_item(CustomMenuItem::new("exit_app", "Quit"))),
     )
     .on_system_tray_event(|app, event| match event {
       SystemTrayEvent::LeftClick {
@@ -54,42 +52,41 @@ fn main() {
         window.show().unwrap();
         window.set_focus().unwrap();
       }
-      SystemTrayEvent::MenuItemClick { id, .. } => {
-        match id.as_str() {
-          "exit_app" => app.exit(0),
-          #[cfg(target_os = "linux")]
-          "icon_1" => app
-            .tray_handle()
-            .set_icon(tauri::Icon::File(PathBuf::from("../icons/icon.png")))
-            .unwrap(),
-          #[cfg(target_os = "macos")]
-          "icon_1" => {
-            app.tray_handle().set_icon_as_template(true).unwrap();
-            app
-              .tray_handle()
-              .set_icon(tauri::Icon::Raw(
-                include_bytes!("../icons/icon.png").to_vec(),
-              ))
-              .unwrap();
-          }
-          #[cfg(target_os = "windows")]
-          "icon_1" => app
+      SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+        "exit_app" => app.exit(0),
+        #[cfg(target_os = "linux")]
+        "icon_1" => app
+          .tray_handle()
+          .set_icon(tauri::Icon::File(PathBuf::from("../icons/icon.png")))
+          .unwrap(),
+        #[cfg(target_os = "macos")]
+        "icon_1" => {
+          app.tray_handle().set_icon_as_template(true).unwrap();
+          app
             .tray_handle()
             .set_icon(tauri::Icon::Raw(
-              include_bytes!("../icons/icon.ico").to_vec(),
+              include_bytes!("../icons/icon.png").to_vec(),
             ))
-            .unwrap(),
-          _ => {}
+            .unwrap();
         }
-      }
+        #[cfg(target_os = "windows")]
+        "icon_1" => app
+          .tray_handle()
+          .set_icon(tauri::Icon::Raw(
+            include_bytes!("../icons/icon.ico").to_vec(),
+          ))
+          .unwrap(),
+        _ => {}
+      },
       _ => {}
     })
     .invoke_handler(tauri::generate_handler![
       identity::follow_publisher,
+      identity::get_display_name_db,
       identity::get_file_ipfs,
-      identity::get_mime,
       identity::get_identity,
       identity::get_identity_ipfs_cmd,
+      identity::get_mime,
       identity::get_post_ipfs,
       identity::ipfs_id,
       identity::post,

@@ -114,6 +114,7 @@ pub struct PostRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostResponse {
   pub cid: String,
+  pub display_name: String,
   pub post: Post,
 }
 

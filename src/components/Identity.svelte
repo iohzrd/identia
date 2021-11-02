@@ -29,7 +29,7 @@
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
   let posts_limit: number = 5;
   $: publisher = params["publisher"];
-  $: posts_query = `SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE publisher = '${publisher}' AND timestamp < ${posts_oldest_ts} ORDER BY timestamp DESC LIMIT ${posts_limit}`;
+  $: posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher = '${publisher}' AND posts.timestamp < ${posts_oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${posts_limit}`;
 
   async function getPostsPage() {
     console.log(`getFeedPage: ${publisher}`);

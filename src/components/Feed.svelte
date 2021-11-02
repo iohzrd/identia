@@ -15,8 +15,8 @@
   let newest_ts: number = Math.floor(new Date().getTime());
   let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
-  $: feed_query = `SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE timestamp < ${oldest_ts} ORDER BY timestamp DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE publisher != '${publisher}' AND timestamp > ${newest_ts} ORDER BY timestamp DESC`;
+  $: feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
+  $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${publisher}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
 
   async function getFeedPage() {
     console.log(`getFeedPage: ${publisher}`);

@@ -4,15 +4,12 @@
     Button,
     FileUploaderItem,
     Form,
-    FluidForm,
     FormGroup,
     ProgressBar,
     TextArea,
-    Tile,
   } from "carbon-components-svelte";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
-  import { readBinaryFile } from "@tauri-apps/api/fs";
   import { invoke } from "@tauri-apps/api/tauri";
 
   export let onPost: Function;
@@ -69,6 +66,9 @@
       bind:value={body}
       bind:disabled={awaiting_response}
     />
+    {#each files as file}
+      <FileUploaderItem status="complete" name={file} />
+    {/each}
     <Button on:click={openDialog} bind:disabled={awaiting_response}
       >Add files</Button
     >
@@ -78,9 +78,5 @@
     {:else}
       <ProgressBar helperText="Publishing..." />
     {/if}
-
-    {#each files as file}
-      <FileUploaderItem status="complete" name={file} />
-    {/each}
   </FormGroup>
 </Form>
