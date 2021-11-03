@@ -728,7 +728,6 @@ pub async fn post(
   let identity_res = publish_identity(identity_res.identity).await.unwrap();
   update_identity_db(conn, &identity_res).await;
 
-  let display_name = 0;
   let post_response = PostResponse {
     cid: cid,
     post: post,

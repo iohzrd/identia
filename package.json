@@ -36,6 +36,9 @@
     "go-ipfs": "^0.10.0",
     "hotkeys-js": "^3.8.7",
     "ipfs-http-client": "^53.0.1",
+    "linkify-html": "^3.0.3",
+    "linkify-string": "^3.0.3",
+    "linkifyjs": "^3.0.3",
     "npm-check-updates": "^11.8.5",
     "rollup": "^2.59.0",
     "rollup-plugin-css-only": "^3.1.0",
@@ -54,6 +57,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8",
-    "sirv-cli": "^1.0.14"
+    "sirv-cli": "^1.0.14",
+    "string-strip-html": "^9.0.3"
   }
 }

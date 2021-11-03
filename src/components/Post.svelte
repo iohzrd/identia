@@ -12,13 +12,28 @@
     Tile,
   } from "carbon-components-svelte";
   import { invoke } from "@tauri-apps/api/tauri";
+  import { open } from "@tauri-apps/api/shell";
   import { onMount, onDestroy } from "svelte";
   import { create } from "ipfs-http-client/index";
+  import linkifyStr from "linkify-string";
+  import linkifyHtml from "linkify-html";
+  import { stripHtml } from "string-strip-html";
 
   export let cid: String;
   export let postResponse: PostResponse;
-  export let includeFrom: Boolean = true;
   let media = [];
+
+  let linkOptions = {
+    target: "_blank",
+  };
+  let bodyHTML = linkifyStr(
+    stripHtml(postResponse.post.body).result,
+    linkOptions
+  ).replace(/\n/g, "<br>");
+
+  async function openWithDefaultApp(url) {
+    await open(url);
+  }
 
   async function getPostFromCid() {
     console.log("getPostFromCid");
@@ -74,7 +89,7 @@
 </script>
 
 {#if postResponse.post}
-  <Tile style="outline: 1px solid black">
+  <Tile style="outline: 2px solid black">
     <div>
       <Link href="#/identity/{postResponse.post.publisher}">
         {postResponse.display_name || postResponse.post.publisher}
@@ -87,14 +102,18 @@
       </OverflowMenu>
     </div>
     <br />
-    <div>
-      {@html postResponse.post.body.replace(/\n/g, "<br>")}
-    </div>
-    {#if postResponse.post.files.length > 0 && media.length == 0}
-      <Loading withOverlay={false} />
-    {:else if postResponse.post.files.length > 0 && media.length > 0}
-      <div>
-        <Grid fullWidth>
+    {#if postResponse.post.body || postResponse.post.files}
+      <Grid fullWidth>
+        {#if postResponse.post.body}
+          <div>
+            <!-- {@html linkifyStr(postResponse.post.body.replace(/\n/g, "<br>"))} -->
+            {@html bodyHTML}
+          </div>
+          <br />
+        {/if}
+        {#if postResponse.post.files.length > 0 && media.length == 0}
+          <Loading withOverlay={false} />
+        {:else if postResponse.post.files.length > 0 && media.length > 0}
           <Row>
             {#each media as mediaObj}
               <Column sm={4} md={4} lg={4}>
@@ -128,8 +147,8 @@
               </Column>
             {/each}
           </Row>
-        </Grid>
-      </div>
+        {/if}
+      </Grid>
     {/if}
   </Tile>
 {/if}
@@ -137,7 +156,7 @@
 <style>
   .thumbnail {
     width: auto;
-    height: 300px;
+    height: 200px;
     object-fit: cover;
   }
 </style>

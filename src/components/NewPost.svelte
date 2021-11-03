@@ -11,6 +11,7 @@
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
   import { invoke } from "@tauri-apps/api/tauri";
+  import { stripHtml } from "string-strip-html";
 
   export let onPost: Function;
 
@@ -22,7 +23,7 @@
   async function post() {
     awaiting_response = true;
     let postRequest: PostRequest = {
-      body: body,
+      body: stripHtml(body).result,
       files: files,
       meta: meta,
     };
