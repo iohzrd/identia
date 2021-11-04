@@ -1,27 +1,31 @@
 <script lang="ts">
-  import type { PostResponse, MediaObj } from "../types.type";
-  import { Buffer } from "buffer/index";
   import {
     Column,
     Grid,
     Link,
     Loading,
+    Modal,
     OverflowMenu,
     OverflowMenuItem,
     Row,
     Tile,
   } from "carbon-components-svelte";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { open } from "@tauri-apps/api/shell";
-  import { onMount, onDestroy } from "svelte";
-  import { create } from "ipfs-http-client/index";
+  // import linkifyHtml from "linkify-html";
   import linkifyStr from "linkify-string";
-  import linkifyHtml from "linkify-html";
+  import type { MediaObj, PostResponse } from "../types.type";
+  import { Buffer } from "buffer/index";
+  import { Splide, SplideSlide } from "@splidejs/svelte-splide";
+  // import type { Options } from "@splidejs/splide";
+  import { create } from "ipfs-http-client/index";
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { onMount, onDestroy } from "svelte";
+  import { open } from "@tauri-apps/api/shell";
   import { stripHtml } from "string-strip-html";
 
   export let cid: String;
   export let postResponse: PostResponse;
   let media = [];
+  let modal_open = false;
 
   let linkOptions = {
     target: "_blank",
@@ -59,8 +63,9 @@
     const urlCreator = window.URL || window.webkitURL;
     const mediaObj: MediaObj = {
       blobUrl: urlCreator.createObjectURL(blob),
-      mime: mime,
       element: null,
+      filename: filename,
+      mime: mime,
     };
     return mediaObj;
   }
@@ -123,6 +128,7 @@
                     src={mediaObj.blobUrl}
                     alt=""
                     bind:this={mediaObj.element}
+                    on:click={() => (modal_open = true)}
                   />
                 {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
                   <video
@@ -131,6 +137,7 @@
                     height="300"
                     controls
                     bind:this={mediaObj.element}
+                    on:click={() => (modal_open = true)}
                   >
                     <track kind="captions" />
                   </video>
@@ -140,6 +147,7 @@
                     height="300"
                     controls
                     bind:this={mediaObj.element}
+                    on:click={() => (modal_open = true)}
                   >
                     <track kind="captions" />
                   </video>
@@ -153,10 +161,69 @@
   </Tile>
 {/if}
 
+<Modal
+  bind:open={modal_open}
+  modalHeading="media"
+  on:close
+  on:open
+  passiveModal={true}
+  size="lg"
+>
+  {#if modal_open}
+    {#if postResponse.post.files.length > 0 && media.length == 0}
+      <Loading withOverlay={false} />
+    {:else if postResponse.post.files.length > 0 && media.length > 0}
+      <Splide>
+        {#each media as mediaObj}
+          {#if mediaObj.mime && mediaObj.mime.includes("image")}
+            <SplideSlide>
+              <img
+                class="image"
+                src={mediaObj.blobUrl}
+                alt=""
+                bind:this={mediaObj.element}
+              />
+            </SplideSlide>
+          {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
+            <SplideSlide>
+              <video
+                src={mediaObj.blobUrl}
+                controls
+                bind:this={mediaObj.element}
+              >
+                <track kind="captions" />
+              </video>
+            </SplideSlide>
+          {:else if mediaObj.mime && mediaObj.mime.includes("video")}
+            <SplideSlide>
+              <video
+                src={mediaObj.blobUrl}
+                controls
+                bind:this={mediaObj.element}
+              >
+                <track kind="captions" />
+              </video>
+            </SplideSlide>
+          {/if}
+        {/each}
+      </Splide>
+    {/if}
+  {/if}
+</Modal>
+
 <style>
   .thumbnail {
     width: auto;
     height: 200px;
     object-fit: cover;
+  }
+  .image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin: auto;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
   }
 </style>

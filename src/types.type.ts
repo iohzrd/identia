@@ -26,6 +26,7 @@ export type MediaResponse = {
 export type MediaObj = {
   blobUrl: string;
   element: Element;
+  filename: string;
   mime: string;
 };
 
