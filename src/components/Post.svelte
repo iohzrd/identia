@@ -21,6 +21,7 @@
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/shell";
   import { stripHtml } from "string-strip-html";
+  import * as timeago from "timeago.js";
 
   export let cid: String;
   export let postResponse: PostResponse;
@@ -99,8 +100,9 @@
       <Link href="#/identity/{postResponse.post.publisher}">
         {postResponse.display_name || postResponse.post.publisher}
       </Link>
-      -
-      {new Date(Number(postResponse.post.timestamp)).toLocaleString()}
+      - {timeago.format(postResponse.post.timestamp)} ({new Date(
+        Number(postResponse.post.timestamp)
+      ).toLocaleString()})
 
       <OverflowMenu flipped style="float:right;">
         <OverflowMenuItem text="Delete post" />
