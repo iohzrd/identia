@@ -2,7 +2,7 @@
   "name": "identia",
   "version": "0.1.0",
   "description": "Decentralized, censorship resistant social media on IPFS",
-  "productName": "Identia",
+  "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
   "license": "GPL-3.0",
   "private": true,
@@ -19,18 +19,18 @@
     "tauri:build": "tauri build",
     "tauri:build-debug": "tauri build -- --debug",
     "tauri:dev": "tauri dev",
-    "update": "cd src-tauri && cargo update && cd .. && ncu -u && npm install"
+    "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@rollup/plugin-typescript": "^8.3.0",
-    "@splidejs/svelte-splide": "^0.1.5",
+    "@splidejs/svelte-splide": "^0.1.7",
     "@tauri-apps/cli": "^1.0.0-beta.10",
     "@tsconfig/svelte": "^2.0.1",
     "buffer": "^6.0.3",
-    "carbon-components-svelte": "^0.47.5",
+    "carbon-components-svelte": "^0.48.0",
     "carbon-icons-svelte": "^10.38.0",
     "carbon-preprocess-svelte": "^0.6.0",
     "exifremove": "^1.0.1",
@@ -40,12 +40,13 @@
     "linkify-html": "^3.0.3",
     "linkify-string": "^3.0.3",
     "linkifyjs": "^3.0.3",
-    "npm-check-updates": "^12.0.1",
-    "rollup": "^2.59.0",
+    "npm-check-updates": "^12.0.2",
+    "rollup": "^2.60.0",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
+    "string-strip-html": "^9.0.5",
     "svelte": "^3.44.1",
     "svelte-check": "^2.2.8",
     "svelte-inview": "^2.0.3",
@@ -58,7 +59,6 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.8",
-    "sirv-cli": "^1.0.14",
-    "string-strip-html": "^9.0.5"
+    "sirv-cli": "^1.0.14"
   }
 }
