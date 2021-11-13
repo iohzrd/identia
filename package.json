@@ -49,7 +49,7 @@
     "string-strip-html": "^9.0.5",
     "svelte": "^3.44.1",
     "svelte-check": "^2.2.8",
-    "svelte-inview": "^2.0.3",
+    "svelte-inview": "^2.1.0",
     "svelte-preprocess": "^4.9.8",
     "svelte-spa-router": "^3.2.0",
     "timeago.js": "^4.0.2",
