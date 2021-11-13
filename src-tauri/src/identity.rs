@@ -762,7 +762,7 @@ pub async fn delete_post(state: tauri::State<'_, AppState>, cid: String) -> Resu
   println!("delete_post: {:?}", cid);
   let conn = state.db_pool.get().unwrap();
   conn
-    .execute("DELETE FROM posts WHERE cid = (?1)", params![&cid])
+    .execute("DELETE FROM posts WHERE cid = ?", params![&cid])
     .unwrap();
   Ok(true)
 }
