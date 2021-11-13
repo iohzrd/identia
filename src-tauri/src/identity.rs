@@ -758,6 +758,16 @@ pub async fn insert_post(
 }
 
 #[tauri::command]
+pub async fn delete_post(state: tauri::State<'_, AppState>, cid: String) -> Result<bool, bool> {
+  println!("delete_post: {:?}", cid);
+  let conn = state.db_pool.get().unwrap();
+  conn
+    .execute("DELETE FROM posts WHERE cid = (?1)", params![&cid])
+    .unwrap();
+  Ok(true)
+}
+
+#[tauri::command]
 pub async fn initialize_database(publisher: String, db_file_path: PathBuf) -> Result<()> {
   println!("initialize_database: {:?}", publisher.clone());
   let mut conn = Connection::open(db_file_path.into_os_string().to_str().unwrap())?;
