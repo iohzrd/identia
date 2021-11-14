@@ -63,7 +63,7 @@ impl Identity {
       avatar: String::from(""),
       description: String::from(""),
       display_name: String::from(""),
-      following: Vec::new(),
+      following: vec![String::from("12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz")],
       meta: json!({}),
       posts: Vec::new(),
       publisher: String::from(publisher),
