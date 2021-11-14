@@ -60,7 +60,7 @@
 </script>
 
 {#if ipfs_id}
-  <Header company="Identia">
+  <Header company="identia">
     <div slot="skip-to-content">
       <SkipToContent />
     </div>

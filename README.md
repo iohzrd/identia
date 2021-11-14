@@ -1,4 +1,4 @@
-# Identia
+# identia
 
 Decentralized, censorship resistant social media on IPFS.
 
@@ -18,7 +18,7 @@ npm start
 
 ## Architecture
 
-The core of Identia is it's conception of an identity.
+The core of identia is it's conception of an identity.
 
 An identity object is the fundamental unit that we'll use to bootstrap a distributed multi-media social graph.
 

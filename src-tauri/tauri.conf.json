@@ -6,7 +6,7 @@
     "distDir": "../public"
   },
   "package": {
-    "productName": "Identia",
+    "productName": "identia",
     "version": "0.1.0"
   },
   "tauri": {
@@ -23,7 +23,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.follow.api"
+      "identifier": "com.iohzrd.identia"
     },
     "cli": {
       "args": [
@@ -78,7 +78,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Identia",
+        "title": "identia",
         "width": 1920,
         "height": 1080,
         "resizable": true,

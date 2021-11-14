@@ -185,7 +185,7 @@ fn main() {
         std::thread::spawn(move || {
           ask(
             Some(&window),
-            "Identia",
+            "identia",
             "Are you sure that you want to close this window?",
             move |answer| {
               if answer {
