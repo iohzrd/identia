@@ -57,6 +57,14 @@
     console.log(identity_res);
   }
 
+  function setMediaModal(media) {
+    console.log("setMediaModal");
+    // media_modal_open = true;
+    // media_modal_media = media;
+    // console.log(media_modal_open);
+    // console.log(media_modal_media);
+  }
+
   onMount(async () => {
     console.log("onMount");
     console.log(params);
@@ -145,9 +153,9 @@
 
     <FormGroup legendText="posts">
       {#if identity && identity.posts}
-        {#each posts as postResponse}
+        {#each posts as post_response}
           <div>
-            <Post cid={null} {postResponse} includeFrom={false} />
+            <Post cid={null} {post_response} {setMediaModal} />
           </div>
         {/each}
       {/if}

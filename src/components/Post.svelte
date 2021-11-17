@@ -4,45 +4,38 @@
     Grid,
     Link,
     Loading,
-    Modal,
     OverflowMenu,
     OverflowMenuItem,
     Row,
     Tile,
   } from "carbon-components-svelte";
   // import linkifyHtml from "linkify-html";
+  import * as timeago from "timeago.js";
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse } from "../types.type";
   import { Buffer } from "buffer/index";
-  import { Splide, SplideSlide } from "@splidejs/svelte-splide";
-  // import type { Options } from "@splidejs/splide";
   import { create } from "ipfs-http-client/index";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-  import { open } from "@tauri-apps/api/shell";
   import { stripHtml } from "string-strip-html";
-  import * as timeago from "timeago.js";
 
   export let cid: String;
-  export let postResponse: PostResponse;
-  let media = [];
-  let modal_open = false;
+  export let post_response: PostResponse;
+  export let media_modal_media: MediaObj[];
+  export let media_modal_open: boolean;
 
+  let media = [];
   let linkOptions = {
     target: "_blank",
   };
   let bodyHTML = linkifyStr(
-    stripHtml(postResponse.post.body).result,
+    stripHtml(post_response.post.body).result,
     linkOptions
   ).replace(/\n/g, "<br>");
 
-  async function openWithDefaultApp(url) {
-    await open(url);
-  }
-
   async function getPostFromCid() {
     console.log("getPostFromCid");
-    postResponse = await invoke("get_post_ipfs", {
+    post_response = await invoke("get_post_ipfs", {
       cid: cid,
     });
   }
@@ -50,7 +43,7 @@
   async function getMediaObject(filename) {
     console.log("getMediaObject");
     let bufs = [];
-    const root_cid = postResponse.cid || cid;
+    const root_cid = post_response.cid || cid;
     const path: string = root_cid + "/" + filename;
     const ipfs = await create("/ip4/127.0.0.1/tcp/5001");
     for await (const buf of ipfs.cat(path)) {
@@ -71,12 +64,17 @@
     return mediaObj;
   }
 
+  function openMediaModal() {
+    media_modal_media = media;
+    media_modal_open = true;
+  }
+
   onMount(async () => {
-    if (!postResponse) {
+    if (!post_response) {
       await getPostFromCid();
     }
 
-    for await (const filename of postResponse.post.files) {
+    for await (const filename of post_response.post.files) {
       media = [...media, await getMediaObject(filename)];
     }
   });
@@ -94,14 +92,14 @@
   });
 </script>
 
-{#if postResponse.post}
+{#if post_response.post}
   <Tile style="outline: 2px solid black">
     <div>
-      <Link href="#/identity/{postResponse.post.publisher}">
-        {postResponse.display_name || postResponse.post.publisher}
+      <Link href="#/identity/{post_response.post.publisher}">
+        {post_response.display_name || post_response.post.publisher}
       </Link>
-      - {timeago.format(postResponse.post.timestamp)} ({new Date(
-        Number(postResponse.post.timestamp)
+      - {timeago.format(post_response.post.timestamp)} ({new Date(
+        Number(post_response.post.timestamp)
       ).toLocaleString()})
 
       <OverflowMenu flipped style="float:right;">
@@ -109,18 +107,18 @@
       </OverflowMenu>
     </div>
     <br />
-    {#if postResponse.post.body || postResponse.post.files}
+    {#if post_response.post.body || post_response.post.files}
       <Grid fullWidth>
-        {#if postResponse.post.body}
+        {#if post_response.post.body}
           <div>
-            <!-- {@html linkifyStr(postResponse.post.body.replace(/\n/g, "<br>"))} -->
+            <!-- {@html linkifyStr(post_response.post.body.replace(/\n/g, "<br>"))} -->
             {@html bodyHTML}
           </div>
           <br />
         {/if}
-        {#if postResponse.post.files.length > 0 && media.length == 0}
+        {#if post_response.post.files.length > 0 && media.length == 0}
           <Loading withOverlay={false} />
-        {:else if postResponse.post.files.length > 0 && media.length > 0}
+        {:else if post_response.post.files.length > 0 && media.length > 0}
           <Row>
             {#each media as mediaObj}
               <Column sm={4} md={4} lg={4}>
@@ -130,7 +128,7 @@
                     src={mediaObj.blobUrl}
                     alt=""
                     bind:this={mediaObj.element}
-                    on:click={() => (modal_open = true)}
+                    on:click={openMediaModal}
                   />
                 {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
                   <video
@@ -139,7 +137,7 @@
                     height="300"
                     controls
                     bind:this={mediaObj.element}
-                    on:click={() => (modal_open = true)}
+                    on:click={openMediaModal}
                   >
                     <track kind="captions" />
                   </video>
@@ -149,7 +147,7 @@
                     height="300"
                     controls
                     bind:this={mediaObj.element}
-                    on:click={() => (modal_open = true)}
+                    on:click={openMediaModal}
                   >
                     <track kind="captions" />
                   </video>
@@ -163,69 +161,10 @@
   </Tile>
 {/if}
 
-<Modal
-  bind:open={modal_open}
-  modalHeading="media"
-  on:close
-  on:open
-  passiveModal={true}
-  size="lg"
->
-  {#if modal_open}
-    {#if postResponse.post.files.length > 0 && media.length == 0}
-      <Loading withOverlay={false} />
-    {:else if postResponse.post.files.length > 0 && media.length > 0}
-      <Splide>
-        {#each media as mediaObj}
-          {#if mediaObj.mime && mediaObj.mime.includes("image")}
-            <SplideSlide>
-              <img
-                class="image"
-                src={mediaObj.blobUrl}
-                alt=""
-                bind:this={mediaObj.element}
-              />
-            </SplideSlide>
-          {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-            <SplideSlide>
-              <video
-                src={mediaObj.blobUrl}
-                controls
-                bind:this={mediaObj.element}
-              >
-                <track kind="captions" />
-              </video>
-            </SplideSlide>
-          {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-            <SplideSlide>
-              <video
-                src={mediaObj.blobUrl}
-                controls
-                bind:this={mediaObj.element}
-              >
-                <track kind="captions" />
-              </video>
-            </SplideSlide>
-          {/if}
-        {/each}
-      </Splide>
-    {/if}
-  {/if}
-</Modal>
-
 <style>
   .thumbnail {
     width: auto;
     height: 200px;
     object-fit: cover;
-  }
-  .image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin: auto;
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
   }
 </style>

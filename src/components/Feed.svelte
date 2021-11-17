@@ -3,6 +3,7 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
+  import MediaModal from "./MediaModal.svelte";
   import NewPost from "./NewPost.svelte";
   import Post from "./Post.svelte";
   import type { PostResponse } from "../types.type";
@@ -17,6 +18,9 @@
   let limit: number = 10;
   $: feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
   $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${publisher}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
+
+  let media_modal_open = false;
+  let media_modal_media = [];
 
   async function getFeedPage() {
     console.log(`getFeedPage: ${publisher}`);
@@ -64,10 +68,17 @@
   });
 </script>
 
+<MediaModal bind:media_modal_media bind:media_modal_open />
+
 <NewPost {onPost} />
 
-{#each feed as postResponse}
-  <Post cid={null} {postResponse} />
+{#each feed as post_response}
+  <Post
+    cid={null}
+    {post_response}
+    bind:media_modal_media
+    bind:media_modal_open
+  />
 {/each}
 
 {#if feed.length >= limit}
