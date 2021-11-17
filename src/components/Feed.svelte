@@ -28,14 +28,18 @@
       query: feed_query,
     });
     if (page.length > 0) {
-      feed = [...feed, ...page];
+      feed.push(...page);
+      feed = feed;
       newest_ts = feed[0].post.timestamp;
       oldest_ts = feed[feed.length - 1].post.timestamp;
     }
   }
 
   function onPost(post: PostResponse) {
-    feed = [post, ...feed];
+    feed.unshift(post);
+    feed = feed;
+    newest_ts = feed[0].post.timestamp;
+    oldest_ts = feed[feed.length - 1].post.timestamp;
   }
 
   async function updateIdentities() {
@@ -48,7 +52,8 @@
       query: new_posts_query,
     });
     if (new_posts.length > 0) {
-      feed = [...new_posts, ...feed];
+      feed.unshift(...new_posts);
+      feed = feed;
       newest_ts = feed[0].post.timestamp;
       oldest_ts = feed[feed.length - 1].post.timestamp;
     }
