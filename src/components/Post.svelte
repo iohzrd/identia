@@ -116,46 +116,42 @@
           </div>
           <br />
         {/if}
-        {#if post_response.post.files.length > 0 && media.length == 0}
-          <Loading withOverlay={false} />
-        {:else if post_response.post.files.length > 0 && media.length > 0}
-          <Row>
-            {#each media as mediaObj}
-              <Column sm={4} md={4} lg={4}>
-                {#if mediaObj.mime && mediaObj.mime.includes("image")}
-                  <img
-                    class="thumbnail"
-                    src={mediaObj.blobUrl}
-                    alt=""
-                    bind:this={mediaObj.element}
-                    on:click={openMediaModal}
-                  />
-                {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-                  <video
-                    class="thumbnail"
-                    src={mediaObj.blobUrl}
-                    height="300"
-                    controls
-                    bind:this={mediaObj.element}
-                    on:click={openMediaModal}
-                  >
-                    <track kind="captions" />
-                  </video>
-                {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-                  <video
-                    src={mediaObj.blobUrl}
-                    height="300"
-                    controls
-                    bind:this={mediaObj.element}
-                    on:click={openMediaModal}
-                  >
-                    <track kind="captions" />
-                  </video>
-                {/if}
-              </Column>
-            {/each}
-          </Row>
-        {/if}
+        <Row>
+          {#each media as mediaObj}
+            <Column sm={4} md={4} lg={4}>
+              {#if mediaObj.mime && mediaObj.mime.includes("image")}
+                <img
+                  class="thumbnail"
+                  src={mediaObj.blobUrl}
+                  alt=""
+                  bind:this={mediaObj.element}
+                  on:click={openMediaModal}
+                />
+              {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
+                <video
+                  class="thumbnail"
+                  src={mediaObj.blobUrl}
+                  height="300"
+                  controls
+                  bind:this={mediaObj.element}
+                  on:click={openMediaModal}
+                >
+                  <track kind="captions" />
+                </video>
+              {:else if mediaObj.mime && mediaObj.mime.includes("video")}
+                <video
+                  src={mediaObj.blobUrl}
+                  height="300"
+                  controls
+                  bind:this={mediaObj.element}
+                  on:click={openMediaModal}
+                >
+                  <track kind="captions" />
+                </video>
+              {/if}
+            </Column>
+          {/each}
+        </Row>
       </Grid>
     {/if}
   </Tile>

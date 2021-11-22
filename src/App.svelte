@@ -12,14 +12,12 @@
     TextInput,
   } from "carbon-components-svelte";
   import Add20 from "carbon-icons-svelte/lib/Add20";
-
-  import Identity from "./components/Identity.svelte";
   import Feed from "./components/Feed.svelte";
-
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { onMount, onDestroy } from "svelte";
+  import Identity from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
+  import { invoke } from "@tauri-apps/api/tauri";
   import { location } from "svelte-spa-router";
+  import { onMount, onDestroy } from "svelte";
 
   let add_diaglog_open = false;
   let ipfs_id: string;

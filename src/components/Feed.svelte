@@ -32,16 +32,18 @@
       query: feed_query,
     });
     if (page.length > 0) {
-      feed.push(...page);
-      feed = feed;
+      // feed.push(...page);
+      // feed = feed;
+      feed = [...feed, ...page];
       newest_ts = feed[0].post.timestamp;
       oldest_ts = feed[feed.length - 1].post.timestamp;
     }
   }
 
   function onPost(post: PostResponse) {
-    feed.unshift(post);
-    feed = feed;
+    // feed.unshift(post);
+    // feed = feed;
+    feed = [post, ...feed];
     newest_ts = feed[0].post.timestamp;
     oldest_ts = feed[feed.length - 1].post.timestamp;
   }
@@ -56,8 +58,9 @@
       query: new_posts_query,
     });
     if (new_posts.length > 0) {
-      feed.unshift(...new_posts);
-      feed = feed;
+      // feed.unshift(...new_posts);
+      // feed = feed;
+      feed = [...new_posts, ...feed];
       newest_ts = feed[0].post.timestamp;
       oldest_ts = feed[feed.length - 1].post.timestamp;
     }
