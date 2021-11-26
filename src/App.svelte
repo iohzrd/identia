@@ -110,7 +110,7 @@
       bind:value={publisher_to_follow}
     />
     {#if follow_waiting}
-      <ProgressBar helperText="Loading..." />
+      <ProgressBar helperText="Please wait..." />
     {:else}
       <ButtonSet>
         <Button on:click={closeFollowModal} kind="secondary">Cancel</Button>
