@@ -1,14 +1,17 @@
 <script lang="ts">
   import {
+    Button,
+    ButtonSet,
     Content,
     Header,
     HeaderGlobalAction,
+    HeaderNav,
+    HeaderNavItem,
     HeaderUtilities,
     Loading,
     Modal,
+    ProgressBar,
     SkipToContent,
-    HeaderNav,
-    HeaderNavItem,
     TextInput,
   } from "carbon-components-svelte";
   import Add20 from "carbon-icons-svelte/lib/Add20";
@@ -19,9 +22,11 @@
   import { location } from "svelte-spa-router";
   import { onMount, onDestroy } from "svelte";
 
-  let add_diaglog_open = false;
+  let follow_modal_open = false;
   let ipfs_id: string;
-  let publisher_to_follow: string;
+  let publisher_to_follow: string = "";
+  let follow_success = false;
+  let follow_waiting = false;
 
   const views = [
     {
@@ -41,17 +46,22 @@
   };
 
   async function followPublisher() {
-    let success = await invoke("follow_publisher", {
+    console.log("followPublisher");
+    follow_waiting = true;
+    follow_success = await invoke("follow_publisher", {
       publisher: publisher_to_follow.trim(),
     });
+    closeFollowModal();
+  }
+
+  function closeFollowModal() {
+    follow_modal_open = false;
+    follow_waiting = false;
     publisher_to_follow = "";
-    console.log(`followPublisher: ${success}`);
   }
 
   onMount(async () => {
     ipfs_id = await invoke("ipfs_id");
-    console.log("ipfs_id");
-    console.log(ipfs_id);
   });
 
   onDestroy(() => {});
@@ -79,27 +89,37 @@
       <HeaderGlobalAction
         aria-label="Follow new identity"
         icon={Add20}
-        on:click={() => (add_diaglog_open = !add_diaglog_open)}
+        on:click={() => (follow_modal_open = !follow_modal_open)}
       />
     </HeaderUtilities>
   </Header>
 
   <Modal
-    size="lg"
-    bind:open={add_diaglog_open}
+    bind:open={follow_modal_open}
     modalHeading="Follow publisher"
-    primaryButtonText="Confirm"
-    secondaryButtonText="Cancel"
-    on:click:button--secondary
+    on:close
     on:open
-    on:close={() => (add_diaglog_open = false)}
-    on:submit={followPublisher}
+    passiveModal
+    preventCloseOnClickOutside
+    size="lg"
   >
     <TextInput
       labelText="publisher to follow"
       placeholder="12D3KooW..."
+      disabled={follow_waiting}
       bind:value={publisher_to_follow}
     />
+    {#if follow_waiting}
+      <ProgressBar helperText="Loading..." />
+    {:else}
+      <ButtonSet>
+        <Button on:click={closeFollowModal} kind="secondary">Cancel</Button>
+        <Button
+          disabled={publisher_to_follow.length < 32}
+          on:click={followPublisher}>Confirm</Button
+        >
+      </ButtonSet>
+    {/if}
   </Modal>
 
   <Content>
