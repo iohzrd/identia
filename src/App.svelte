@@ -21,11 +21,12 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import { location } from "svelte-spa-router";
   import { onMount, onDestroy } from "svelte";
+  import { multihash } from "is-ipfs";
 
   let follow_modal_open = false;
   let ipfs_id: string;
   let publisher_to_follow: string = "";
-  let follow_success = false;
+  $: publisher_to_follow_invalid = !multihash(publisher_to_follow);
   let follow_waiting = false;
 
   const views = [
@@ -48,7 +49,7 @@
   async function followPublisher() {
     console.log("followPublisher");
     follow_waiting = true;
-    follow_success = await invoke("follow_publisher", {
+    let follow_success = await invoke("follow_publisher", {
       publisher: publisher_to_follow.trim(),
     });
     closeFollowModal();
@@ -104,6 +105,8 @@
     size="lg"
   >
     <TextInput
+      invalid={publisher_to_follow_invalid}
+      invalidText="Invalid IPNS id. Please try another."
       labelText="publisher to follow"
       placeholder="12D3KooW..."
       disabled={follow_waiting}
@@ -115,7 +118,7 @@
       <ButtonSet>
         <Button on:click={closeFollowModal} kind="secondary">Cancel</Button>
         <Button
-          disabled={publisher_to_follow.length < 32}
+          disabled={publisher_to_follow_invalid}
           on:click={followPublisher}>Confirm</Button
         >
       </ButtonSet>
