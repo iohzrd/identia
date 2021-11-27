@@ -98,7 +98,7 @@
   <Modal
     bind:open={follow_modal_open}
     modalHeading="Follow publisher"
-    on:close
+    on:close={closeFollowModal}
     on:open
     passiveModal
     preventCloseOnClickOutside
@@ -115,13 +115,9 @@
     {#if follow_waiting}
       <ProgressBar helperText="Please wait..." />
     {:else}
-      <ButtonSet>
-        <Button on:click={closeFollowModal} kind="secondary">Cancel</Button>
-        <Button
-          disabled={publisher_to_follow_invalid}
-          on:click={followPublisher}>Confirm</Button
-        >
-      </ButtonSet>
+      <Button disabled={publisher_to_follow_invalid} on:click={followPublisher}
+        >Confirm</Button
+      >
     {/if}
   </Modal>
 
