@@ -37,6 +37,7 @@
     "go-ipfs": "^0.10.0",
     "hotkeys-js": "^3.8.7",
     "ipfs-http-client": "^54.0.2",
+    "is-ipfs": "^6.0.2",
     "linkify-html": "^3.0.4",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.4",
