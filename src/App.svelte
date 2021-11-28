@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     Button,
-    ButtonSet,
     Content,
     Header,
     HeaderGlobalAction,
@@ -53,12 +52,11 @@
       publisher: publisher_to_follow.trim(),
     });
     if (follow_success) {
-      closeFollowModal();
+      clearFollowModal();
     }
   }
 
-  function closeFollowModal() {
-    follow_modal_open = false;
+  function clearFollowModal() {
     follow_waiting = false;
     publisher_to_follow = "";
   }
@@ -100,10 +98,9 @@
   <Modal
     bind:open={follow_modal_open}
     modalHeading="Follow publisher"
-    on:close
+    on:close={clearFollowModal}
     on:open
     passiveModal
-    preventCloseOnClickOutside
     size="lg"
   >
     <TextInput

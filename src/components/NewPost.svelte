@@ -62,20 +62,23 @@
 <Form>
   <FormGroup>
     <TextArea
+      bind:value={body}
+      disabled={awaiting_response}
       labelText="New post"
       placeholder="What's happening?"
-      bind:value={body}
-      bind:disabled={awaiting_response}
     />
     {#each files as file}
       <FileUploaderItem status="complete" name={file} />
     {/each}
-    <Button on:click={openDialog} bind:disabled={awaiting_response}
-      >Add files</Button
+    <Button on:click={openDialog} disabled={awaiting_response}>Add files</Button
     >
 
     {#if !awaiting_response}
-      <Button on:click={post} bind:disabled={awaiting_response}>Post</Button>
+      <Button
+        on:click={post}
+        disabled={awaiting_response || (files.length < 1 && body.length < 1)}
+        >Post</Button
+      >
     {:else}
       <ProgressBar helperText="Publishing..." />
     {/if}
