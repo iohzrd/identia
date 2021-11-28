@@ -90,36 +90,39 @@
       <HeaderGlobalAction
         aria-label="Follow new identity"
         icon={Add20}
-        on:click={() => (follow_modal_open = !follow_modal_open)}
+        on:click={() => (follow_modal_open = true)}
       />
     </HeaderUtilities>
   </Header>
 
-  <Modal
-    bind:open={follow_modal_open}
-    modalHeading="Follow publisher"
-    on:close={closeFollowModal}
-    on:open
-    passiveModal
-    preventCloseOnClickOutside
-    size="lg"
-  >
-    <TextInput
-      invalid={publisher_to_follow_invalid}
-      invalidText="Invalid IPNS id. Please try another."
-      labelText="publisher to follow"
-      placeholder="12D3KooW..."
-      disabled={follow_waiting}
-      bind:value={publisher_to_follow}
-    />
-    {#if follow_waiting}
-      <ProgressBar helperText="Please wait..." />
-    {:else}
-      <Button disabled={publisher_to_follow_invalid} on:click={followPublisher}
-        >Confirm</Button
-      >
-    {/if}
-  </Modal>
+  {#if follow_modal_open}
+    <Modal
+      bind:open={follow_modal_open}
+      modalHeading="Follow publisher"
+      on:close
+      on:open
+      passiveModal
+      preventCloseOnClickOutside
+      size="lg"
+    >
+      <TextInput
+        invalid={publisher_to_follow_invalid}
+        invalidText="Invalid IPNS id. Please try another."
+        labelText="publisher to follow"
+        placeholder="12D3KooW..."
+        disabled={follow_waiting}
+        bind:value={publisher_to_follow}
+      />
+      {#if follow_waiting}
+        <ProgressBar helperText="Please wait..." />
+      {:else}
+        <Button
+          disabled={publisher_to_follow_invalid}
+          on:click={followPublisher}>Confirm</Button
+        >
+      {/if}
+    </Modal>
+  {/if}
 
   <Content>
     <Router {routes} />
