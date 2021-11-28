@@ -3,13 +3,11 @@
     Column,
     Grid,
     Link,
-    Loading,
     OverflowMenu,
     OverflowMenuItem,
     Row,
     Tile,
   } from "carbon-components-svelte";
-  // import linkifyHtml from "linkify-html";
   import * as timeago from "timeago.js";
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse } from "../types.type";

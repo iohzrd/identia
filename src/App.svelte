@@ -19,8 +19,8 @@
   import Router from "svelte-spa-router";
   import { invoke } from "@tauri-apps/api/tauri";
   import { location } from "svelte-spa-router";
-  import { onMount, onDestroy } from "svelte";
   import { multihash } from "is-ipfs";
+  import { onMount, onDestroy } from "svelte";
 
   let follow_modal_open = false;
   let ipfs_id: string;

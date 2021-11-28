@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { inview } from "svelte-inview/dist/";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { onMount, onDestroy } from "svelte";
-
   import MediaModal from "./MediaModal.svelte";
   import NewPost from "./NewPost.svelte";
   import Post from "./Post.svelte";
   import type { PostResponse } from "../types.type";
+  import { inview } from "svelte-inview/dist/";
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { onMount, onDestroy } from "svelte";
 
   export let params = {};
   $: publisher = params["publisher"];

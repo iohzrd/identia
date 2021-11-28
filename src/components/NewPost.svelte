@@ -8,9 +8,9 @@
     ProgressBar,
     TextArea,
   } from "carbon-components-svelte";
+  import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
-  import { invoke } from "@tauri-apps/api/tauri";
   import { stripHtml } from "string-strip-html";
 
   export let onPost: Function;

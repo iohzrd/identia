@@ -1,25 +1,20 @@
 <script lang="ts">
   import {
     Button,
-    ButtonSet,
     ClickableTile,
     Form,
-    Grid,
     FormGroup,
     TextArea,
     TextInput,
-    Tile,
     Link,
-    UnorderedList,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { onMount, onDestroy } from "svelte";
-
   import MediaModal from "./MediaModal.svelte";
   import Meta from "./Meta.svelte";
   import Post from "./Post.svelte";
   import type { Identity, IdentityResponse, PostResponse } from "../types.type";
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { onMount, onDestroy } from "svelte";
 
   export let params = {};
 
@@ -59,14 +54,6 @@
       meta: identity.meta,
     });
     console.log(identity_res);
-  }
-
-  function setMediaModal(media) {
-    console.log("setMediaModal");
-    // media_modal_open = true;
-    // media_modal_media = media;
-    // console.log(media_modal_open);
-    // console.log(media_modal_media);
   }
 
   onMount(async () => {
