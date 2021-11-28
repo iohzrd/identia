@@ -52,7 +52,9 @@
     let follow_success = await invoke("follow_publisher", {
       publisher: publisher_to_follow.trim(),
     });
-    closeFollowModal();
+    if (follow_success) {
+      closeFollowModal();
+    }
   }
 
   function closeFollowModal() {
@@ -95,34 +97,31 @@
     </HeaderUtilities>
   </Header>
 
-  {#if follow_modal_open}
-    <Modal
-      bind:open={follow_modal_open}
-      modalHeading="Follow publisher"
-      on:close
-      on:open
-      passiveModal
-      preventCloseOnClickOutside
-      size="lg"
-    >
-      <TextInput
-        invalid={publisher_to_follow_invalid}
-        invalidText="Invalid IPNS id. Please try another."
-        labelText="publisher to follow"
-        placeholder="12D3KooW..."
-        disabled={follow_waiting}
-        bind:value={publisher_to_follow}
-      />
-      {#if follow_waiting}
-        <ProgressBar helperText="Please wait..." />
-      {:else}
-        <Button
-          disabled={publisher_to_follow_invalid}
-          on:click={followPublisher}>Confirm</Button
-        >
-      {/if}
-    </Modal>
-  {/if}
+  <Modal
+    bind:open={follow_modal_open}
+    modalHeading="Follow publisher"
+    on:close
+    on:open
+    passiveModal
+    preventCloseOnClickOutside
+    size="lg"
+  >
+    <TextInput
+      invalid={publisher_to_follow_invalid}
+      invalidText="Invalid IPNS id. Please try another."
+      labelText="publisher to follow"
+      placeholder="12D3KooW..."
+      disabled={follow_waiting}
+      bind:value={publisher_to_follow}
+    />
+    {#if follow_waiting}
+      <ProgressBar helperText="Please wait..." />
+    {:else}
+      <Button disabled={publisher_to_follow_invalid} on:click={followPublisher}
+        >Confirm</Button
+      >
+    {/if}
+  </Modal>
 
   <Content>
     <Router {routes} />

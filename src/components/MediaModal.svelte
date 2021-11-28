@@ -7,15 +7,15 @@
   export let media_modal_open: boolean;
 </script>
 
-{#if media_modal_open}
-  <Modal
-    bind:open={media_modal_open}
-    modalHeading="media"
-    on:close
-    on:open
-    passiveModal={true}
-    size="lg"
-  >
+<Modal
+  bind:open={media_modal_open}
+  modalHeading="media"
+  on:close
+  on:open
+  passiveModal
+  size="lg"
+>
+  {#if media_modal_open}
     <Splide>
       {#each media_modal_media as mediaObj}
         {#if mediaObj.mime && mediaObj.mime.includes("image")}
@@ -42,8 +42,8 @@
         {/if}
       {/each}
     </Splide>
-  </Modal>
-{/if}
+  {/if}
+</Modal>
 
 <style>
   .image {
