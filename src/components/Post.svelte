@@ -8,6 +8,7 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
+  import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
   import * as timeago from "timeago.js";
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse } from "../types.type";
@@ -132,7 +133,6 @@
                   height="300"
                   controls
                   bind:this={mediaObj.element}
-                  on:click={openMediaModal}
                 >
                   <track kind="captions" />
                 </video>
@@ -142,10 +142,11 @@
                   height="300"
                   controls
                   bind:this={mediaObj.element}
-                  on:click={openMediaModal}
                 >
                   <track kind="captions" />
                 </video>
+              {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
+                <DocumentPdf32 on:click={openMediaModal} />
               {/if}
             </Column>
           {/each}
