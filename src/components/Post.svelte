@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    Button,
     Column,
     Grid,
     Link,
@@ -146,7 +147,10 @@
                   <track kind="captions" />
                 </video>
               {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-                <DocumentPdf32 on:click={openMediaModal} />
+                <Button kind="secondary" on:click={openMediaModal}>
+                  {mediaObj.filename}
+                  <DocumentPdf32 />
+                </Button>
               {/if}
             </Column>
           {/each}

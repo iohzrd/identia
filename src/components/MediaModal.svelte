@@ -1,25 +1,32 @@
 <script lang="ts">
-  import PdfViewer from "svelte-pdf-viewer";
+  import PdfViewer from "svelte-pdf";
   import type { MediaObj } from "../types.type";
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
 
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
-  let pdfInfos = [];
+  export let idx = 0;
+  $: filename =
+    typeof Array.isArray(media_modal_media) && media_modal_media.length > 0
+      ? media_modal_media[idx].filename
+      : "";
 </script>
 
 <Modal
   bind:open={media_modal_open}
-  modalHeading="media"
+  modalHeading={filename}
   on:close
   on:open
   passiveModal
   size="lg"
 >
   {#if media_modal_open}
-    <Splide>
-      {#each media_modal_media as mediaObj, idx}
+    <Splide
+      on:active={(e) => (idx = e.detail.Slide.index)}
+      on:move={(e) => (idx = e.detail.index)}
+    >
+      {#each media_modal_media as mediaObj}
         {#if mediaObj.mime && mediaObj.mime.includes("image")}
           <SplideSlide>
             <img
@@ -43,8 +50,12 @@
           </SplideSlide>
         {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
           <SplideSlide>
-            <div style="height: 90%; width: 100%;">
-              <PdfViewer file={mediaObj.blobUrl} bind:infos={pdfInfos[idx]} />
+            <div style="text-align: center;">
+              <PdfViewer
+                url={mediaObj.blobUrl}
+                scale={1.0}
+                showBorder={false}
+              />
             </div>
           </SplideSlide>
         {/if}
