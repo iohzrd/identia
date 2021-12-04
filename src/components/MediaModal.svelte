@@ -4,12 +4,12 @@
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
 
+  export let media_modal_idx: number;
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
-  export let idx = 0;
   $: filename =
     typeof Array.isArray(media_modal_media) && media_modal_media.length > 0
-      ? media_modal_media[idx].filename
+      ? media_modal_media[media_modal_idx].filename
       : "";
 </script>
 
@@ -23,8 +23,8 @@
 >
   {#if media_modal_open}
     <Splide
-      on:active={(e) => (idx = e.detail.Slide.index)}
-      on:move={(e) => (idx = e.detail.index)}
+      options={{ start: media_modal_idx }}
+      on:move={(e) => (media_modal_idx = e.detail.index)}
     >
       {#each media_modal_media as mediaObj}
         {#if mediaObj.mime && mediaObj.mime.includes("image")}

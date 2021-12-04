@@ -21,6 +21,7 @@
 
   export let cid: String;
   export let post_response: PostResponse;
+  export let media_modal_idx: number;
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
 
@@ -64,7 +65,10 @@
     return mediaObj;
   }
 
-  function openMediaModal() {
+  function openMediaModal(idx) {
+    console.log("openMediaModal");
+    console.log(idx);
+    media_modal_idx = idx;
     media_modal_media = media;
     media_modal_open = true;
   }
@@ -117,7 +121,7 @@
           <br />
         {/if}
         <Row>
-          {#each media as mediaObj}
+          {#each media as mediaObj, idx}
             <Column sm={4} md={4} lg={4}>
               {#if mediaObj.mime && mediaObj.mime.includes("image")}
                 <img
@@ -125,7 +129,7 @@
                   src={mediaObj.blobUrl}
                   alt=""
                   bind:this={mediaObj.element}
-                  on:click={openMediaModal}
+                  on:click={() => openMediaModal(idx)}
                 />
               {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
                 <video
@@ -147,7 +151,7 @@
                   <track kind="captions" />
                 </video>
               {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-                <Button kind="secondary" on:click={openMediaModal}>
+                <Button kind="secondary" on:click={() => openMediaModal(idx)}>
                   {mediaObj.filename}
                   <DocumentPdf32 />
                 </Button>
