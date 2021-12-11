@@ -6,7 +6,7 @@ authors = [ "iohzrd" ]
 license = "GPL-3.0"
 repository = "https://github.com/iohzrd/tauri-svelte"
 default-run = "identia"
-edition = "2018"
+edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "1.0.0-beta.4" }
