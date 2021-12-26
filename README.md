@@ -99,4 +99,4 @@ https://www.patreon.com/iohzrd
 
 ## License
 
-[GPL-3.0 License](LICENSE)
+[AGPL-3.0](LICENSE)
