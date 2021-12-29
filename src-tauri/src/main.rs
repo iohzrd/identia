@@ -81,6 +81,7 @@ fn main() {
       _ => {}
     })
     .invoke_handler(tauri::generate_handler![
+      identity::delete_post,
       identity::follow_publisher,
       identity::get_display_name_db,
       identity::get_file_ipfs,

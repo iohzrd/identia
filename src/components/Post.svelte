@@ -65,6 +65,15 @@
     return mediaObj;
   }
 
+  async function deletePost() {
+    console.log("deletePost");
+    const root_cid = post_response.cid || cid;
+    console.log(root_cid);
+    post_response = await invoke("delete_post", {
+      cid: root_cid,
+    });
+  }
+
   function openMediaModal(idx) {
     console.log("openMediaModal");
     console.log(idx);
@@ -107,7 +116,7 @@
       ).toLocaleString()})
 
       <OverflowMenu flipped style="float:right;">
-        <OverflowMenuItem text="Delete post" />
+        <OverflowMenuItem text="Delete post" on:click={deletePost} />
       </OverflowMenu>
     </div>
     <br />

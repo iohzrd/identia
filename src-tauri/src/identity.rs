@@ -760,10 +760,36 @@ pub async fn insert_post(
 #[tauri::command]
 pub async fn delete_post(state: tauri::State<'_, AppState>, cid: String) -> Result<bool, bool> {
   println!("delete_post: {:?}", cid);
+
+  let conn = state.db_pool.get().unwrap();
+  let mut identity_res = match get_identity_db(conn, state.ipfs_id.clone()).await {
+    Ok(res) => {
+      println!("got : {:?}", res);
+      res
+    }
+    Err(e) => {
+      eprintln!("{:#?}", e);
+      IdentityResponse {
+        cid: String::from(""),
+        identity: Identity::new(state.ipfs_id.clone(), 0),
+      }
+    }
+  };
+
+  if let Some(pos) = identity_res.identity.posts.iter().position(|x| *x == cid) {
+    identity_res.identity.posts.remove(pos);
+    identity_res.identity.timestamp = DateTime::timestamp_millis(&Utc::now());
+  }
+
+  let conn = state.db_pool.get().unwrap();
+  let identity_res = publish_identity(identity_res.identity).await.unwrap();
+  update_identity_db(conn, &identity_res).await;
+
   let conn = state.db_pool.get().unwrap();
   conn
     .execute("DELETE FROM posts WHERE cid = ?", params![&cid])
     .unwrap();
+
   Ok(true)
 }
 
@@ -839,7 +865,7 @@ pub fn initialize_ipfs_config() {
       "config",
       "--json",
       "API.HTTPHeaders.Access-Control-Allow-Origin",
-      r#"["tauri://localhost","https://tauri.localhost"]"#,
+      r#"["http://127.0.0.1:5001","tauri://localhost","https://tauri.localhost"]"#,
     ])
     .output()
     .unwrap();
