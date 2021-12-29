@@ -1,6 +1,7 @@
 import commonjs from "@rollup/plugin-commonjs";
 import css from "rollup-plugin-css-only";
 import livereload from "rollup-plugin-livereload";
+import replace from "@rollup/plugin-replace";
 import resolve from "@rollup/plugin-node-resolve";
 import svelte from "rollup-plugin-svelte";
 import sveltePreprocess from "svelte-preprocess";
@@ -43,6 +44,10 @@ export default {
     file: "public/build/bundle.js",
   },
   plugins: [
+    // this is required to avoid an error from: string-strip-html -> ranges-apply -> tiny-invariant
+    replace({
+      "process.env.NODE_ENV": JSON.stringify("production"),
+    }),
     svelte({
       preprocess: sveltePreprocess({ sourceMap: !production }),
       compilerOptions: {
