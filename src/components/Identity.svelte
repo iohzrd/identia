@@ -150,6 +150,7 @@
         {#each posts as post_response}
           <div>
             <Post
+              {ipfs_id}
               cid={null}
               {post_response}
               bind:media_modal_idx

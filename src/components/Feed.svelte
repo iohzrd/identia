@@ -10,6 +10,7 @@
   export let params = {};
   $: publisher = params["publisher"];
 
+  let ipfs_id: string;
   let update_feed_interval = null;
   let feed: PostResponse[] = [];
   let newest_ts: number = Math.floor(new Date().getTime());
@@ -67,6 +68,7 @@
   }
 
   onMount(async () => {
+    ipfs_id = await invoke("ipfs_id");
     getFeedPage();
     update_feed_interval = setInterval(updateIdentities, 60 * 1000);
   });
@@ -82,6 +84,7 @@
 
 {#each feed as post_response}
   <Post
+    {ipfs_id}
     cid={null}
     {post_response}
     bind:media_modal_idx

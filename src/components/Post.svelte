@@ -19,6 +19,7 @@
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
 
+  export let ipfs_id: string;
   export let cid: String;
   export let post_response: PostResponse;
   export let media_modal_idx: number;
@@ -116,7 +117,9 @@
       ).toLocaleString()})
 
       <OverflowMenu flipped style="float:right;">
-        <OverflowMenuItem text="Delete post" on:click={deletePost} />
+        {#if post_response.post.publisher === ipfs_id}
+          <OverflowMenuItem text="Delete post" on:click={deletePost} />
+        {/if}
       </OverflowMenu>
     </div>
     <br />
