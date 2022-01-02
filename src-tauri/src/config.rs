@@ -1,3 +1,6 @@
+// Copyright 2021-2022 iohzrd
+// SPDX-License-Identifier: AGPL-3.0
+
 use std::{fs, path::PathBuf};
 use tauri::api::path::config_dir;
 

@@ -1,3 +1,6 @@
+// Copyright 2021-2022 iohzrd
+// SPDX-License-Identifier: AGPL-3.0
+
 pub const CREATE_IDENTITIES_TABLE: &str = "
     create table if not exists identities (
     avatar        text,

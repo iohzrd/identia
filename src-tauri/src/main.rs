@@ -1,3 +1,6 @@
+// Copyright 2021-2022 iohzrd
+// SPDX-License-Identifier: AGPL-3.0
+
 #![cfg_attr(
   all(not(debug_assertions), target_os = "windows"),
   windows_subsystem = "windows"

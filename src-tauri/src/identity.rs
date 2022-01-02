@@ -1,3 +1,6 @@
+// Copyright 2021-2022 iohzrd
+// SPDX-License-Identifier: AGPL-3.0
+
 use chrono::{offset::Utc, DateTime};
 use common_multipart_rfc7578::client::multipart::Form;
 use futures::TryStreamExt;

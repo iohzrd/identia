@@ -1,3 +1,6 @@
+// Copyright 2021-2022 iohzrd
+// SPDX-License-Identifier: AGPL-3.0
+
 use chrono::{offset::Utc, DateTime};
 use ipfs_api::IpfsClient;
 use r2d2::Pool;
@@ -63,7 +66,9 @@ impl Identity {
       avatar: String::from(""),
       description: String::from(""),
       display_name: String::from(""),
-      following: vec![String::from("12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz")],
+      following: vec![String::from(
+        "12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz",
+      )],
       meta: json!({}),
       posts: Vec::new(),
       publisher: String::from(publisher),
