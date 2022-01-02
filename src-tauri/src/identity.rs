@@ -736,6 +736,25 @@ pub async fn post(
   Ok(post_response)
 }
 
+#[tauri::command]
+pub async fn repost(state: tauri::State<'_, AppState>, cid: String) -> Result<bool, bool> {
+  let mut success = false;
+  let conn = state.db_pool.get().unwrap();
+  let mut db_identity_res = get_identity_db(conn, state.ipfs_id.clone()).await.unwrap();
+  if !db_identity_res.identity.posts.contains(&cid) {
+    db_identity_res.identity.posts.insert(0, cid.clone());
+    db_identity_res.identity.timestamp = DateTime::timestamp_millis(&Utc::now());
+    println!("repost success, publishing...");
+    let conn = state.db_pool.get().unwrap();
+    let identity_res = publish_identity(db_identity_res.identity).await.unwrap();
+    update_identity_db(conn, &identity_res).await;
+    success = true;
+  } else {
+    println!("post {:?} already in posts, skipping...", cid);
+  }
+  Ok(success)
+}
+
 pub async fn insert_post(
   conn: PooledConnection<SqliteConnectionManager>,
   post: Post,

@@ -92,6 +92,7 @@ fn main() {
       identity::ipfs_id,
       identity::post,
       identity::query_posts,
+      identity::repost,
       identity::update_feed,
       identity::update_identity_aux,
       identity::wait_for_ipfs_id_cmd,

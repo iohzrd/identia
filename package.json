@@ -42,7 +42,7 @@
     "linkify-html": "^3.0.4",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.4",
-    "npm-check-updates": "^12.0.5",
+    "npm-check-updates": "^12.1.0",
     "rollup": "^2.62.0",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
