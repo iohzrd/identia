@@ -1,4 +1,4 @@
-// Copyright 2021-2022 iohzrd
+// Copyright 2021-2022, iohzrd <iohzrd@protonmail.com>
 // SPDX-License-Identifier: AGPL-3.0
 
 #![cfg_attr(
