@@ -65,6 +65,37 @@ Most of the identity logic is contained in:
 The meta object is a store for arbitrary data that can be used to describe complex relationships between various types of data.
 These relationships can be stored in a post object to add context to a specific post or in the identity object to provide an identity-wide context scope.
 
+## TODO
+
+- [x] prototype logic
+- [x] periodically re-publish self identity
+- [x] periodically update identities you follow...
+- [x] cache posts
+- [x] enable file in posts
+- [x] bundle IPFS binaries and manage execution
+- [x] post view
+- [x] implement tray.
+- [x] progress events for spinners and such
+- [x] Distribute binaries
+- [x] migrate to SQLite...
+- [x] Paginate feed
+- [x] enable(fix) audio/video playback
+- [ ] "re-post" / mirror a post
+- [ ] implement comment system via pubsub
+- [ ] strip exif data from images
+- [ ] include index.html with posts to allow styling for browser consumption...
+- [ ] Auto-update system
+- [ ] advanced pin management
+- [ ] meta view
+- [ ] settings view
+- [ ] implement private messaging via pubsub + libsignal
+- [ ] mechanism for exporting / importing, identity / posts
+- [ ] keybase-like functionality...
+- [ ] mobile app...
+- [ ] re-imlpement tor hidden service
+- [ ] serve web-frendly html with identity + TOR
+- [ ] integrate [DiscoCrypto](https://discocrypto.com/#/) into IPFS
+
 ## Community:
 
 ```
