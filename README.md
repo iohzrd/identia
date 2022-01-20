@@ -80,6 +80,7 @@ These relationships can be stored in a post object to add context to a specific 
 - [x] migrate to SQLite...
 - [x] Paginate feed
 - [x] enable(fix) audio/video playback
+- [ ] include crypto signature of body in post
 - [ ] "re-post" / mirror a post
 - [ ] implement comment system via pubsub
 - [ ] strip exif data from images
@@ -88,13 +89,12 @@ These relationships can be stored in a post object to add context to a specific 
 - [ ] advanced pin management
 - [ ] meta view
 - [ ] settings view
-- [ ] implement private messaging via pubsub + libsignal
+- [ ] implement private messaging via pubsub + libsignal or [DiscoCrypto](https://discocrypto.com/#/)
 - [ ] mechanism for exporting / importing, identity / posts
 - [ ] keybase-like functionality...
 - [ ] mobile app...
 - [ ] re-imlpement tor hidden service
 - [ ] serve web-frendly html with identity + TOR
-- [ ] integrate [DiscoCrypto](https://discocrypto.com/#/) into IPFS
 
 ## Community:
 
