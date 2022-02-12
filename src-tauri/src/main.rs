@@ -14,10 +14,7 @@ use crate::identity::{initialize_database, wait_for_ipfs_id};
 use ipfs_api::IpfsClient;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
-use tauri::{
-  api::dialog::ask, async_runtime, CustomMenuItem, Event, GlobalShortcutManager, Manager,
-  SystemTray, SystemTrayEvent, SystemTrayMenu,
-};
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 
 #[cfg(target_os = "linux")]
 use std::path::PathBuf;
@@ -29,18 +26,6 @@ struct IpfsID {
 
 fn main() {
   tauri::Builder::default()
-    // .on_page_load(|window, _| {
-    //   let window_ = window.clone();
-    //   window.listen("ipfs-id", move |event| {
-    //     println!("got js-event with message '{:?}'", event.payload());
-    //     let id = IpfsID {
-    //       data: "ipfs-id".to_string(),
-    //     };
-    //     window_
-    //       .emit("rust-event", Some(id))
-    //       .expect("failed to emit");
-    //   });
-    // })
     .system_tray(
       SystemTray::new()
         .with_menu(SystemTrayMenu::new().add_item(CustomMenuItem::new("exit_app", "Quit"))),
@@ -147,7 +132,7 @@ fn main() {
 
             let reply = IpfsID { data: id.clone() };
             main_window
-              .emit("ipfs-id", Some(reply))
+              .emit("ipfs-id", Some(&reply))
               .expect("failed to emit");
           }
           Err(e) => {
@@ -158,55 +143,6 @@ fn main() {
 
       Ok(())
     })
-    .build(tauri::generate_context!())
-    .expect("error while building tauri application")
-    .run(|app_handle, e| match e {
-      // Application is ready (triggered only once)
-      Event::Ready => {
-        let app_handle = app_handle.clone();
-        // launch a new thread so it doesnt block any channel
-        async_runtime::spawn(async move {
-          let app_handle = app_handle.clone();
-          app_handle
-            .global_shortcut_manager()
-            .register("CmdOrCtrl+1", move || {
-              let app_handle = app_handle.clone();
-              let window = app_handle.get_window("main").unwrap();
-              window.set_title("New title!").unwrap();
-            })
-            .unwrap();
-        });
-      }
-
-      // Triggered when a window is trying to close
-      Event::CloseRequested { label, api, .. } => {
-        let app_handle = app_handle.clone();
-        let window = app_handle.get_window(&label).unwrap();
-        // use the exposed close api, and prevent the event loop to close
-        api.prevent_close();
-        // ask the user if he wants to quit
-        // we need to run this on another thread because this is the event loop callback handler
-        // and the dialog API needs to communicate with the event loop.
-        std::thread::spawn(move || {
-          ask(
-            Some(&window),
-            "identia",
-            "Are you sure that you want to close this window?",
-            move |answer| {
-              if answer {
-                app_handle.get_window(&label).unwrap().close().unwrap();
-              }
-            },
-          );
-        });
-      }
-
-      // Keep the event loop running even if all windows are closed
-      // This allow us to catch system tray events when there is no window
-      Event::ExitRequested { api, .. } => {
-        api.prevent_exit();
-      }
-
-      _ => {}
-    })
+    .run(tauri::generate_context!())
+    .expect("error while running identia");
 }

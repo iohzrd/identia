@@ -15,6 +15,12 @@
     },
     "bundle": {
       "active": true,
+      "category": "P2P",
+      "copyright": "iohzrd",
+      "deb": {
+        "depends": [],
+        "useBootstrapper": false
+      },
       "externalBin": ["../node_modules/go-ipfs/go-ipfs/ipfs"],
       "icon": [
         "icons/32x32.png",
@@ -23,42 +29,24 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.iohzrd.identia"
-    },
-    "cli": {
-      "args": [
-        {
-          "description": "Config path",
-          "name": "config",
-          "short": "c",
-          "takesValue": true
-        },
-        {
-          "description": "App theme",
-          "name": "theme",
-          "possibleValues": ["light", "dark", "system"],
-          "short": "t",
-          "takesValue": true
-        },
-        {
-          "description": "Verbosity level",
-          "multipleOccurrences": true,
-          "name": "verbose",
-          "short": "v"
-        }
-      ],
-      "description": "Decentralized, censorship resistant social media on IPFS",
-      "subcommands": {
-        "update": {
-          "args": [
-            {
-              "description": "Update in background",
-              "name": "background",
-              "short": "b"
-            }
-          ],
-          "description": "Updates the app"
-        }
+      "identifier": "com.iohzrd.identia",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "minimumSystemVersion": "",
+        "providerShortName": null,
+        "signingIdentity": null,
+        "useBootstrapper": false
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
       }
     },
     "security": {
@@ -68,21 +56,15 @@
       "iconPath": "icons/icon.png"
     },
     "updater": {
-      "active": true,
-      "dialog": false,
-      "endpoints": [
-        "https://tauri-update-server.vercel.app/update/{{target}}/{{current_version}}"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5QzMxNjYwNTM5OEUwNTgKUldSWTRKaFRZQmJER1h4d1ZMYVA3dnluSjdpN2RmMldJR09hUFFlZDY0SlFqckkvRUJhZDJVZXAK"
+      "active": false
     },
     "windows": [
       {
-        "label": "main",
-        "title": "identia",
-        "width": 1920,
+        "fullscreen": false,
         "height": 1080,
         "resizable": true,
-        "visible": true
+        "title": "identia",
+        "width": 1920
       }
     ]
   }
