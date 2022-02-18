@@ -2332,7 +2332,7 @@ dependencies = [
  "rand 0.8.5",
  "ring",
  "rw-stream-sink",
- "sha2 0.10.1",
+ "sha2 0.10.2",
  "smallvec",
  "thiserror",
  "unsigned-varint 0.7.1",
@@ -2384,7 +2384,7 @@ dependencies = [
  "prost",
  "prost-build",
  "rand 0.8.5",
- "sha2 0.10.1",
+ "sha2 0.10.2",
  "snow",
  "static_assertions",
  "x25519-dalek",
@@ -4147,9 +4147,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99c3bd8169c58782adad9290a9af5939994036b76187f7b4f0e6de91dbbfc0ec"
+checksum = "55deaec60f81eefe3cce0dc50bda92d6d8e88f2a27df7c5033b42afeb1ed2676"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -4578,7 +4578,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "sha2 0.10.1",
+ "sha2 0.10.2",
  "tauri-utils",
  "thiserror",
  "uuid",
@@ -4615,7 +4615,7 @@ dependencies = [
  "tauri-utils",
  "thiserror",
  "uuid",
- "webview2-com",
+ "webview2-com 0.11.0",
  "windows 0.30.0",
 ]
 
@@ -4632,7 +4632,7 @@ dependencies = [
  "tauri-runtime",
  "tauri-utils",
  "uuid",
- "webview2-com",
+ "webview2-com 0.11.0",
  "windows 0.30.0",
  "wry",
 ]
@@ -4820,9 +4820,9 @@ checksum = "360dfd1d6d30e05fda32ace2c8c70e9c0a9da713275777f5a4dbb8a1893930c6"
 
 [[package]]
 name = "tracing"
-version = "0.1.30"
+version = "0.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d8d93354fe2a8e50d5953f5ae2e47a3fc2ef03292e7ea46e3cc38f549525fb9"
+checksum = "f6c650a8ef0cd2dd93736f033d21cbd1224c5a967aa0c258d00fcf7dafef9b9f"
 dependencies = [
  "cfg-if",
  "pin-project-lite",
@@ -4864,9 +4864,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.3.8"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74786ce43333fcf51efe947aed9718fbe46d5c7328ec3f1029e818083966d9aa"
+checksum = "9e0ab7bdc962035a87fba73f3acca9b8a8d0034c2e6f60b84aeaaddddc155dce"
 dependencies = [
  "ansi_term",
  "lazy_static",
@@ -5214,7 +5214,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1975ce3573344c099935fe3903f1708dac69efe8539f1efee3ae54d8f9315fbb"
 dependencies = [
  "webview2-com-macros",
- "webview2-com-sys",
+ "webview2-com-sys 0.11.0",
+ "windows 0.30.0",
+ "windows_macros",
+]
+
+[[package]]
+name = "webview2-com"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb8e90ac2d9ce39cdb70017aaec641be09fbdd702b7b332b9896d053eb469524"
+dependencies = [
+ "webview2-com-macros",
+ "webview2-com-sys 0.13.0",
  "windows 0.30.0",
  "windows_macros",
 ]
@@ -5235,6 +5247,20 @@ name = "webview2-com-sys"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a746838a94b7391f707209a246e3436d81d1e71832126a65a897d3ee5511040"
+dependencies = [
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "windows 0.30.0",
+ "windows-bindgen",
+]
+
+[[package]]
+name = "webview2-com-sys"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92160310b3322397e4ff8a8285a7429d73a07a68fda44ee80879605b93e53f76"
 dependencies = [
  "regex",
  "serde",
@@ -5489,9 +5515,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "194b2750d8fe10fef189af5e2ca09e56cb8c5458a365d2b32842b024351f58c9"
+checksum = "620bfe8ed3cde9310f32a69ffc654dfd8dae4ac5a0e08d6fbf0205a996fc7f0f"
 dependencies = [
  "cocoa",
  "core-graphics",
@@ -5513,7 +5539,7 @@ dependencies = [
  "url",
  "webkit2gtk",
  "webkit2gtk-sys",
- "webview2-com",
+ "webview2-com 0.13.0",
  "windows 0.30.0",
  "windows_macros",
 ]
