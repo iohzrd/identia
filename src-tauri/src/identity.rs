@@ -11,6 +11,7 @@ use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{named_params, params, Connection, Result};
 use rusqlite_migration::{Migrations, M};
 use serde_json::{from_slice, json, Value};
+use std::env;
 use std::fs;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
@@ -910,6 +911,13 @@ pub fn initialize_ipfs_config() {
 
 pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
   println!("Starting IPFS.");
+  env::set_var(
+    "IPFS_PATH",
+    config::identia_app_data_path()
+      .into_os_string()
+      .to_str()
+      .unwrap(),
+  );
   Command::new_sidecar("ipfs")
     .or(Err(String::from("Can't find ipfs binary")))?
     .args(&[
@@ -919,6 +927,7 @@ pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
         .into_os_string()
         .to_str()
         .unwrap(),
+      "--migrate=true",
     ])
     .spawn()
     .map_err(|err| format!("Failed to execute ipfs: {:?}", err))?;
