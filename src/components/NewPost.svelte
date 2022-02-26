@@ -66,19 +66,18 @@
     });
   }
 
-  function handleDrop(paths: string[]) {
+  function handleFiles(paths: string[]) {
     paths = paths.map((path) => decodeURIComponent(path));
     files = arrayUnique([...files, ...paths]);
   }
 
   onMount(async () => {});
-
   onDestroy(() => {});
 </script>
 
 <Form>
   <FormGroup>
-    <FileDrop handleFiles={handleDrop}>
+    <FileDrop {handleFiles}>
       <TextArea
         bind:value={body}
         disabled={posting}
