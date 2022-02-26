@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FileDrop from "svelte-tauri-filedrop";
   import type { PostRequest, PostResponse } from "../types.type";
   import {
     Button,
@@ -18,10 +19,10 @@
   let body: string = "";
   let files: string[] = [];
   let meta: object = {};
-  let awaiting_response = false;
+  let posting = false;
 
   async function post() {
-    awaiting_response = true;
+    posting = true;
     let postRequest: PostRequest = {
       body: stripHtml(body).result,
       files: files,
@@ -36,7 +37,18 @@
       files = [];
       meta = {};
     }
-    awaiting_response = false;
+    posting = false;
+  }
+
+  function arrayUnique(array) {
+    var a = array.concat();
+    for (var i = 0; i < a.length; ++i) {
+      for (var j = i + 1; j < a.length; ++j) {
+        if (a[i] === a[j]) a.splice(j--, 1);
+      }
+    }
+
+    return a;
   }
 
   function openDialog() {
@@ -54,6 +66,13 @@
     });
   }
 
+  function handleDrop(paths: string[]) {
+    console.log("handleDrop");
+    console.log(paths);
+    paths = paths.map((path) => decodeURI(path));
+    files = arrayUnique([...files, ...paths]);
+  }
+
   onMount(async () => {});
 
   onDestroy(() => {});
@@ -61,26 +80,29 @@
 
 <Form>
   <FormGroup>
-    <TextArea
-      bind:value={body}
-      disabled={awaiting_response}
-      labelText="New post"
-      placeholder="What's happening?"
-    />
-    {#each files as file}
-      <FileUploaderItem status="complete" name={file} />
-    {/each}
-    <Button on:click={openDialog} disabled={awaiting_response}>Add files</Button
-    >
+    <FileDrop handleFiles={handleDrop}>
+      <TextArea
+        bind:value={body}
+        disabled={posting}
+        labelText="New post"
+        placeholder="What's happening?"
+      />
 
-    {#if !awaiting_response}
-      <Button
-        on:click={post}
-        disabled={awaiting_response || (files.length < 1 && body.length < 1)}
-        >Post</Button
-      >
-    {:else}
-      <ProgressBar helperText="Publishing..." />
-    {/if}
+      {#each files as file}
+        <FileUploaderItem status="complete" name={file} />
+      {/each}
+      <Button on:click={openDialog} disabled={posting}>Add files</Button>
+
+      {#if !posting}
+        <Button
+          on:click={post}
+          disabled={posting || (files.length < 1 && body.length < 1)}
+        >
+          Post
+        </Button>
+      {:else}
+        <ProgressBar helperText="Publishing..." />
+      {/if}
+    </FileDrop>
   </FormGroup>
 </Form>
