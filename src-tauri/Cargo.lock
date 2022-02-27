@@ -129,9 +129,9 @@ checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
 name = "ashpd"
-version = "0.2.2"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7915e26e0786f91768d23de32afafa4ee5e2ea76be21c0ecd8e14441543c1655"
+checksum = "098dee97729c0164b39a8a7de9c20e4b0eb9cd57f87c8bb465224587b44b1683"
 dependencies = [
  "enumflags2",
  "futures",
@@ -2907,7 +2907,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
 dependencies = [
  "malloc_buf",
- "objc_exception",
 ]
 
 [[package]]
@@ -2919,15 +2918,6 @@ dependencies = [
  "block",
  "objc",
  "objc_id",
-]
-
-[[package]]
-name = "objc_exception"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad970fb455818ad6cba4c122ad012fae53ae8b4795f86378bce65e4f6bab2ca4"
-dependencies = [
- "cc",
 ]
 
 [[package]]
@@ -4384,16 +4374,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sys-info"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b3a0d0aba8bf96a0e1ddfdc352fc53b3df7f39318c71854910c3c4b024ae52c"
-dependencies = [
- "cc",
- "libc",
-]
-
-[[package]]
 name = "system-deps"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5490,9 +5470,9 @@ dependencies = [
 
 [[package]]
 name = "wry"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "620bfe8ed3cde9310f32a69ffc654dfd8dae4ac5a0e08d6fbf0205a996fc7f0f"
+checksum = "9514586e5c964d30cc7123c9aea9880ff7b3cb1c43f6a1dc8703941eb72ac89f"
 dependencies = [
  "cocoa",
  "core-graphics",
@@ -5508,7 +5488,6 @@ dependencies = [
  "once_cell",
  "serde",
  "serde_json",
- "sys-info",
  "tao",
  "thiserror",
  "url",
