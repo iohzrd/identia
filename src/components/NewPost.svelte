@@ -36,6 +36,10 @@
     files = arrayUnique([...files, ...paths]);
   }
 
+  function removeFile(i) {
+    files = files.slice(0, i).concat(files.slice(i + 1));
+  }
+
   function openDialog() {
     open({
       defaultPath: null,
@@ -68,10 +72,6 @@
       meta = {};
     }
     posting = false;
-  }
-
-  function removeFile(i) {
-    files = files.slice(0, i).concat(files.slice(i + 1, files.length));
   }
 
   onMount(async () => {});
