@@ -70,6 +70,10 @@
     posting = false;
   }
 
+  function removeFile(i) {
+    files = files.slice(0, i).concat(files.slice(i + 1, files.length));
+  }
+
   onMount(async () => {});
   onDestroy(() => {});
 </script>
@@ -84,8 +88,12 @@
         placeholder="What's happening?"
       />
 
-      {#each files as file}
-        <FileUploaderItem status="complete" name={file} />
+      {#each files as file, i}
+        <FileUploaderItem
+          status="edit"
+          name={file}
+          on:delete={() => removeFile(i)}
+        />
       {/each}
       <Button on:click={openDialog} disabled={posting}>Add files</Button>
 
