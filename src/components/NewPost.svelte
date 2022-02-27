@@ -21,25 +21,6 @@
   let meta: object = {};
   let posting = false;
 
-  async function post() {
-    posting = true;
-    let postRequest: PostRequest = {
-      body: stripHtml(body).result,
-      files: files,
-      meta: meta,
-    };
-    let postResponse: PostResponse = await invoke("post", {
-      postRequest: postRequest,
-    });
-    if (postResponse) {
-      onPost(postResponse);
-      body = "";
-      files = [];
-      meta = {};
-    }
-    posting = false;
-  }
-
   function arrayUnique(array) {
     let a = array.concat();
     for (let i = 0; i < a.length; ++i) {
@@ -47,8 +28,12 @@
         if (a[i] === a[j]) a.splice(j--, 1);
       }
     }
-
     return a;
+  }
+
+  function handleFiles(paths: string[]) {
+    paths = paths.map((path) => decodeURIComponent(path));
+    files = arrayUnique([...files, ...paths]);
   }
 
   function openDialog() {
@@ -66,9 +51,23 @@
     });
   }
 
-  function handleFiles(paths: string[]) {
-    paths = paths.map((path) => decodeURIComponent(path));
-    files = arrayUnique([...files, ...paths]);
+  async function post() {
+    posting = true;
+    let postRequest: PostRequest = {
+      body: stripHtml(body).result,
+      files: files,
+      meta: meta,
+    };
+    let postResponse: PostResponse = await invoke("post", {
+      postRequest: postRequest,
+    });
+    if (postResponse) {
+      onPost(postResponse);
+      body = "";
+      files = [];
+      meta = {};
+    }
+    posting = false;
   }
 
   onMount(async () => {});
