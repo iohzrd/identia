@@ -43,7 +43,7 @@
     "linkify-html": "^3.0.5",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.5",
-    "rollup": "^2.68.0",
+    "rollup": "^2.69.1",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-svelte": "^7.1.0",
@@ -58,7 +58,7 @@
     "svelte-tauri-filedrop": "^1.0.0",
     "timeago.js": "^4.0.2",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.5",
+    "typescript": "^4.6.2",
     "webcam-easy": "^1.0.5"
   },
   "dependencies": {
