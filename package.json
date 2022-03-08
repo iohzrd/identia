@@ -28,7 +28,7 @@
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.1",
     "@splidejs/svelte-splide": "^0.1.18",
-    "@tauri-apps/cli": "^1.0.0-rc.5",
+    "@tauri-apps/cli": "^1.0.0-rc.7",
     "@tsconfig/svelte": "^3.0.0",
     "buffer": "^6.0.3",
     "carbon-components-svelte": "^0.60.0",
@@ -43,7 +43,7 @@
     "linkify-html": "^3.0.5",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.5",
-    "rollup": "^2.69.1",
+    "rollup": "^2.70.0",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-svelte": "^7.1.0",
@@ -61,7 +61,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.0-rc.1",
+    "@tauri-apps/api": "^1.0.0-rc.2",
     "sirv-cli": "^2.0.2"
   }
 }
