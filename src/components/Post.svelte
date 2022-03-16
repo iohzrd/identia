@@ -12,7 +12,7 @@
   import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
   import * as timeago from "timeago.js";
   import linkifyStr from "linkify-string";
-  import type { MediaObj, PostResponse } from "../types.type";
+  import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client/index";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -52,16 +52,16 @@
       bufs.push(buf);
     }
     const buf: Buffer = Buffer.concat(bufs);
-    const mime: string = await invoke("get_mime", {
+    const fileType: FileTypeResponse = await invoke("get_mime", {
       buf: buf.slice(0, 16),
     });
-    const blob = new Blob([buf], { type: mime });
+    const blob = new Blob([buf], { type: fileType.mime });
     const urlCreator = window.URL || window.webkitURL;
     const mediaObj: MediaObj = {
       blobUrl: urlCreator.createObjectURL(blob),
       element: null,
       filename: filename,
-      mime: mime,
+      mime: fileType.mime,
     };
     return mediaObj;
   }
