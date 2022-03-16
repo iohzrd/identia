@@ -23,6 +23,7 @@ export type MediaResponse = {
   ext: string;
   mime: string;
 };
+
 export type MediaObj = {
   blobUrl: string;
   element: Element;
@@ -31,8 +32,13 @@ export type MediaObj = {
   mime: string;
 };
 
-export type MimeRequest = {
+export type FileTypeRequest = {
   data: any[];
+};
+
+export type FileTypeResponse = {
+  ext: string;
+  mime: string;
 };
 
 export type Post = {

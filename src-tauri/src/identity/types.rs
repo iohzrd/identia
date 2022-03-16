@@ -85,8 +85,14 @@ pub struct MediaResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MimeRequest {
+pub struct FileTypeRequest {
   pub data: Vec<u8>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FileTypeResponse {
+  pub ext: String,
+  pub mime: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

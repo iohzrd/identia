@@ -12,7 +12,7 @@
   import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
   import * as timeago from "timeago.js";
   import linkifyStr from "linkify-string";
-  import type { MediaObj, PostResponse } from "../types.type";
+  import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client/index";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -26,6 +26,11 @@
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
 
+  let timer;
+  let timestamp: string = timeago.format(post_response.post.timestamp);
+  let datetime: string = new Date(
+    post_response.post.timestamp
+  ).toLocaleString();
   let media = [];
   let linkOptions = {
     target: "_blank",
@@ -52,16 +57,16 @@
       bufs.push(buf);
     }
     const buf: Buffer = Buffer.concat(bufs);
-    const mime: string = await invoke("get_mime", {
+    const fileType: FileTypeResponse = await invoke("get_mime", {
       buf: buf.slice(0, 16),
     });
-    const blob = new Blob([buf], { type: mime });
+    const blob = new Blob([buf], { type: fileType.mime });
     const urlCreator = window.URL || window.webkitURL;
     const mediaObj: MediaObj = {
       blobUrl: urlCreator.createObjectURL(blob),
       element: null,
       filename: filename,
-      mime: mime,
+      mime: fileType.mime,
     };
     return mediaObj;
   }
@@ -84,6 +89,9 @@
   }
 
   onMount(async () => {
+    timer = setInterval(() => {
+      timestamp = timeago.format(post_response.post.timestamp);
+    }, 60000);
     if (!post_response) {
       await getPostFromCid();
     }
@@ -94,6 +102,7 @@
   });
 
   onDestroy(() => {
+    clearInterval(timer);
     // this is required to avoid a memory leak...
     media.forEach((mediaObj) => {
       if (mediaObj.element && mediaObj.element.src) {
@@ -112,9 +121,7 @@
       <Link href="#/identity/{post_response.post.publisher}">
         {post_response.display_name || post_response.post.publisher}
       </Link>
-      - {timeago.format(post_response.post.timestamp)} ({new Date(
-        Number(post_response.post.timestamp)
-      ).toLocaleString()})
+      - {timestamp} ({datetime})
 
       <OverflowMenu flipped style="float:right;">
         {#if post_response.post.publisher === ipfs_id}

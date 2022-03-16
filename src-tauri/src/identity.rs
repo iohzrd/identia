@@ -24,7 +24,7 @@ pub mod types;
 use crate::config;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
 use crate::identity::types::{
-  AppState, Identity, IdentityResponse, MediaResponse, MimeRequest, Post, PostRequest, PostResponse,
+  AppState, Identity, IdentityResponse, MediaResponse, FileTypeRequest, FileTypeResponse, Post, PostRequest, PostResponse,
 };
 
 #[tauri::command]
@@ -257,10 +257,15 @@ pub async fn get_file_ipfs(
 }
 
 #[tauri::command]
-pub async fn get_mime(buf: MimeRequest) -> Result<String, String> {
+pub async fn get_mime(buf: FileTypeRequest) -> Result<FileTypeResponse, FileTypeResponse> {
   println!("get_mime: {:?}", &buf.data);
   let kind = infer::get(&buf.data).expect("failed to get mime");
-  Ok(kind.mime_type().into())
+  Ok({
+    FileTypeResponse {
+      ext: kind.extension().into(),
+      mime: kind.mime_type().into(),
+    }
+  })
 }
 
 #[tauri::command]
