@@ -26,6 +26,11 @@
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
 
+  let timer;
+  let timestamp: string = timeago.format(post_response.post.timestamp);
+  let datetime: string = new Date(
+    post_response.post.timestamp
+  ).toLocaleString();
   let media = [];
   let linkOptions = {
     target: "_blank",
@@ -84,6 +89,9 @@
   }
 
   onMount(async () => {
+    timer = setInterval(() => {
+      timestamp = timeago.format(post_response.post.timestamp);
+    }, 60000);
     if (!post_response) {
       await getPostFromCid();
     }
@@ -94,6 +102,7 @@
   });
 
   onDestroy(() => {
+    clearInterval(timer);
     // this is required to avoid a memory leak...
     media.forEach((mediaObj) => {
       if (mediaObj.element && mediaObj.element.src) {
@@ -112,9 +121,7 @@
       <Link href="#/identity/{post_response.post.publisher}">
         {post_response.display_name || post_response.post.publisher}
       </Link>
-      - {timeago.format(post_response.post.timestamp)} ({new Date(
-        Number(post_response.post.timestamp)
-      ).toLocaleString()})
+      - {timestamp} ({datetime})
 
       <OverflowMenu flipped style="float:right;">
         {#if post_response.post.publisher === ipfs_id}
