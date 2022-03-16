@@ -933,8 +933,8 @@ pub async fn launch_ipfs_daemon(client: &IpfsClient) -> Result<String, String> {
     .map_err(|err| format!("Failed to execute ipfs: {:?}", err))?;
 
   match wait_for_ipfs_ready(&client).await {
-    Ok(ready) => println!("ipfs ready: {:?}", ready),
-    Err(e) => eprintln!("error waiting for ipfs: {}", e),
+    true => println!("ipfs ready"),
+    false => eprintln!("error waiting for ipfs"),
   }
 
   match get_ipfs_id(&client).await {
@@ -966,25 +966,15 @@ pub async fn wait_for_ipfs_id(client: &IpfsClient) -> Result<String, String> {
   Ok(identity)
 }
 
-pub async fn wait_for_ipfs_ready(client: &IpfsClient) -> Result<bool, bool> {
+pub async fn wait_for_ipfs_ready(client: &IpfsClient) -> bool {
   let mut ready = false;
-  let mut retries = 1;
-  while !ready {
-    match client.id(None).await {
-      Ok(_id) => {
-        ready = true;
-      }
-      Err(_err) => {
-        if retries > 300 {
-          break;
-        }
-        retries += 1;
-        thread::sleep(Duration::from_millis(100));
-      }
-    }
+  let mut retries = 0;
+  while !ready && retries < 600 {
+    ready = client.id(None).await.is_ok();
+    retries += 1;
+    thread::sleep(Duration::from_millis(100));
   }
-
-  Ok(ready)
+  ready
 }
 
 pub async fn get_ipfs_id(client: &IpfsClient) -> Result<String, String> {

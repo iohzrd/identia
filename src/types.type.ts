@@ -27,6 +27,7 @@ export type MediaObj = {
   blobUrl: string;
   element: Element;
   filename: string;
+  thumbnailFor: string;
   mime: string;
 };
 
