@@ -14,13 +14,9 @@ tauri-build = { version = "1.0.0-rc.4", features = [] }
 [dependencies]
 chrono = { version = "0.4.19", features = [ "serde" ] }
 common-multipart-rfc7578 = "0.3.1"
-feed-rs = "1.0.0"
 futures = "0.3.21"
 infer = "0.7.0"
 ipfs-api = { git = "https://github.com/iohzrd/rust-ipfs-api", features = [ "with-hyper" ] }
-kamadak-exif = "0.5.4"
-libp2p = { default-features = false, features = [ "identify", "noise" ], version = "0.43.0" }
-qrcode = "0.12.0"
 r2d2 = "0.8.9"
 r2d2_sqlite = "0.20.0"
 rusqlite = { version = "0.27.0", features = [ "bundled", "serde_json" ] }
@@ -29,15 +25,6 @@ serde = { version = "1.0.136", features = [ "derive" ] }
 serde_json = "1.0.79"
 tauri = { version = "1.0.0-rc.4", features = ["api-all", "system-tray"] }
 tokio = { version = "1.17.0", features = [ "full", "rt", "rt-multi-thread", "sync", "fs" ] }
-
-[dependencies.libsignal-protocol]
-git = "https://github.com/signalapp/libsignal-client"
-tag = "v0.12.0"
-
-#[dependencies.tauri-plugin-sql]
-#git = "https://github.com/tauri-apps/tauri-plugin-sql"
-#features = ["sqlite"]
-#branch = "release"
 
 [features]
 default = [ "custom-protocol" ]
