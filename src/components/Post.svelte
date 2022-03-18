@@ -10,7 +10,7 @@
     Tile,
   } from "carbon-components-svelte";
   import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
-  import * as timeago from "timeago.js";
+  import { format as formatTime } from "timeago.js";
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
   import { Buffer } from "buffer/index";
@@ -18,6 +18,7 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
+  import ext2mime from "ext2mime";
 
   export let ipfs_id: string;
   export let cid: String;
@@ -27,18 +28,14 @@
   export let media_modal_open: boolean;
 
   let timer;
-  let timestamp: string = timeago.format(post_response.post.timestamp);
+  let timestamp: string = formatTime(post_response.post.timestamp);
   let datetime: string = new Date(
     post_response.post.timestamp
   ).toLocaleString();
   let media = [];
-  let linkOptions = {
+  let bodyHTML = linkifyStr(stripHtml(post_response.post.body).result, {
     target: "_blank",
-  };
-  let bodyHTML = linkifyStr(
-    stripHtml(post_response.post.body).result,
-    linkOptions
-  ).replace(/\n/g, "<br>");
+  }).replace(/\n/g, "<br>");
 
   async function getPostFromCid() {
     console.log("getPostFromCid");
@@ -47,7 +44,7 @@
     });
   }
 
-  async function getMediaObject(filename) {
+  async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
     let bufs = [];
     const root_cid = post_response.cid || cid;
@@ -57,18 +54,29 @@
       bufs.push(buf);
     }
     const buf: Buffer = Buffer.concat(bufs);
-    const fileType: FileTypeResponse = await invoke("get_mime", {
-      buf: buf.slice(0, 16),
-    });
+    // const fileType: FileTypeResponse = await invoke("get_mime", {
+    //   buf: buf.slice(0, 16),
+    // });
+
+    const fileType = {
+      ext: filename.split(".").pop(),
+      mime: ext2mime(filename.split(".").pop()),
+    };
+
     const blob = new Blob([buf], { type: fileType.mime });
     const urlCreator = window.URL || window.webkitURL;
     const mediaObj: MediaObj = {
       blobUrl: urlCreator.createObjectURL(blob),
       element: null,
+      thumbnailFor: "",
       filename: filename,
       mime: fileType.mime,
     };
     return mediaObj;
+  }
+
+  function isVideo(filename: string) {
+    return ext2mime(filename.split(".").pop()).includes("video");
   }
 
   async function deletePost() {
@@ -90,14 +98,22 @@
 
   onMount(async () => {
     timer = setInterval(() => {
-      timestamp = timeago.format(post_response.post.timestamp);
+      timestamp = formatTime(post_response.post.timestamp);
     }, 60000);
     if (!post_response) {
       await getPostFromCid();
     }
 
     for await (const filename of post_response.post.files) {
-      media = [...media, await getMediaObject(filename)];
+      console.log("isVideo");
+      console.log(isVideo(filename));
+      if (isVideo(filename)) {
+        // get thumbnail here...
+        const mediaObj: MediaObj = await getMediaObject(filename, true);
+        media = [...media, mediaObj];
+      } else {
+        media = [...media, await getMediaObject(filename)];
+      }
     }
   });
 
@@ -134,7 +150,6 @@
       <Grid fullWidth>
         {#if post_response.post.body}
           <div>
-            <!-- {@html linkifyStr(post_response.post.body.replace(/\n/g, "<br>"))} -->
             {@html bodyHTML}
           </div>
           <br />
