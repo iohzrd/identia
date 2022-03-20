@@ -3,6 +3,7 @@
   import NewPost from "./NewPost.svelte";
   import Post from "./Post.svelte";
   import type { PostResponse } from "../types.type";
+  import { create } from "ipfs-http-client/index";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
@@ -10,6 +11,8 @@
   export let params = {};
   $: publisher = params["publisher"];
 
+  let ipfs;
+  let ipfs_info;
   let ipfs_id: string;
   let update_feed_interval = null;
   let feed: PostResponse[] = [];
@@ -68,7 +71,9 @@
   }
 
   onMount(async () => {
-    ipfs_id = await invoke("ipfs_id");
+    ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    ipfs_info = await ipfs.id();
+    ipfs_id = ipfs_info.id;
     getFeedPage();
     update_feed_interval = setInterval(updateIdentities, 60 * 1000);
   });

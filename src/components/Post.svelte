@@ -10,15 +10,16 @@
     Tile,
   } from "carbon-components-svelte";
   import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
-  import { format as formatTime } from "timeago.js";
+  import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client/index";
+  import { format as formatTime } from "timeago.js";
+  import { followPublisher } from "../Core.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
-  import ext2mime from "ext2mime";
 
   export let ipfs_id: string;
   export let cid: String;
@@ -54,10 +55,6 @@
       bufs.push(buf);
     }
     const buf: Buffer = Buffer.concat(bufs);
-    // const fileType: FileTypeResponse = await invoke("get_mime", {
-    //   buf: buf.slice(0, 16),
-    // });
-
     const fileType = {
       ext: filename.split(".").pop(),
       mime: ext2mime(filename.split(".").pop()),

@@ -13,11 +13,14 @@
   import Meta from "./Meta.svelte";
   import Post from "./Post.svelte";
   import type { Identity, IdentityResponse, PostResponse } from "../types.type";
+  import { create } from "ipfs-http-client/index";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
   export let params = {};
 
+  let ipfs;
+  let ipfs_info;
   let ipfs_id = "";
   let identity_res: IdentityResponse;
   let identity: Identity;
@@ -60,7 +63,9 @@
   onMount(async () => {
     console.log("onMount");
     console.log(params);
-    ipfs_id = await invoke("ipfs_id");
+    ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    ipfs_info = await ipfs.id();
+    ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
       identity_res = await invoke("get_identity", {
         publisher: params["publisher"],

@@ -1,3 +1,31 @@
+export type AddObj = {
+  path: string;
+  content: string;
+};
+
+export type Comment = {
+  body: string;
+  cid: string;
+  from: string;
+  kind: string;
+  in_response_to: string;
+  topic: string;
+  timestamp: number;
+};
+
+export type Feed = {
+  feed: Post[];
+};
+
+export type FileTypeRequest = {
+  data: any[];
+};
+
+export type FileTypeResponse = {
+  ext: string;
+  mime: string;
+};
+
 export type Identity = {
   avatar: string;
   description: string;
@@ -29,15 +57,6 @@ export type MediaObj = {
   element: Element;
   filename: string;
   thumbnailFor: string;
-  mime: string;
-};
-
-export type FileTypeRequest = {
-  data: any[];
-};
-
-export type FileTypeResponse = {
-  ext: string;
   mime: string;
 };
 

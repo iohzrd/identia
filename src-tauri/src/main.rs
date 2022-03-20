@@ -6,25 +6,76 @@
   windows_subsystem = "windows"
 )]
 
-mod config;
-mod identity;
-use crate::identity::types::AppState;
-use crate::identity::{initialize_database, wait_for_ipfs_id};
-
-use ipfs_api::IpfsClient;
-use r2d2_sqlite::SqliteConnectionManager;
-use serde::{Deserialize, Serialize};
+use ipfs_api::{IpfsApi, IpfsClient};
+use std::env;
+use std::{fs, path::PathBuf};
+use std::{thread, time::Duration};
+use tauri::api::path::config_dir;
+use tauri::api::process::Command;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
-#[cfg(target_os = "linux")]
-use std::path::PathBuf;
+pub fn identia_app_data_path() -> PathBuf {
+  config_dir()
+    .expect("Could not get config dir")
+    .join("identia")
+}
 
-#[derive(Serialize, Deserialize)]
-struct IpfsID {
-  data: String,
+fn create_dir_if_necessary(path: PathBuf) {
+  if let Err(_) = fs::read(path.clone()) {
+    let _result = fs::create_dir(path);
+  }
+}
+
+pub fn initialize_ipfs() {
+  create_dir_if_necessary(identia_app_data_path());
+  println!("Initializing IPFS");
+  let cmd = Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "init",
+      "-c",
+      identia_app_data_path().into_os_string().to_str().unwrap(),
+    ])
+    .output()
+    .unwrap();
+  format!("IPFS init: {:?}", cmd);
+  println!("configuring IPFS");
+  Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "-c",
+      identia_app_data_path().into_os_string().to_str().unwrap(),
+      "config",
+      "--json",
+      "API.HTTPHeaders.Access-Control-Allow-Origin",
+      r#"["http://127.0.0.1:5001","tauri://localhost","https://tauri.localhost"]"#,
+    ])
+    .output()
+    .unwrap();
+  Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "-c",
+      identia_app_data_path().into_os_string().to_str().unwrap(),
+      "config",
+      "--json",
+      "API.HTTPHeaders.Access-Control-Allow-Methods",
+      r#"["GET","POST","PUT"]"#,
+    ])
+    .output()
+    .unwrap();
+}
+
+pub async fn get_ipfs_id(client: &IpfsClient) -> Result<String, String> {
+  match client.id(None).await {
+    Ok(id) => Ok(id.id),
+    Err(err) => Err(err.to_string()),
+  }
 }
 
 fn main() {
+  // let mut id = "";
   tauri::Builder::default()
     .system_tray(
       SystemTray::new()
@@ -68,80 +119,66 @@ fn main() {
       },
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![
-      identity::delete_post,
-      identity::follow_publisher,
-      identity::get_display_name_db,
-      identity::get_file_ipfs,
-      identity::get_identity,
-      identity::get_identity_ipfs_cmd,
-      identity::get_mime,
-      identity::get_post_ipfs,
-      identity::ipfs_id,
-      identity::post,
-      identity::query_posts,
-      identity::repost,
-      identity::update_feed,
-      identity::update_identity_aux,
-      identity::wait_for_ipfs_id_cmd,
-    ])
-    .setup(|app| {
-      identity::initialize_ipfs();
-      identity::initialize_ipfs_config();
-
-      let daemon_client = IpfsClient::default();
+    .invoke_handler(tauri::generate_handler![])
+    .setup(|_app| {
+      initialize_ipfs();
       tauri::async_runtime::spawn(async move {
-        match identity::launch_ipfs_daemon(&daemon_client).await {
-          Ok(id) => {
-            config::create_db_file_if_necessary(id.clone());
-            let db_file_path = config::identia_db_file_path(id.clone());
-            let _ = initialize_database(id.clone(), db_file_path).await;
-          }
-          Err(err) => {
-            // log::error!("There was an error launching ipfs: {:?}", err);
-            eprintln!("There was an error launching ipfs: {:?}", err);
-          }
-        }
-        // log::info!("Launch setup successful")
-        println!("Launch setup successful")
+        println!("Starting IPFS.");
+        env::set_var(
+          "IPFS_PATH",
+          identia_app_data_path().into_os_string().to_str().unwrap(),
+        );
+        Command::new_sidecar("ipfs")
+          .expect("failed to setup ipfs sidecar")
+          .args(&[
+            "daemon",
+            "-c",
+            identia_app_data_path().into_os_string().to_str().unwrap(),
+            "--migrate=true",
+          ])
+          .spawn()
+          .expect("Failed to spawn ipfs");
       });
 
-      let app_handle = app.handle();
-      let ipfs_client = IpfsClient::default();
       tauri::async_runtime::block_on(async move {
-        match wait_for_ipfs_id(&ipfs_client.clone()).await {
-          Ok(id) => {
-            let db_file_path = config::identia_db_file_path(id.clone());
-            println!("opening sqlite db @ {:?}", db_file_path);
-            let db_manager = SqliteConnectionManager::file(db_file_path);
-            let db_pool = r2d2::Pool::new(db_manager).unwrap();
-            let ipfs_client = IpfsClient::default();
-            let ipfs_id = match ipfs_client.id(None).await {
-              Ok(id) => Ok(id.id),
-              Err(_err) => Err(String::new()),
+        let client = IpfsClient::default();
+        let mut ready = false;
+        let mut retries = 1;
+        while !ready {
+          match client.id(None).await {
+            Ok(resp) => {
+              println!("using id: {}", resp.id);
+              // id = &resp.id.as_str();
+              // let f = || {
+              //   id = resp.id.as_str();
+              // };
+              // f();
+              ready = true;
             }
-            .unwrap();
-            let main_window = app.get_window("main").unwrap();
-            let state_manager = app_handle;
-            let app_state = AppState {
-              ipfs_id: ipfs_id,
-              db_pool: db_pool,
-              ipfs_client: ipfs_client,
-            };
-            state_manager.manage(app_state);
-
-            let reply = IpfsID { data: id.clone() };
-            main_window
-              .emit("ipfs-id", Some(&reply))
-              .expect("failed to emit");
+            Err(_err) => {
+              if retries > 6000 {
+                break;
+              }
+              retries += 1;
+              thread::sleep(Duration::from_millis(10));
+            }
           }
-          Err(e) => {
-            eprintln!("failed to wait_for_ipfs_id: {:?}", e)
-          }
-        };
+        }
       });
 
       Ok(())
+    })
+    .plugin({
+      TauriSql::default().add_migrations(
+        "sqlite:sqlite.db",
+        // format!("sqlite:{}.db", id).as_str(),
+        vec![Migration {
+          version: 1,
+          description: "create tables",
+          sql: include_str!("../migrations/1.sql"),
+          kind: MigrationKind::Up,
+        }],
+      )
     })
     .run(tauri::generate_context!())
     .expect("error while running identia");

@@ -14,13 +14,19 @@
     TextInput,
   } from "carbon-components-svelte";
   import Add20 from "carbon-icons-svelte/lib/Add20";
+  import Database from "tauri-plugin-sql-api";
   import Feed from "./components/Feed.svelte";
   import Identity from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
+  import { create } from "ipfs-http-client/index";
+  // import { followPublisher } from "./Core.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
+
+  let ipfs;
+  let ipfs_info;
 
   let follow_modal_open = false;
   let ipfs_id: string;
@@ -62,7 +68,35 @@
   }
 
   onMount(async () => {
-    ipfs_id = await invoke("ipfs_id");
+    ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    ipfs_info = await ipfs.id();
+    console.log(ipfs_info);
+    ipfs_id = ipfs_info.id;
+    // const db = await Database.load(`sqlite:${ipfs_id}.db`);
+    const db = await Database.load(`sqlite:sqlite.db`);
+
+    try {
+      const insert = await db.execute(
+        "INSERT INTO identities (cid,avatar,description,display_name,following,meta,posts,publisher,timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+        [
+          "test",
+          "test",
+          "test",
+          "test",
+          ["12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz"],
+          { BTC: "1234", twitter: { url: "https://twitter.com/iohzrd" } },
+          ["post1", "post2", "post3"],
+          "test",
+          0,
+        ]
+      );
+      console.log(insert);
+    } catch (error) {
+      console.log(error);
+    }
+
+    const select = await db.select("SELECT * from identities");
+    console.log(select);
   });
 
   onDestroy(() => {});
