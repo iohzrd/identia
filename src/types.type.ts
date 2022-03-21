@@ -75,7 +75,11 @@ export type PostRequest = {
 };
 
 export type PostResponse = {
+  body: string;
   cid: string;
   display_name: string;
-  post: Post;
+  files: string[];
+  meta: object;
+  publisher: string;
+  timestamp: number;
 };

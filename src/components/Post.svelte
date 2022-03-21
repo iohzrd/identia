@@ -28,13 +28,16 @@
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
 
+  //  temporary hack to deal with incorrect sql schema
+  if (typeof post_response.files != "object") {
+    post_response.files = JSON.parse(post_response.files);
+  }
+
   let timer;
-  let timestamp: string = formatTime(post_response.post.timestamp);
-  let datetime: string = new Date(
-    post_response.post.timestamp
-  ).toLocaleString();
+  let timestamp: string = formatTime(post_response.timestamp);
+  let datetime: string = new Date(post_response.timestamp).toLocaleString();
   let media = [];
-  let bodyHTML = linkifyStr(stripHtml(post_response.post.body).result, {
+  let bodyHTML = linkifyStr(stripHtml(post_response.body).result, {
     target: "_blank",
   }).replace(/\n/g, "<br>");
 
@@ -95,13 +98,13 @@
 
   onMount(async () => {
     timer = setInterval(() => {
-      timestamp = formatTime(post_response.post.timestamp);
+      timestamp = formatTime(post_response.timestamp);
     }, 60000);
     if (!post_response) {
       await getPostFromCid();
     }
 
-    for await (const filename of post_response.post.files) {
+    for await (const filename of post_response.files) {
       console.log("isVideo");
       console.log(isVideo(filename));
       if (isVideo(filename)) {
@@ -128,24 +131,24 @@
   });
 </script>
 
-{#if post_response.post}
+{#if post_response}
   <Tile style="outline: 2px solid black">
     <div>
-      <Link href="#/identity/{post_response.post.publisher}">
-        {post_response.display_name || post_response.post.publisher}
+      <Link href="#/identity/{post_response.publisher}">
+        {post_response.display_name || post_response.publisher}
       </Link>
       - {timestamp} ({datetime})
 
       <OverflowMenu flipped style="float:right;">
-        {#if post_response.post.publisher === ipfs_id}
+        {#if post_response.publisher === ipfs_id}
           <OverflowMenuItem text="Delete post" on:click={deletePost} />
         {/if}
       </OverflowMenu>
     </div>
     <br />
-    {#if post_response.post.body || post_response.post.files}
+    {#if post_response.body || post_response.files}
       <Grid fullWidth>
-        {#if post_response.post.body}
+        {#if post_response.body}
           <div>
             {@html bodyHTML}
           </div>

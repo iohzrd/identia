@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Database from "tauri-plugin-sql-api";
   import MediaModal from "./MediaModal.svelte";
   import NewPost from "./NewPost.svelte";
   import Post from "./Post.svelte";
@@ -11,6 +12,7 @@
   export let params = {};
   $: publisher = params["publisher"];
 
+  let db;
   let ipfs;
   let ipfs_info;
   let ipfs_id: string;
@@ -29,18 +31,18 @@
   async function getFeedPage() {
     console.log(`getFeedPage: ${publisher}`);
     if (feed.length > 0) {
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
+      newest_ts = feed[0].timestamp;
+      oldest_ts = feed[feed.length - 1].timestamp;
     }
-    let page: PostResponse[] = await invoke("query_posts", {
-      query: feed_query,
-    });
+    let page: PostResponse[] = await db.select(feed_query);
+    console.log("page");
+    console.log(page);
     if (page.length > 0) {
-      // feed.push(...page);
-      // feed = feed;
       feed = [...feed, ...page];
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
+      if (feed.length > 0) {
+        newest_ts = feed[0].timestamp;
+        oldest_ts = feed[feed.length - 1].timestamp;
+      }
     }
   }
 
@@ -48,38 +50,39 @@
     // feed.unshift(post);
     // feed = feed;
     feed = [post, ...feed];
-    newest_ts = feed[0].post.timestamp;
-    oldest_ts = feed[feed.length - 1].post.timestamp;
+    newest_ts = feed[0].timestamp;
+    oldest_ts = feed[feed.length - 1].timestamp;
   }
 
   async function updateIdentities() {
     console.log(`updateIdentities: ${publisher}`);
     if (feed.length > 0) {
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
+      newest_ts = feed[0].timestamp;
+      oldest_ts = feed[feed.length - 1].timestamp;
     }
     let new_posts: PostResponse[] = await invoke("update_feed", {
       query: new_posts_query,
     });
     if (new_posts.length > 0) {
-      // feed.unshift(...new_posts);
-      // feed = feed;
       feed = [...new_posts, ...feed];
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
+      if (feed.length > 0) {
+        newest_ts = feed[0].timestamp;
+        oldest_ts = feed[feed.length - 1].timestamp;
+      }
     }
   }
 
   onMount(async () => {
+    db = await Database.load(`sqlite:sqlite.db`);
     ipfs = await create("/ip4/127.0.0.1/tcp/5001");
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();
-    update_feed_interval = setInterval(updateIdentities, 60 * 1000);
+    // update_feed_interval = setInterval(updateIdentities, 60 * 1000);
   });
 
   onDestroy(() => {
-    clearInterval(update_feed_interval);
+    // clearInterval(update_feed_interval);
   });
 </script>
 

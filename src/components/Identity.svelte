@@ -38,14 +38,14 @@
     console.log(`getFeedPage: ${publisher}`);
     if (identity && identity.posts) {
       if (posts.length > 0) {
-        posts_oldest_ts = posts[posts.length - 1].post.timestamp;
+        posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
       let page: PostResponse[] = await invoke("query_posts", {
         query: posts_query,
       });
       if (page.length > 0) {
         posts = [...posts, ...page];
-        posts_oldest_ts = posts[posts.length - 1].post.timestamp;
+        posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
     }
   }
