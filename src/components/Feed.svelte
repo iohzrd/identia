@@ -4,7 +4,7 @@
   import NewPost from "./NewPost.svelte";
   import Post from "./Post.svelte";
   import type { PostResponse } from "../types.type";
-  import { create } from "ipfs-http-client/index";
+  import { create } from "ipfs-http-client";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
@@ -39,10 +39,8 @@
     console.log(page);
     if (page.length > 0) {
       feed = [...feed, ...page];
-      if (feed.length > 0) {
-        newest_ts = feed[0].timestamp;
-        oldest_ts = feed[feed.length - 1].timestamp;
-      }
+      newest_ts = feed[0].timestamp;
+      oldest_ts = feed[feed.length - 1].timestamp;
     }
   }
 
@@ -65,16 +63,14 @@
     });
     if (new_posts.length > 0) {
       feed = [...new_posts, ...feed];
-      if (feed.length > 0) {
-        newest_ts = feed[0].timestamp;
-        oldest_ts = feed[feed.length - 1].timestamp;
-      }
+      newest_ts = feed[0].timestamp;
+      oldest_ts = feed[feed.length - 1].timestamp;
     }
   }
 
   onMount(async () => {
     db = await Database.load(`sqlite:sqlite.db`);
-    ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();

@@ -18,7 +18,7 @@
   import Feed from "./components/Feed.svelte";
   import Identity from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
-  import { create } from "ipfs-http-client/index";
+  import { create } from "ipfs-http-client";
   import { followPublisher } from "./Core.svelte";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
@@ -56,7 +56,7 @@
   }
 
   onMount(async () => {
-    ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     // const db = await Database.load(`sqlite:${ipfs_id}.db`);

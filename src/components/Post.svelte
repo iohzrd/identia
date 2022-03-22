@@ -14,7 +14,7 @@
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
   import { Buffer } from "buffer/index";
-  import { create } from "ipfs-http-client/index";
+  import { create } from "ipfs-http-client";
   import { format as formatTime } from "timeago.js";
   import { followPublisher } from "../Core.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -53,7 +53,7 @@
     let bufs = [];
     const root_cid = post_response.cid || cid;
     const path: string = root_cid + "/" + filename;
-    const ipfs = await create("/ip4/127.0.0.1/tcp/5001");
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }

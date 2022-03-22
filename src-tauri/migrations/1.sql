@@ -18,4 +18,3 @@ CREATE TABLE posts (
     publisher   TEXT,
     timestamp   INT primary key
   );
-  
