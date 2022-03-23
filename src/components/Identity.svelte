@@ -9,20 +9,20 @@
     Link,
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
+  import Database from "tauri-plugin-sql-api";
   import MediaModal from "./MediaModal.svelte";
   import Meta from "./Meta.svelte";
   import Post from "./Post.svelte";
   import type { Identity, IdentityResponse, PostResponse } from "../types.type";
   import { create } from "ipfs-http-client";
+  import { getIdentity } from "../Core.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
-
   export let params = {};
 
   let ipfs;
   let ipfs_info;
   let ipfs_id = "";
-  let identity_res: IdentityResponse;
   let identity: Identity;
   let posts: PostResponse[] = [];
   let posts_oldest_ts: number = Math.floor(new Date().getTime());
@@ -67,10 +67,14 @@
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
-      identity_res = await invoke("get_identity", {
-        publisher: params["publisher"],
-      });
-      identity = identity_res.identity;
+      const db = await Database.load("sqlite:sqlite.db");
+      await db
+        .select("SELECT * FROM identities WHERE publisher = ?", [publisher])
+        .then((identity_res) => {
+          identity = identity_res[0];
+          console.log("identity");
+          console.log(identity);
+        });
     }
     await getPostsPage();
 
@@ -173,7 +177,7 @@
     </FormGroup>
 
     <FormGroup legendText="last known cid">
-      {identity_res["cid"]}
+      {identity["cid"]}
     </FormGroup>
 
     <Button

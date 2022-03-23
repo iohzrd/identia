@@ -61,6 +61,7 @@
     let new_posts: PostResponse[] = await invoke("update_feed", {
       query: new_posts_query,
     });
+
     if (new_posts.length > 0) {
       feed = [...new_posts, ...feed];
       newest_ts = feed[0].timestamp;
