@@ -1,14 +1,13 @@
 <script context="module" lang="ts">
   import Database from "tauri-plugin-sql-api";
   import type { AddResult } from "ipfs-core-types/src/root";
-  import type { Identity, IdentityResponse } from "./types.type";
+  import type { Identity, IdentityResponse, Post } from "./types.type";
   import type { PublishResult } from "ipfs-core-types/src/name/index";
+  import type { QueryResult } from "tauri-plugin-sql-api";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
 
-  export async function followPublisher(publisher: string) {}
-
-  export async function getPostFromIPFS(cid: string) {
+  export async function getPostFromIPFS(cid: string): Promise<Post> {
     console.log("getPostIPFS");
     if (!cid.includes("/post.json")) {
       cid = cid + "/post.json";
@@ -22,17 +21,74 @@
     return JSON.parse(buf.toString());
   }
 
-  export async function getIdentityFromDB(publisher: string) {
+  export async function getPostFromDB(cid: string): Promise<Post> {
+    console.log("getPostFromDB");
+    const db = await Database.load("sqlite:sqlite.db");
+    const rows: Post[] = await db.select(
+      "SELECT body,files,meta,publisher,timestamp FROM posts WHERE cid = ?",
+      [cid]
+    );
+    return rows[0];
+  }
+
+  export async function getIdentityFromIPFS(
+    publisher: string
+  ): Promise<Identity> {
+    console.log("getIdentityFromIPFS");
+    let bufs = [];
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    let cid = await ipfs.resolve(publisher);
+    if (!cid.includes("/identity.json")) {
+      cid = cid + "/identity.json";
+    }
+    for await (const buf of ipfs.cat(cid)) {
+      bufs.push(buf);
+    }
+    const buf: Buffer = Buffer.concat(bufs);
+    return JSON.parse(buf.toString());
+  }
+
+  export async function getIdentityFromDB(
+    publisher: string
+  ): Promise<Identity> {
     console.log("getIdentityFromDB");
     const db = await Database.load("sqlite:sqlite.db");
-    const rows = await db.select(
-      "SELECT * FROM identities WHERE publisher = ?",
+    const rows: Identity[] = await db.select(
+      "SELECT avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
       [publisher]
     );
     return rows[0];
   }
 
+  export async function deleteIdentityFromDB(
+    publisher: string
+  ): Promise<QueryResult> {
+    const db = await Database.load("sqlite:sqlite.db");
+    return await db.execute(`DELETE FROM identities WHERE publisher = ?`, [
+      publisher,
+    ]);
+  }
+
+  export async function deletePostFromDB(cid: string): Promise<QueryResult> {
+    const db = await Database.load("sqlite:sqlite.db");
+    return await db.execute(`DELETE FROM posts WHERE cid = ?`, [cid]);
+  }
+
   // WIP
+  export async function followPublisher(publisher: string) {}
+
+  export async function deletePostFromIdentity(cid: string) {
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs_id = (await ipfs.id()).id;
+    let identity: Identity = await getIdentityFromDB(ipfs_id);
+    if (identity.posts.includes(cid)) {
+      identity.posts = identity.posts.filter((p) => p !== cid);
+      identity.timestamp = Math.floor(new Date().getTime());
+    }
+    await publishIdentity(identity);
+    await updateIdentityInDB(identity);
+  }
+
   export async function publishIdentity(
     identity: Identity
   ): Promise<IdentityResponse> {
