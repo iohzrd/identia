@@ -15,7 +15,7 @@
   import Post from "./Post.svelte";
   import type { Identity, IdentityResponse, PostResponse } from "../types.type";
   import { create } from "ipfs-http-client";
-  import { getIdentity } from "../Core.svelte";
+  import { getIdentityFromDB } from "../Core.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   export let params = {};
@@ -40,9 +40,8 @@
       if (posts.length > 0) {
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
-      let page: PostResponse[] = await invoke("query_posts", {
-        query: posts_query,
-      });
+      const db = await Database.load("sqlite:sqlite.db");
+      let page: PostResponse[] = await db.select(posts_query);
       if (page.length > 0) {
         posts = [...posts, ...page];
         posts_oldest_ts = posts[posts.length - 1].timestamp;
@@ -67,14 +66,11 @@
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
-      const db = await Database.load("sqlite:sqlite.db");
-      await db
-        .select("SELECT * FROM identities WHERE publisher = ?", [publisher])
-        .then((identity_res) => {
-          identity = identity_res[0];
-          console.log("identity");
-          console.log(identity);
-        });
+      await getIdentityFromDB(publisher).then((identity_res) => {
+        identity = identity_res;
+        console.log("identity");
+        console.log(identity);
+      });
     }
     await getPostsPage();
 

@@ -16,13 +16,13 @@
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
   import { format as formatTime } from "timeago.js";
-  import { followPublisher } from "../Core.svelte";
+  import { getPostFromIPFS } from "../Core.svelte";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
 
   export let ipfs_id: string;
-  export let cid: String;
+  export let cid: string;
   export let post_response: PostResponse;
   export let media_modal_idx: number;
   export let media_modal_media: MediaObj[];
@@ -40,13 +40,6 @@
   let bodyHTML = linkifyStr(stripHtml(post_response.body).result, {
     target: "_blank",
   }).replace(/\n/g, "<br>");
-
-  async function getPostFromCid() {
-    console.log("getPostFromCid");
-    post_response = await invoke("get_post_ipfs", {
-      cid: cid,
-    });
-  }
 
   async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
@@ -101,7 +94,7 @@
       timestamp = formatTime(post_response.timestamp);
     }, 60000);
     if (!post_response) {
-      await getPostFromCid();
+      post_response = await getPostFromIPFS(cid);
     }
 
     for await (const filename of post_response.files) {

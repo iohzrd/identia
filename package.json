@@ -31,7 +31,7 @@
     "@tauri-apps/cli": "^1.0.0-rc.7",
     "@tsconfig/svelte": "^3.0.0",
     "buffer": "^6.0.3",
-    "carbon-components-svelte": "^0.62.1",
+    "carbon-components-svelte": "^0.62.2",
     "carbon-icons-svelte": "^10.45.1",
     "carbon-preprocess-svelte": "^0.7.0",
     "execa": "^6.1.0",
