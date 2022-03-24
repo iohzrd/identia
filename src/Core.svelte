@@ -7,26 +7,28 @@
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
 
-  export async function getPostFromIPFS(cid: string): Promise<Post> {
-    console.log("getPostIPFS");
-    if (!cid.includes("/post.json")) {
-      cid = cid + "/post.json";
-    }
-    let bufs = [];
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    for await (const buf of ipfs.cat(cid)) {
-      bufs.push(buf);
-    }
-    const buf: Buffer = Buffer.concat(bufs);
-    return JSON.parse(buf.toString());
+  export async function deleteIdentityFromDB(
+    publisher: string
+  ): Promise<QueryResult> {
+    const db = await Database.load("sqlite:sqlite.db");
+    return await db.execute(`DELETE FROM identities WHERE publisher = ?`, [
+      publisher,
+    ]);
   }
 
-  export async function getPostFromDB(cid: string): Promise<Post> {
-    console.log("getPostFromDB");
+  export async function deletePostFromDB(cid: string): Promise<QueryResult> {
     const db = await Database.load("sqlite:sqlite.db");
-    const rows: Post[] = await db.select(
-      "SELECT body,files,meta,publisher,timestamp FROM posts WHERE cid = ?",
-      [cid]
+    return await db.execute(`DELETE FROM posts WHERE cid = ?`, [cid]);
+  }
+
+  export async function getIdentityFromDB(
+    publisher: string
+  ): Promise<Identity> {
+    console.log("getIdentityFromDB");
+    const db = await Database.load("sqlite:sqlite.db");
+    const rows: Identity[] = await db.select(
+      "SELECT avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
+      [publisher]
     );
     return rows[0];
   }
@@ -48,30 +50,28 @@
     return JSON.parse(buf.toString());
   }
 
-  export async function getIdentityFromDB(
-    publisher: string
-  ): Promise<Identity> {
-    console.log("getIdentityFromDB");
+  export async function getPostFromDB(cid: string): Promise<Post> {
+    console.log("getPostFromDB");
     const db = await Database.load("sqlite:sqlite.db");
-    const rows: Identity[] = await db.select(
-      "SELECT avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
-      [publisher]
+    const rows: Post[] = await db.select(
+      "SELECT body,files,meta,publisher,timestamp FROM posts WHERE cid = ?",
+      [cid]
     );
     return rows[0];
   }
 
-  export async function deleteIdentityFromDB(
-    publisher: string
-  ): Promise<QueryResult> {
-    const db = await Database.load("sqlite:sqlite.db");
-    return await db.execute(`DELETE FROM identities WHERE publisher = ?`, [
-      publisher,
-    ]);
-  }
-
-  export async function deletePostFromDB(cid: string): Promise<QueryResult> {
-    const db = await Database.load("sqlite:sqlite.db");
-    return await db.execute(`DELETE FROM posts WHERE cid = ?`, [cid]);
+  export async function getPostFromIPFS(cid: string): Promise<Post> {
+    console.log("getPostIPFS");
+    if (!cid.includes("/post.json")) {
+      cid = cid + "/post.json";
+    }
+    let bufs = [];
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    for await (const buf of ipfs.cat(cid)) {
+      bufs.push(buf);
+    }
+    const buf: Buffer = Buffer.concat(bufs);
+    return JSON.parse(buf.toString());
   }
 
   // WIP
