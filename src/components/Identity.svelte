@@ -25,7 +25,7 @@
   let ipfs_id = "";
   let identity: Identity;
   let posts: PostResponse[] = [];
-  let posts_oldest_ts: number = Math.floor(new Date().getTime());
+  let posts_oldest_ts: number = new Date().getTime();
   let posts_limit: number = 5;
   $: publisher = params["publisher"];
   $: posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher = '${publisher}' AND posts.timestamp < ${posts_oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${posts_limit}`;

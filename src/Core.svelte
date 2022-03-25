@@ -77,13 +77,13 @@
   // WIP
   export async function followPublisher(publisher: string) {}
 
-  export async function deletePostFromIdentity(cid: string) {
+  export async function deletePost(cid: string) {
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     const ipfs_id = (await ipfs.id()).id;
     let identity: Identity = await getIdentityFromDB(ipfs_id);
     if (identity.posts.includes(cid)) {
       identity.posts = identity.posts.filter((p) => p !== cid);
-      identity.timestamp = Math.floor(new Date().getTime());
+      identity.timestamp = new Date().getTime();
     }
     await publishIdentity(identity);
     await updateIdentityInDB(identity);
@@ -93,7 +93,7 @@
     identity: Identity
   ): Promise<IdentityResponse> {
     console.log("publishIdentity");
-    identity.timestamp = Math.floor(new Date().getTime());
+    identity.timestamp = new Date().getTime();
     const json = JSON.stringify(identity);
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     const obj = {
@@ -104,10 +104,10 @@
       wrapWithDirectory: true,
     });
     const publish_result: PublishResult = await ipfs.name.publish(
-      add_result.cid.toString()
+      String(add_result.cid)
     );
     const identity_response: IdentityResponse = {
-      cid: "",
+      cid: String(add_result.cid),
       identity: identity,
     };
     console.log("publish complete");
@@ -120,7 +120,7 @@
     const ipfs_id = (await ipfs.id()).id;
     const db_identity: Identity = await getIdentityFromDB(ipfs_id);
     const updated_identity = { ...db_identity, ...identity };
-    updated_identity.timestamp = Math.floor(new Date().getTime());
+    updated_identity.timestamp = new Date().getTime();
     const publish_result = await publishIdentity(updated_identity);
     updated_identity.cid = publish_result.value;
   }

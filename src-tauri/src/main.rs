@@ -6,16 +6,115 @@
   windows_subsystem = "windows"
 )]
 
-use ipfs_api::{IpfsApi, IpfsClient};
+use ipfs_api::{Form, IpfsApi, IpfsClient};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::env;
+use std::io::Cursor;
+use std::path::Path;
 use std::{fs, path::PathBuf};
 use std::{thread, time::Duration};
+use tauri;
 use tauri::api::path::config_dir;
 use tauri::api::process::Command;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
-pub fn identia_app_data_path() -> PathBuf {
+#[derive(Debug, Serialize, Deserialize)]
+struct Post {
+  body: String,
+  files: Vec<String>,
+  meta: Value,
+  publisher: String,
+  timestamp: i64,
+}
+impl Post {
+  fn new(body: String, files: Vec<String>, meta: Value, publisher: String, timestamp: i64) -> Post {
+    Post {
+      body: body,
+      files: files,
+      meta: meta,
+      publisher: publisher,
+      timestamp: timestamp,
+    }
+  }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct PostRequest {
+  body: String,
+  files: Vec<String>,
+  meta: Value,
+  timestamp: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct PostResponse {
+  cid: String,
+  post: Post,
+}
+
+#[tauri::command]
+async fn post(post_request: PostRequest) -> PostResponse {
+  println!("post");
+  println!("{:?}", post_request);
+  let ipfs_client = IpfsClient::default();
+  let ipfs_id = match ipfs_client.id(None).await {
+    Ok(id) => id.id,
+    Err(_err) => String::from(""),
+  };
+  let file_paths: Vec<String> = post_request.files.clone();
+  let mut file_names: Vec<String> = Vec::new();
+
+  let add = ipfs_api::request::Add::builder()
+    .wrap_with_directory(true)
+    .build();
+  let mut form = Form::default();
+
+  for filepath in file_paths {
+    let data = fs::read(filepath.clone()).expect("Something went wrong reading the file");
+    let filename = String::from(Path::new(&filepath).file_name().unwrap().to_str().unwrap());
+    file_names.push(filename.clone());
+    form.add_reader_file("path", Cursor::new(data), filename);
+  }
+
+  let post = Post::new(
+    post_request.body,
+    file_names,
+    post_request.meta,
+    ipfs_id,
+    post_request.timestamp,
+  );
+  println!("{:?}", post);
+  let json = serde_json::to_vec(&post).unwrap();
+  form.add_reader_file("path", Cursor::new(json), "post.json");
+
+  let ipfs_client = IpfsClient::default();
+  let cid = match ipfs_client.add_with_form(form, add).await {
+    Ok(res) => {
+      println!("res: {:?}", res);
+      let mut cid = String::from("");
+      for add in res {
+        if add.name == String::from("") {
+          cid = add.hash
+        }
+      }
+      cid
+    }
+    Err(e) => {
+      eprintln!("{:#?}", e);
+      String::from("")
+    }
+  };
+
+  let post_response = PostResponse {
+    cid: cid,
+    post: post,
+  };
+  post_response
+}
+
+fn identia_app_data_path() -> PathBuf {
   config_dir()
     .expect("Could not get config dir")
     .join("identia")
@@ -27,7 +126,7 @@ fn create_dir_if_necessary(path: PathBuf) {
   }
 }
 
-pub fn initialize_ipfs() {
+fn initialize_ipfs() {
   create_dir_if_necessary(identia_app_data_path());
   println!("Initializing IPFS");
   let cmd = Command::new_sidecar("ipfs")
@@ -67,15 +166,7 @@ pub fn initialize_ipfs() {
     .unwrap();
 }
 
-pub async fn get_ipfs_id(client: &IpfsClient) -> Result<String, String> {
-  match client.id(None).await {
-    Ok(id) => Ok(id.id),
-    Err(err) => Err(err.to_string()),
-  }
-}
-
 fn main() {
-  // let mut id = "";
   tauri::Builder::default()
     .system_tray(
       SystemTray::new()
@@ -119,7 +210,7 @@ fn main() {
       },
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![])
+    .invoke_handler(tauri::generate_handler![post])
     .setup(|_app| {
       initialize_ipfs();
       tauri::async_runtime::spawn(async move {
@@ -148,11 +239,6 @@ fn main() {
           match client.id(None).await {
             Ok(resp) => {
               println!("using id: {}", resp.id);
-              // id = &resp.id.as_str();
-              // let f = || {
-              //   id = resp.id.as_str();
-              // };
-              // f();
               ready = true;
             }
             Err(_err) => {
@@ -171,7 +257,6 @@ fn main() {
     .plugin({
       TauriSql::default().add_migrations(
         "sqlite:sqlite.db",
-        // format!("sqlite:{}.db", id).as_str(),
         vec![Migration {
           version: 1,
           description: "create tables",
