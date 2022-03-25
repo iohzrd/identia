@@ -54,15 +54,10 @@
       bufs.push(buf);
     }
     const buf: Buffer = Buffer.concat(bufs);
-    // const fileType: FileTypeResponse = await invoke("get_mime", {
-    //   buf: buf.slice(0, 16),
-    // });
-
     const fileType = {
       ext: filename.split(".").pop(),
       mime: ext2mime(filename.split(".").pop()),
     };
-
     const blob = new Blob([buf], { type: fileType.mime });
     const urlCreator = window.URL || window.webkitURL;
     const mediaObj: MediaObj = {

@@ -11,7 +11,7 @@ mod identity;
 use crate::identity::types::AppState;
 use crate::identity::{initialize_database, wait_for_ipfs_id};
 
-use ipfs_api::IpfsClient;
+use ipfs_api::{IpfsApi, IpfsClient};
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::{Deserialize, Serialize};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
@@ -72,10 +72,8 @@ fn main() {
       identity::delete_post,
       identity::follow_publisher,
       identity::get_display_name_db,
-      identity::get_file_ipfs,
       identity::get_identity,
       identity::get_identity_ipfs_cmd,
-      identity::get_mime,
       identity::get_post_ipfs,
       identity::ipfs_id,
       identity::post,

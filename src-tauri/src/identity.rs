@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 use chrono::{offset::Utc, DateTime};
-use common_multipart_rfc7578::client::multipart::Form;
 use futures::TryStreamExt;
-use infer;
-use ipfs_api::IpfsClient;
+use ipfs_api::{Form, IpfsApi, IpfsClient};
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{named_params, params, Connection, Result};
@@ -24,7 +22,7 @@ pub mod types;
 use crate::config;
 use crate::identity::migrations::{CREATE_IDENTITIES_TABLE, CREATE_POSTS_TABLE};
 use crate::identity::types::{
-  AppState, Identity, IdentityResponse, MediaResponse, FileTypeRequest, FileTypeResponse, Post, PostRequest, PostResponse,
+  AppState, Identity, IdentityResponse, Post, PostRequest, PostResponse,
 };
 
 #[tauri::command]
@@ -221,51 +219,6 @@ pub async fn pin_cid(state: tauri::State<'_, AppState>, cid: String) -> Result<b
       false
     }),
   }
-}
-
-#[tauri::command]
-pub async fn get_file_ipfs(
-  state: tauri::State<'_, AppState>,
-  cid: String,
-) -> Result<MediaResponse, MediaResponse> {
-  println!("get_file_ipfs: {:?}", cid);
-  let buf = state
-    .ipfs_client
-    .cat(cid.as_str())
-    .map_ok(|chunk| chunk.to_vec())
-    .try_concat()
-    .await;
-
-  match buf {
-    Ok(buf) => Ok({
-      let kind = infer::get(&buf).expect("file type is known");
-      MediaResponse {
-        data: buf,
-        ext: String::from(kind.extension()),
-        mime: String::from(kind.mime_type()),
-      }
-    }),
-    Err(err) => Err({
-      eprintln!("error getting file from ipfs: {:?}", err);
-      MediaResponse {
-        data: vec![],
-        ext: String::from(""),
-        mime: String::from(""),
-      }
-    }),
-  }
-}
-
-#[tauri::command]
-pub async fn get_mime(buf: FileTypeRequest) -> Result<FileTypeResponse, FileTypeResponse> {
-  println!("get_mime: {:?}", &buf.data);
-  let kind = infer::get(&buf.data).expect("failed to get mime");
-  Ok({
-    FileTypeResponse {
-      ext: kind.extension().into(),
-      mime: kind.mime_type().into(),
-    }
-  })
 }
 
 #[tauri::command]
@@ -495,7 +448,7 @@ pub async fn publish_identity(identity: Identity) -> Result<IdentityResponse, Id
   let mut form = Form::default();
   let json = serde_json::to_vec(&identity).unwrap();
   form.add_reader_file("path", Cursor::new(json), "identity.json");
-  let cid = match ipfs_client.add_with_form(add, form).await {
+  let cid = match ipfs_client.add_with_form(form, add).await {
     Ok(res) => {
       println!("res: {:?}", res);
       let mut cid = String::from("");
@@ -681,7 +634,7 @@ pub async fn post(
   let json = serde_json::to_vec(&post).unwrap();
   form.add_reader_file("path", Cursor::new(json), "post.json");
 
-  let cid = match state.ipfs_client.add_with_form(add, form).await {
+  let cid = match state.ipfs_client.add_with_form(form, add).await {
     Ok(res) => {
       println!("res: {:?}", res);
       let mut cid = String::from("");
