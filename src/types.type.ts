@@ -72,6 +72,7 @@ export type PostRequest = {
   body: string;
   files: string[];
   meta: object;
+  timestamp: number
 };
 
 export type PostResponse = {

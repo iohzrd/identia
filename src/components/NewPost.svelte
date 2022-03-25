@@ -13,6 +13,8 @@
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
+  // import { readBinaryFile } from "@tauri-apps/api/fs";
+  // import { Buffer } from "buffer/index";
 
   export let onPost: Function;
 
@@ -40,19 +42,26 @@
     files = files.slice(0, i).concat(files.slice(i + 1));
   }
 
-  function openDialog() {
-    open({
+  async function openDialog() {
+    const res = await open({
       defaultPath: null,
       filters: [],
       multiple: true,
       directory: false,
-    }).then(function (res) {
-      console.log("openDialog.then");
-      console.log(res);
-      if (Array.isArray(res)) {
-        files = res;
-      }
     });
+    console.log("openDialog.then");
+    console.log(res);
+    const bufs = [];
+    if (Array.isArray(res)) {
+      files = res;
+      // res.forEach(async (path) => {
+      //   console.log("path");
+      //   console.log(path);
+      //   const test = await readBinaryFile(path);
+      //   const buf = Buffer.from(test);
+      //   console.log(buf);
+      // });
+    }
   }
 
   async function post() {
@@ -61,6 +70,7 @@
       body: stripHtml(body).result,
       files: files,
       meta: meta,
+      timestamp: new Date().getTime(),
     };
     let postResponse: PostResponse = await invoke("post", {
       postRequest: postRequest,
