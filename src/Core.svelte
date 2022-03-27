@@ -140,7 +140,7 @@
         posts=$7,
         publisher=$8,
         timestamp=$9
-        WHERE publisher=:publisher`,
+        WHERE publisher=$10`,
       [
         cid,
         i.avatar,
@@ -151,6 +151,7 @@
         i.posts,
         i.publisher,
         i.timestamp,
+        i.publisher,
       ]
     );
     return rows[0];
