@@ -17,15 +17,6 @@ export type Feed = {
   feed: Post[];
 };
 
-export type FileTypeRequest = {
-  data: any[];
-};
-
-export type FileTypeResponse = {
-  ext: string;
-  mime: string;
-};
-
 export type Identity = {
   avatar: string;
   description: string;
@@ -72,7 +63,7 @@ export type PostRequest = {
   body: string;
   files: string[];
   meta: object;
-  timestamp: number
+  timestamp: number;
 };
 
 export type PostResponse = {

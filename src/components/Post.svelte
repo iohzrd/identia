@@ -12,12 +12,11 @@
   import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
-  import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
+  import type { MediaObj, PostResponse } from "../types.type";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
   import { format as formatTime } from "timeago.js";
-  import { getPostFromIPFS } from "../Core.svelte";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { getPostFromIPFS, deletePost } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
 
@@ -27,11 +26,7 @@
   export let media_modal_idx: number;
   export let media_modal_media: MediaObj[];
   export let media_modal_open: boolean;
-
-  //  temporary hack to deal with incorrect sql schema
-  if (typeof post_response.files != "object") {
-    post_response.files = JSON.parse(post_response.files);
-  }
+  const root_cid = post_response.cid || cid;
 
   let timer;
   let timestamp: string = formatTime(post_response.timestamp);
@@ -44,7 +39,6 @@
   async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
     let bufs = [];
-    const root_cid = post_response.cid || cid;
     const path: string = root_cid + "/" + filename;
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     for await (const buf of ipfs.cat(path)) {
@@ -70,15 +64,6 @@
 
   function isVideo(filename: string) {
     return ext2mime(filename.split(".").pop()).includes("video");
-  }
-
-  async function deletePost() {
-    console.log("deletePost");
-    const root_cid = post_response.cid || cid;
-    console.log(root_cid);
-    post_response = await invoke("delete_post", {
-      cid: root_cid,
-    });
   }
 
   function openMediaModal(idx) {
@@ -134,7 +119,12 @@
 
       <OverflowMenu flipped style="float:right;">
         {#if post_response.publisher === ipfs_id}
-          <OverflowMenuItem text="Delete post" on:click={deletePost} />
+          <OverflowMenuItem
+            text="Delete post"
+            on:click={() => {
+              deletePost(root_cid);
+            }}
+          />
         {/if}
       </OverflowMenu>
     </div>

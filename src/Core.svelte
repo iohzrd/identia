@@ -17,6 +17,7 @@
   }
 
   export async function deletePostFromDB(cid: string): Promise<QueryResult> {
+    console.log("deletePostFromDB");
     const db = await Database.load("sqlite:sqlite.db");
     return await db.execute(`DELETE FROM posts WHERE cid = ?`, [cid]);
   }
@@ -61,7 +62,7 @@
   }
 
   export async function getPostFromIPFS(cid: string): Promise<Post> {
-    console.log("getPostIPFS");
+    console.log("getPostFromIPFS");
     if (!cid.includes("/post.json")) {
       cid = cid + "/post.json";
     }
@@ -75,18 +76,46 @@
   }
 
   // WIP
-  export async function followPublisher(publisher: string) {}
+  export async function followPublisher(publisher: string) {
+    console.log("followPublisher");
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs_id = (await ipfs.id()).id;
+    let identity: Identity = await getIdentityFromDB(ipfs_id);
+    if (!identity.following.includes(publisher)) {
+      identity.following.push(publisher);
+      const identity_response = await publishIdentity(identity);
+      console.log(identity_response);
+      const update_result = await updateIdentityDB(identity_response);
+      console.log(update_result);
+    }
+  }
 
   export async function deletePost(cid: string) {
+    console.log("deletePost");
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     const ipfs_id = (await ipfs.id()).id;
     let identity: Identity = await getIdentityFromDB(ipfs_id);
     if (identity.posts.includes(cid)) {
       identity.posts = identity.posts.filter((p) => p !== cid);
-      identity.timestamp = new Date().getTime();
+      const identity_response = await publishIdentity(identity);
+      console.log(identity_response);
+      const update_result = await updateIdentityDB(identity_response);
+      console.log(update_result);
+      const delete_result = await deletePostFromDB(cid);
+      console.log(delete_result);
     }
-    await publishIdentity(identity);
-    await updateIdentityInDB(identity);
+  }
+
+  export async function updateIdentity(identity: Identity) {
+    console.log("updateIdentity");
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs_id = (await ipfs.id()).id;
+    const db_identity: Identity = await getIdentityFromDB(ipfs_id);
+    const updated_identity = { ...db_identity, ...identity };
+    const identity_response = await publishIdentity(updated_identity);
+    console.log(identity_response);
+    const update_result = await updateIdentityDB(identity_response);
+    console.log(update_result);
   }
 
   export async function publishIdentity(
@@ -95,6 +124,7 @@
     console.log("publishIdentity");
     identity.timestamp = new Date().getTime();
     const json = JSON.stringify(identity);
+    console.log(json);
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     const obj = {
       path: "identity.json",
@@ -103,33 +133,23 @@
     const add_result: AddResult = await ipfs.add(obj, {
       wrapWithDirectory: true,
     });
+    console.log(add_result);
     const publish_result: PublishResult = await ipfs.name.publish(
       String(add_result.cid)
     );
+    console.log("publish complete");
+    console.log(publish_result);
     const identity_response: IdentityResponse = {
       cid: String(add_result.cid),
       identity: identity,
     };
-    console.log("publish complete");
-    console.log(publish_result);
     return identity_response;
   }
 
-  export async function updateIdentity(identity: Identity) {
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    const ipfs_id = (await ipfs.id()).id;
-    const db_identity: Identity = await getIdentityFromDB(ipfs_id);
-    const updated_identity = { ...db_identity, ...identity };
-    updated_identity.timestamp = new Date().getTime();
-    const publish_result = await publishIdentity(updated_identity);
-    updated_identity.cid = publish_result.value;
-  }
-
-  export async function updateIdentityInDB(i: Identity) {
+  export async function updateIdentityDB(ir: IdentityResponse) {
     console.log("getIdentityFromDB");
     const db = await Database.load("sqlite:sqlite.db");
-    const cid = "";
-    const rows = await db.execute(
+    const result = await db.execute(
       `UPDATE identities SET 
         cid=$1,
         avatar=$2,
@@ -142,18 +162,18 @@
         timestamp=$9
         WHERE publisher=$10`,
       [
-        cid,
-        i.avatar,
-        i.description,
-        i.display_name,
-        i.following,
-        i.meta,
-        i.posts,
-        i.publisher,
-        i.timestamp,
-        i.publisher,
+        ir.cid,
+        ir.identity.avatar,
+        ir.identity.description,
+        ir.identity.display_name,
+        ir.identity.following,
+        ir.identity.meta,
+        ir.identity.posts,
+        ir.identity.publisher,
+        ir.identity.timestamp,
+        ir.identity.publisher,
       ]
     );
-    return rows[0];
+    return result;
   }
 </script>

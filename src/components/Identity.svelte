@@ -15,8 +15,7 @@
   import Post from "./Post.svelte";
   import type { Identity, IdentityResponse, PostResponse } from "../types.type";
   import { create } from "ipfs-http-client";
-  import { getIdentityFromDB } from "../Core.svelte";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { getIdentityFromDB, updateIdentity } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
   export let params = {};
 
@@ -47,16 +46,6 @@
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
     }
-  }
-
-  async function updateIdentityAux() {
-    console.log(`updateMeta`);
-    let identity_res: IdentityResponse[] = await invoke("update_identity_aux", {
-      desc: identity.description,
-      dn: identity.display_name,
-      meta: identity.meta,
-    });
-    console.log(identity_res);
   }
 
   onMount(async () => {
@@ -178,7 +167,7 @@
 
     <Button
       on:click={() => {
-        updateIdentityAux();
+        updateIdentity(identity);
       }}>Save</Button
     >
   {/if}

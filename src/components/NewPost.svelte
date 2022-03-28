@@ -15,6 +15,7 @@
   import { stripHtml } from "string-strip-html";
   // import { readBinaryFile } from "@tauri-apps/api/fs";
   // import { Buffer } from "buffer/index";
+  import { getIdentityFromDB } from "../Core.svelte";
 
   export let onPost: Function;
 
