@@ -10,6 +10,7 @@
     Tile,
   } from "carbon-components-svelte";
   import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
+  import PlayFilled32 from "carbon-icons-svelte/lib/PlayFilled32";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { MediaObj, PostResponse } from "../types.type";
@@ -36,8 +37,53 @@
     target: "_blank",
   }).replace(/\n/g, "<br>");
 
+  function openMediaModal(idx) {
+    console.log("openMediaModal");
+    console.log(idx);
+    media_modal_idx = idx;
+    media_modal_media = media;
+    media_modal_open = true;
+  }
+
   async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
+    let mediaObj: MediaObj = {
+      blobUrl: null,
+      element: null,
+      thumbnailFor: null,
+      filename: filename,
+      mime: null,
+    };
+
+    if (isThumbnail) {
+      mediaObj.thumbnailFor = filename;
+      mediaObj.mime = "image";
+    } else {
+      let bufs = [];
+      const path: string = root_cid + "/" + filename;
+      const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+      for await (const buf of ipfs.cat(path)) {
+        bufs.push(buf);
+      }
+      const buf: Buffer = Buffer.concat(bufs);
+      const fileType = {
+        ext: filename.split(".").pop(),
+        mime: ext2mime(filename.split(".").pop()),
+      };
+
+      let blob = new Blob([buf], { type: fileType.mime });
+      const urlCreator = window.URL || window.webkitURL;
+      let blobUrl = urlCreator.createObjectURL(blob);
+      mediaObj.blobUrl = blobUrl;
+      mediaObj.filename = filename;
+      mediaObj.mime = fileType.mime;
+    }
+
+    return mediaObj;
+  }
+
+  async function loadVideo(filename, idx: number) {
+    console.log("loadVideo");
     let bufs = [];
     const path: string = root_cid + "/" + filename;
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
@@ -52,26 +98,15 @@
 
     const blob = new Blob([buf], { type: fileType.mime });
     const urlCreator = window.URL || window.webkitURL;
-    const mediaObj: MediaObj = {
+    const newMediaObj: MediaObj = {
       blobUrl: urlCreator.createObjectURL(blob),
       element: null,
       thumbnailFor: "",
       filename: filename,
       mime: fileType.mime,
     };
-    return mediaObj;
-  }
-
-  function isVideo(filename: string) {
-    return ext2mime(filename.split(".").pop()).includes("video");
-  }
-
-  function openMediaModal(idx) {
-    console.log("openMediaModal");
-    console.log(idx);
-    media_modal_idx = idx;
-    media_modal_media = media;
-    media_modal_open = true;
+    media[idx] = newMediaObj;
+    media = media;
   }
 
   onMount(async () => {
@@ -83,9 +118,10 @@
     }
 
     for await (const filename of post_response.files) {
+      const is_video = ext2mime(filename.split(".").pop()).includes("video");
       console.log("isVideo");
-      console.log(isVideo(filename));
-      if (isVideo(filename)) {
+      console.log(is_video);
+      if (is_video) {
         // get thumbnail here...
         const mediaObj: MediaObj = await getMediaObject(filename, true);
         media = [...media, mediaObj];
@@ -140,38 +176,52 @@
         <Row>
           {#each media as mediaObj, idx}
             <Column sm={4} md={4} lg={4}>
-              {#if mediaObj.mime && mediaObj.mime.includes("image")}
-                <img
-                  class="thumbnail"
-                  src={mediaObj.blobUrl}
-                  alt=""
-                  bind:this={mediaObj.element}
-                  on:click={() => openMediaModal(idx)}
-                />
-              {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-                <video
-                  class="thumbnail"
-                  src={mediaObj.blobUrl}
-                  height="300"
-                  controls
-                  bind:this={mediaObj.element}
-                >
-                  <track kind="captions" />
-                </video>
-              {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-                <video
-                  src={mediaObj.blobUrl}
-                  height="300"
-                  controls
-                  bind:this={mediaObj.element}
-                >
-                  <track kind="captions" />
-                </video>
-              {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-                <Button kind="secondary" on:click={() => openMediaModal(idx)}>
-                  {mediaObj.filename}
-                  <DocumentPdf32 />
-                </Button>
+              {#if mediaObj.mime}
+                {#if mediaObj.mime.includes("image")}
+                  {#if mediaObj.thumbnailFor}
+                    <PlayFilled32
+                      bind:this={mediaObj.element}
+                      on:click={() => loadVideo(mediaObj.filename, idx)}
+                    />
+                    <!-- <img
+                      class="thumbnail"
+                      src={mediaObj.blobUrl}
+                      alt=""
+                      bind:this={mediaObj.element}
+                      on:click={() => loadVideo(mediaObj, idx)}
+                    /> -->
+                  {:else}
+                    <img
+                      class="thumbnail"
+                      src={mediaObj.blobUrl}
+                      alt=""
+                      bind:this={mediaObj.element}
+                      on:click={() => openMediaModal(idx)}
+                    />
+                  {/if}
+                {:else if mediaObj.mime.includes("audio")}
+                  <audio
+                    class="thumbnail"
+                    src={mediaObj.blobUrl}
+                    height="300"
+                    controls
+                    bind:this={mediaObj.element}
+                  />
+                {:else if mediaObj.mime.includes("video")}
+                  <video
+                    src={mediaObj.blobUrl}
+                    height="300"
+                    controls
+                    bind:this={mediaObj.element}
+                  >
+                    <track kind="captions" />
+                  </video>
+                {:else if mediaObj.mime.includes("pdf")}
+                  <Button kind="secondary" on:click={() => openMediaModal(idx)}>
+                    {mediaObj.filename}
+                    <DocumentPdf32 />
+                  </Button>
+                {/if}
               {/if}
             </Column>
           {/each}

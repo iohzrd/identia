@@ -11,7 +11,7 @@
     publisher: string
   ): Promise<QueryResult> {
     const db = await Database.load("sqlite:sqlite.db");
-    return await db.execute(`DELETE FROM identities WHERE publisher = ?`, [
+    return await db.execute("DELETE FROM identities WHERE publisher = ?", [
       publisher,
     ]);
   }
@@ -19,7 +19,7 @@
   export async function deletePostFromDB(cid: string): Promise<QueryResult> {
     console.log("deletePostFromDB");
     const db = await Database.load("sqlite:sqlite.db");
-    return await db.execute(`DELETE FROM posts WHERE cid = ?`, [cid]);
+    return await db.execute("DELETE FROM posts WHERE cid = ?", [cid]);
   }
 
   export async function getIdentityFromDB(
@@ -75,7 +75,6 @@
     return JSON.parse(buf.toString());
   }
 
-  // WIP
   export async function followPublisher(publisher: string) {
     console.log("followPublisher");
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
@@ -150,17 +149,7 @@
     console.log("getIdentityFromDB");
     const db = await Database.load("sqlite:sqlite.db");
     const result = await db.execute(
-      `UPDATE identities SET 
-        cid=$1,
-        avatar=$2,
-        description=$3,
-        display_name=$4,
-        following=$5,
-        meta=$6,
-        posts=$7,
-        publisher=$8,
-        timestamp=$9
-        WHERE publisher=$10`,
+      "UPDATE identities SET cid=$1, avatar=$2, description=$3, display_name=$4, following=$5, meta=$6, posts=$7, publisher=$8, timestamp=$9 WHERE publisher=$10",
       [
         ir.cid,
         ir.identity.avatar,
