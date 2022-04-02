@@ -15,7 +15,7 @@
   import { stripHtml } from "string-strip-html";
   // import { readBinaryFile } from "@tauri-apps/api/fs";
   // import { Buffer } from "buffer/index";
-  import { getIdentityFromDB } from "../Core.svelte";
+  import { addPost, getIdentityFromDB } from "../Core.svelte";
 
   export let onPost: Function;
 
@@ -73,11 +73,12 @@
       meta: meta,
       timestamp: new Date().getTime(),
     };
-    let postResponse: PostResponse = await invoke("post", {
+    let post_response: PostResponse = await invoke("post", {
       postRequest: postRequest,
     });
-    if (postResponse) {
-      onPost(postResponse);
+    if (post_response) {
+      await addPost(post_response);
+      onPost(post_response);
       body = "";
       files = [];
       meta = {};

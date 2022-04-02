@@ -1,7 +1,12 @@
 <script context="module" lang="ts">
   import Database from "tauri-plugin-sql-api";
   import type { AddResult } from "ipfs-core-types/src/root";
-  import type { Identity, IdentityResponse, Post } from "./types.type";
+  import type {
+    Identity,
+    IdentityResponse,
+    Post,
+    PostResponse,
+  } from "./types.type";
   import type { PublishResult } from "ipfs-core-types/src/name/index";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Buffer } from "buffer/index";
@@ -20,6 +25,18 @@
     console.log("deletePostFromDB");
     const db = await Database.load("sqlite:sqlite.db");
     return await db.execute("DELETE FROM posts WHERE cid = ?", [cid]);
+  }
+
+  export async function getDisplayNameFromDB(
+    publisher: string
+  ): Promise<string> {
+    console.log("getIdentityFromDB");
+    const db = await Database.load("sqlite:sqlite.db");
+    const rows: Identity[] = await db.select(
+      "SELECT display_name FROM identities WHERE publisher = ?",
+      [publisher]
+    );
+    return rows[0].display_name;
   }
 
   export async function getIdentityFromDB(
@@ -103,6 +120,18 @@
       const delete_result = await deletePostFromDB(cid);
       console.log(delete_result);
     }
+  }
+
+  export async function addPost(post: PostResponse) {
+    console.log("updateIdentity");
+    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs_id = (await ipfs.id()).id;
+    const db_identity: Identity = await getIdentityFromDB(ipfs_id);
+    db_identity.posts.unshift(post.cid);
+    const identity_response = await publishIdentity(db_identity);
+    console.log(identity_response);
+    const update_result = await updateIdentityDB(identity_response);
+    console.log(update_result);
   }
 
   export async function updateIdentity(identity: Identity) {
