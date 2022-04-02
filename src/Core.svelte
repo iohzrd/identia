@@ -1,12 +1,7 @@
 <script context="module" lang="ts">
   import Database from "tauri-plugin-sql-api";
   import type { AddResult } from "ipfs-core-types/src/root";
-  import type {
-    Identity,
-    IdentityResponse,
-    Post,
-    PostResponse,
-  } from "./types.type";
+  import type { Identity, IdentityResponse, Post } from "./types.type";
   import type { PublishResult } from "ipfs-core-types/src/name/index";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Buffer } from "buffer/index";
@@ -27,22 +22,14 @@
     return await db.execute("DELETE FROM posts WHERE cid = ?", [cid]);
   }
 
-  export async function getDisplayNameFromDB(
-    publisher: string
-  ): Promise<string> {
-    console.log("getIdentityFromDB");
-    const db = await Database.load("sqlite:sqlite.db");
-    const rows: Identity[] = await db.select(
-      "SELECT display_name FROM identities WHERE publisher = ?",
-      [publisher]
-    );
-    return rows[0].display_name;
-  }
-
   export async function getIdentityFromDB(
-    publisher: string
+    publisher: string = undefined
   ): Promise<Identity> {
     console.log("getIdentityFromDB");
+    if (publisher === undefined) {
+      const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+      publisher = (await ipfs.id()).id;
+    }
     const db = await Database.load("sqlite:sqlite.db");
     const rows: Identity[] = await db.select(
       "SELECT avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
@@ -122,8 +109,27 @@
     }
   }
 
-  export async function addPost(post: PostResponse) {
-    console.log("updateIdentity");
+  export async function addPostDB(post: Post): Promise<QueryResult> {
+    console.log("addPostDB");
+    console.log(post);
+    const db = await Database.load("sqlite:sqlite.db");
+    // const { lastInsertId: id } = await db.execute('INSERT INTO todos (title) VALUES ($1)', [title]);
+    return await db.execute(
+      "INSERT INTO posts (cid,body,files,meta,publisher,timestamp) VALUES ($1,$2,$3,$4,$5,$6)",
+      [
+        post.cid,
+        post.body,
+        post.files,
+        post.meta,
+        post.publisher,
+        post.timestamp,
+      ]
+    );
+  }
+
+  export async function addPost(post: Post) {
+    console.log("addPost");
+    await addPostDB(post);
     const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     const ipfs_id = (await ipfs.id()).id;
     const db_identity: Identity = await getIdentityFromDB(ipfs_id);

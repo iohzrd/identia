@@ -1,9 +1,9 @@
 <script lang="ts">
   import Database from "tauri-plugin-sql-api";
-  import MediaModal from "./MediaModal.svelte";
-  import NewPost from "./NewPost.svelte";
-  import Post from "./Post.svelte";
-  import type { PostResponse } from "../types.type";
+  import MediaModalComponent from "./MediaModal.svelte";
+  import NewPostComponent from "./NewPost.svelte";
+  import PostComponent from "./Post.svelte";
+  import type { Post } from "../types.type";
   import { create } from "ipfs-http-client";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api/tauri";
@@ -17,7 +17,7 @@
   let ipfs_info;
   let ipfs_id: string;
   let update_feed_interval = null;
-  let feed: PostResponse[] = [];
+  let feed: Post[] = [];
   let newest_ts: number = new Date().getTime();
   let oldest_ts: number = new Date().getTime();
   let limit: number = 10;
@@ -34,7 +34,7 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    let page: PostResponse[] = await db.select(feed_query);
+    let page: Post[] = await db.select(feed_query);
     console.log("page");
     console.log(page);
     if (page.length > 0) {
@@ -44,7 +44,7 @@
     }
   }
 
-  function onPost(post: PostResponse) {
+  function onPost(post: Post) {
     // feed.unshift(post);
     // feed = feed;
     feed = [post, ...feed];
@@ -58,7 +58,7 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    let new_posts: PostResponse[] = await invoke("update_feed", {
+    let new_posts: Post[] = await invoke("update_feed", {
       query: new_posts_query,
     });
 
@@ -83,15 +83,19 @@
   });
 </script>
 
-<MediaModal bind:media_modal_idx bind:media_modal_media bind:media_modal_open />
+<MediaModalComponent
+  bind:media_modal_idx
+  bind:media_modal_media
+  bind:media_modal_open
+/>
 
-<NewPost {onPost} />
+<NewPostComponent {onPost} />
 
-{#each feed as post_response}
-  <Post
+{#each feed as post}
+  <PostComponent
     {ipfs_id}
     cid={null}
-    {post_response}
+    {post}
     bind:media_modal_idx
     bind:media_modal_media
     bind:media_modal_open

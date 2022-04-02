@@ -1,6 +1,6 @@
 <script lang="ts">
   import FileDrop from "svelte-tauri-filedrop";
-  import type { PostRequest, PostResponse } from "../types.type";
+  import type { PostRequest, Post, Identity } from "../types.type";
   import {
     Button,
     FileUploaderItem,
@@ -18,6 +18,8 @@
   import { addPost, getIdentityFromDB } from "../Core.svelte";
 
   export let onPost: Function;
+
+  let identity: Identity;
 
   let body: string = "";
   let files: string[] = [];
@@ -73,12 +75,23 @@
       meta: meta,
       timestamp: new Date().getTime(),
     };
-    let post_response: PostResponse = await invoke("post", {
+    let cid: string = await invoke("post", {
       postRequest: postRequest,
     });
-    if (post_response) {
-      await addPost(post_response);
-      onPost(post_response);
+    console.log("cid");
+    console.log(cid);
+    if (cid) {
+      let post: Post = {
+        cid: cid,
+        body: postRequest.body,
+        display_name: identity.display_name,
+        files: postRequest.files,
+        meta: postRequest.meta,
+        publisher: identity.publisher,
+        timestamp: postRequest.timestamp,
+      };
+      await addPost(post);
+      onPost(post);
       body = "";
       files = [];
       meta = {};
@@ -86,7 +99,9 @@
     posting = false;
   }
 
-  onMount(async () => {});
+  onMount(async () => {
+    identity = await getIdentityFromDB();
+  });
   onDestroy(() => {});
 </script>
 

@@ -13,7 +13,7 @@
   import PlayFilled32 from "carbon-icons-svelte/lib/PlayFilled32";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
-  import type { MediaObj, PostResponse } from "../types.type";
+  import type { Media, Post } from "../types.type";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
   import { format as formatTime } from "timeago.js";
@@ -23,17 +23,17 @@
 
   export let ipfs_id: string;
   export let cid: string;
-  export let post_response: PostResponse;
+  export let post: Post;
   export let media_modal_idx: number;
-  export let media_modal_media: MediaObj[];
+  export let media_modal_media: Media[];
   export let media_modal_open: boolean;
-  const root_cid = post_response.cid || cid;
+  const root_cid = post.cid || cid;
 
   let timer;
-  let timestamp: string = formatTime(post_response.timestamp);
-  let datetime: string = new Date(post_response.timestamp).toLocaleString();
+  let timestamp: string = formatTime(post.timestamp);
+  let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
-  let bodyHTML = linkifyStr(stripHtml(post_response.body).result, {
+  let bodyHTML = linkifyStr(stripHtml(post.body).result, {
     target: "_blank",
   }).replace(/\n/g, "<br>");
 
@@ -47,7 +47,7 @@
 
   async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
-    let mediaObj: MediaObj = {
+    let mediaObj: Media = {
       blobUrl: null,
       element: null,
       thumbnailFor: null,
@@ -98,7 +98,7 @@
 
     const blob = new Blob([buf], { type: fileType.mime });
     const urlCreator = window.URL || window.webkitURL;
-    const newMediaObj: MediaObj = {
+    const newMediaObj: Media = {
       blobUrl: urlCreator.createObjectURL(blob),
       element: null,
       thumbnailFor: "",
@@ -111,19 +111,19 @@
 
   onMount(async () => {
     timer = setInterval(() => {
-      timestamp = formatTime(post_response.timestamp);
+      timestamp = formatTime(post.timestamp);
     }, 60000);
-    if (!post_response) {
-      post_response = await getPostFromIPFS(cid);
+    if (!post) {
+      post = await getPostFromIPFS(cid);
     }
 
-    for await (const filename of post_response.files) {
+    for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
       console.log("isVideo");
       console.log(is_video);
       if (is_video) {
         // get thumbnail here...
-        const mediaObj: MediaObj = await getMediaObject(filename, true);
+        const mediaObj: Media = await getMediaObject(filename, true);
         media = [...media, mediaObj];
       } else {
         media = [...media, await getMediaObject(filename)];
@@ -145,16 +145,16 @@
   });
 </script>
 
-{#if post_response}
+{#if post}
   <Tile style="outline: 2px solid black">
     <div>
-      <Link href="#/identity/{post_response.publisher}">
-        {post_response.display_name || post_response.publisher}
+      <Link href="#/identity/{post.publisher}">
+        {post.display_name || post.publisher}
       </Link>
       - {timestamp} ({datetime})
 
       <OverflowMenu flipped style="float:right;">
-        {#if post_response.publisher === ipfs_id}
+        {#if post.publisher === ipfs_id}
           <OverflowMenuItem
             text="Delete post"
             on:click={() => {
@@ -165,9 +165,9 @@
       </OverflowMenu>
     </div>
     <br />
-    {#if post_response.body || post_response.files}
+    {#if post.body || post.files}
       <Grid fullWidth>
-        {#if post_response.body}
+        {#if post.body}
           <div>
             {@html bodyHTML}
           </div>

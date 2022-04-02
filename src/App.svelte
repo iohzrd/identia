@@ -15,8 +15,8 @@
   } from "carbon-components-svelte";
   import Add20 from "carbon-icons-svelte/lib/Add20";
   import Database from "tauri-plugin-sql-api";
-  import Feed from "./components/Feed.svelte";
-  import Identity from "./components/Identity.svelte";
+  import FeedComponent from "./components/Feed.svelte";
+  import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
   import { create } from "ipfs-http-client";
   import { followPublisher } from "./Core.svelte";
@@ -45,8 +45,8 @@
   ];
 
   const routes = {
-    "/:publisher?": Feed,
-    "/identity/:publisher?": Identity,
+    "/:publisher?": FeedComponent,
+    "/identity/:publisher?": IdentityComponent,
     // "*": NotFound,
   };
 

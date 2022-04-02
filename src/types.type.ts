@@ -43,7 +43,7 @@ export type MediaResponse = {
   mime: string;
 };
 
-export type MediaObj = {
+export type Media = {
   blobUrl: string;
   element: Element;
   filename: string;
@@ -52,6 +52,8 @@ export type MediaObj = {
 };
 
 export type Post = {
+  cid: string;
+  display_name: string;
   body: string;
   files: string[];
   meta: object;
@@ -63,15 +65,5 @@ export type PostRequest = {
   body: string;
   files: string[];
   meta: object;
-  timestamp: number;
-};
-
-export type PostResponse = {
-  body: string;
-  cid: string;
-  display_name: string;
-  files: string[];
-  meta: object;
-  publisher: string;
   timestamp: number;
 };

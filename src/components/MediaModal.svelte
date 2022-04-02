@@ -1,11 +1,11 @@
 <script lang="ts">
   import PdfViewer from "svelte-pdf";
-  import type { MediaObj } from "../types.type";
+  import type { Media } from "../types.type";
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
 
   export let media_modal_idx: number;
-  export let media_modal_media: MediaObj[];
+  export let media_modal_media: Media[];
   export let media_modal_open: boolean;
   $: filename =
     typeof Array.isArray(media_modal_media) && media_modal_media.length > 0

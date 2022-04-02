@@ -48,14 +48,8 @@ struct PostRequest {
   timestamp: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct PostResponse {
-  cid: String,
-  post: Post,
-}
-
 #[tauri::command]
-async fn post(post_request: PostRequest) -> PostResponse {
+async fn post(post_request: PostRequest) -> String {
   println!("post");
   println!("{:?}", post_request);
   let ipfs_client = IpfsClient::default();
@@ -107,11 +101,7 @@ async fn post(post_request: PostRequest) -> PostResponse {
     }
   };
 
-  let post_response = PostResponse {
-    cid: cid,
-    post: post,
-  };
-  post_response
+  cid
 }
 
 fn identia_app_data_path() -> PathBuf {

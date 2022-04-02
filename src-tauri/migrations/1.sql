@@ -6,7 +6,7 @@ CREATE TABLE identities (
     following     BLOB,
     meta          BLOB,
     posts         BLOB,
-    publisher     TEXT primary key,
+    publisher     TEXT PRIMARY KEY,
     timestamp     INT
   );
 
@@ -16,5 +16,5 @@ CREATE TABLE posts (
     files       BLOB,
     meta        BLOB,
     publisher   TEXT,
-    timestamp   INT primary key
+    timestamp   INT PRIMARY KEY
   );

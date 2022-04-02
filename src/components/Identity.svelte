@@ -10,10 +10,10 @@
   } from "carbon-components-svelte";
   // import { UserProfile20 } from "carbon-icons-svelte";
   import Database from "tauri-plugin-sql-api";
-  import MediaModal from "./MediaModal.svelte";
-  import Meta from "./Meta.svelte";
-  import Post from "./Post.svelte";
-  import type { Identity, IdentityResponse, PostResponse } from "../types.type";
+  import MediaModalComponent from "./MediaModal.svelte";
+  import MetaComponent from "./Meta.svelte";
+  import PostComponent from "./Post.svelte";
+  import type { Identity, Post } from "../types.type";
   import { create } from "ipfs-http-client";
   import { getIdentityFromDB, updateIdentity } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
@@ -23,7 +23,7 @@
   let ipfs_info;
   let ipfs_id = "";
   let identity: Identity;
-  let posts: PostResponse[] = [];
+  let posts: Post[] = [];
   let posts_oldest_ts: number = new Date().getTime();
   let posts_limit: number = 5;
   $: publisher = params["publisher"];
@@ -40,7 +40,7 @@
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
       const db = await Database.load("sqlite:sqlite.db");
-      let page: PostResponse[] = await db.select(posts_query);
+      let page: Post[] = await db.select(posts_query);
       if (page.length > 0) {
         posts = [...posts, ...page];
         posts_oldest_ts = posts[posts.length - 1].timestamp;
@@ -76,7 +76,11 @@
   });
 </script>
 
-<MediaModal bind:media_modal_idx bind:media_modal_media bind:media_modal_open />
+<MediaModalComponent
+  bind:media_modal_idx
+  bind:media_modal_media
+  bind:media_modal_open
+/>
 
 <Form on:submit>
   {#if identity}
@@ -135,18 +139,21 @@
 
     <FormGroup legendText="meta">
       {#if identity && identity.meta}
-        <Meta meta={identity.meta} readonly={ipfs_id !== identity.publisher} />
+        <MetaComponent
+          meta={identity.meta}
+          readonly={ipfs_id !== identity.publisher}
+        />
       {/if}
     </FormGroup>
 
     <FormGroup legendText="posts">
       {#if identity && identity.posts}
-        {#each posts as post_response}
+        {#each posts as post}
           <div>
-            <Post
+            <PostComponent
               {ipfs_id}
               cid={null}
-              {post_response}
+              {post}
               bind:media_modal_idx
               bind:media_modal_media
               bind:media_modal_open
