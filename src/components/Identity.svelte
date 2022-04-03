@@ -13,15 +13,19 @@
   import MediaModalComponent from "./MediaModal.svelte";
   import MetaComponent from "./Meta.svelte";
   import PostComponent from "./Post.svelte";
+  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Identity, Post } from "../types.type";
   import { create } from "ipfs-http-client";
   import { getIdentityFromDB, updateIdentity } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
+
   export let params = {};
 
-  let ipfs;
-  let ipfs_info;
-  let ipfs_id = "";
+  let ipfs: IPFSHTTPClient;
+  let ipfs_info: IDResult;
+  let ipfs_id: string;
+
   let identity: Identity;
   let posts: Post[] = [];
   let posts_oldest_ts: number = new Date().getTime();
@@ -51,7 +55,9 @@
   onMount(async () => {
     console.log("onMount");
     console.log(params);
-    ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    if (ipfs === undefined) {
+      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    }
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {

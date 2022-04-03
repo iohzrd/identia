@@ -48,16 +48,22 @@ struct PostRequest {
   timestamp: i64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct PostResponse {
+  cid: String,
+  files: Vec<String>,
+}
+
 #[tauri::command]
-async fn post(post_request: PostRequest) -> String {
+async fn post(request: PostRequest) -> PostResponse {
   println!("post");
-  println!("{:?}", post_request);
+  println!("{:?}", request);
   let ipfs_client = IpfsClient::default();
   let ipfs_id = match ipfs_client.id(None).await {
     Ok(id) => id.id,
     Err(_err) => String::from(""),
   };
-  let file_paths: Vec<String> = post_request.files.clone();
+  let file_paths: Vec<String> = request.files.clone();
   let mut file_names: Vec<String> = Vec::new();
 
   let add = ipfs_api::request::Add::builder()
@@ -73,11 +79,11 @@ async fn post(post_request: PostRequest) -> String {
   }
 
   let post = Post::new(
-    post_request.body,
-    file_names,
-    post_request.meta,
+    request.body,
+    file_names.clone(),
+    request.meta,
     ipfs_id,
-    post_request.timestamp,
+    request.timestamp,
   );
   println!("{:?}", post);
   let json = serde_json::to_vec(&post).unwrap();
@@ -101,7 +107,10 @@ async fn post(post_request: PostRequest) -> String {
     }
   };
 
-  cid
+  PostResponse {
+    cid: cid,
+    files: file_names,
+  }
 }
 
 fn identia_app_data_path() -> PathBuf {

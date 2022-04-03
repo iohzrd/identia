@@ -3,6 +3,8 @@
   import MediaModalComponent from "./MediaModal.svelte";
   import NewPostComponent from "./NewPost.svelte";
   import PostComponent from "./Post.svelte";
+  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Post } from "../types.type";
   import { create } from "ipfs-http-client";
   import { inview } from "svelte-inview/dist/";
@@ -13,8 +15,8 @@
   $: publisher = params["publisher"];
 
   let db;
-  let ipfs;
-  let ipfs_info;
+  let ipfs: IPFSHTTPClient;
+  let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;
   let feed: Post[] = [];
@@ -71,7 +73,9 @@
 
   onMount(async () => {
     db = await Database.load(`sqlite:sqlite.db`);
-    ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    if (ipfs === undefined) {
+      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    }
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();

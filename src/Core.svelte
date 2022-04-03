@@ -1,6 +1,7 @@
 <script context="module" lang="ts">
   import Database from "tauri-plugin-sql-api";
-  import type { AddResult } from "ipfs-core-types/src/root";
+  import type { AddResult, IDResult } from "ipfs-core-types/src/root";
+  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Identity, IdentityResponse, Post } from "./types.type";
   import type { PublishResult } from "ipfs-core-types/src/name/index";
   import type { QueryResult } from "tauri-plugin-sql-api";
@@ -27,7 +28,9 @@
   ): Promise<Identity> {
     console.log("getIdentityFromDB");
     if (publisher === undefined) {
-      const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+      const ipfs: IPFSHTTPClient = await create({
+        url: "/ip4/127.0.0.1/tcp/5001",
+      });
       publisher = (await ipfs.id()).id;
     }
     const db = await Database.load("sqlite:sqlite.db");
@@ -43,7 +46,9 @@
   ): Promise<Identity> {
     console.log("getIdentityFromIPFS");
     let bufs = [];
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     let cid = await ipfs.resolve(publisher);
     if (!cid.includes("/identity.json")) {
       cid = cid + "/identity.json";
@@ -71,7 +76,9 @@
       cid = cid + "/post.json";
     }
     let bufs = [];
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     for await (const buf of ipfs.cat(cid)) {
       bufs.push(buf);
     }
@@ -81,7 +88,9 @@
 
   export async function followPublisher(publisher: string) {
     console.log("followPublisher");
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     const ipfs_id = (await ipfs.id()).id;
     let identity: Identity = await getIdentityFromDB(ipfs_id);
     if (!identity.following.includes(publisher)) {
@@ -95,7 +104,9 @@
 
   export async function deletePost(cid: string) {
     console.log("deletePost");
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     const ipfs_id = (await ipfs.id()).id;
     let identity: Identity = await getIdentityFromDB(ipfs_id);
     if (identity.posts.includes(cid)) {
@@ -130,7 +141,9 @@
   export async function addPost(post: Post) {
     console.log("addPost");
     await addPostDB(post);
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     const ipfs_id = (await ipfs.id()).id;
     const db_identity: Identity = await getIdentityFromDB(ipfs_id);
     db_identity.posts.unshift(post.cid);
@@ -142,7 +155,9 @@
 
   export async function updateIdentity(identity: Identity) {
     console.log("updateIdentity");
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     const ipfs_id = (await ipfs.id()).id;
     const db_identity: Identity = await getIdentityFromDB(ipfs_id);
     const updated_identity = { ...db_identity, ...identity };
@@ -159,7 +174,9 @@
     identity.timestamp = new Date().getTime();
     const json = JSON.stringify(identity);
     console.log(json);
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    const ipfs: IPFSHTTPClient = await create({
+      url: "/ip4/127.0.0.1/tcp/5001",
+    });
     const obj = {
       path: "identity.json",
       content: json,

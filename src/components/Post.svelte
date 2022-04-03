@@ -13,6 +13,7 @@
   import PlayFilled32 from "carbon-icons-svelte/lib/PlayFilled32";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
+  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Media, Post } from "../types.type";
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
@@ -21,14 +22,16 @@
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
 
-  export let ipfs_id: string;
-  export let cid: string;
-  export let post: Post;
   export let media_modal_idx: number;
   export let media_modal_media: Media[];
   export let media_modal_open: boolean;
-  const root_cid = post.cid || cid;
 
+  export let ipfs_id: string;
+  export let cid: string;
+  export let post: Post;
+  let root_cid = post.cid || cid;
+
+  let ipfs: IPFSHTTPClient;
   let timer;
   let timestamp: string = formatTime(post.timestamp);
   let datetime: string = new Date(post.timestamp).toLocaleString();
@@ -61,7 +64,9 @@
     } else {
       let bufs = [];
       const path: string = root_cid + "/" + filename;
-      const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+      if (ipfs === undefined) {
+        ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+      }
       for await (const buf of ipfs.cat(path)) {
         bufs.push(buf);
       }
@@ -86,7 +91,9 @@
     console.log("loadVideo");
     let bufs = [];
     const path: string = root_cid + "/" + filename;
-    const ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    if (ipfs === undefined) {
+      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    }
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }

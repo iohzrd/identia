@@ -67,3 +67,8 @@ export type PostRequest = {
   meta: object;
   timestamp: number;
 };
+
+export type PostResponse = {
+  cid: string;
+  files: string[];
+};
