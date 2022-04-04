@@ -8,7 +8,6 @@
     TextInput,
     Link,
   } from "carbon-components-svelte";
-  // import { UserProfile20 } from "carbon-icons-svelte";
   import Database from "tauri-plugin-sql-api";
   import MediaModalComponent from "./MediaModal.svelte";
   import MetaComponent from "./Meta.svelte";

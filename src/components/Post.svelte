@@ -9,8 +9,8 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
-  import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
-  import PlayFilled32 from "carbon-icons-svelte/lib/PlayFilled32";
+  import DocumentPdf from "carbon-icons-svelte/lib/DocumentPdf.svelte";
+  import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { IPFSHTTPClient } from "ipfs-http-client";
@@ -186,10 +186,13 @@
               {#if mediaObj.mime}
                 {#if mediaObj.mime.includes("image")}
                   {#if mediaObj.thumbnailFor}
-                    <PlayFilled32
+                    <div
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj.filename, idx)}
-                    />
+                    >
+                      <PlayFilled size={32} />
+                    </div>
+
                     <!-- <img
                       class="thumbnail"
                       src={mediaObj.blobUrl}
@@ -226,7 +229,7 @@
                 {:else if mediaObj.mime.includes("pdf")}
                   <Button kind="secondary" on:click={() => openMediaModal(idx)}>
                     {mediaObj.filename}
-                    <DocumentPdf32 />
+                    <DocumentPdf size={32} />
                   </Button>
                 {/if}
               {/if}

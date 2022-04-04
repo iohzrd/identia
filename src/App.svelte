@@ -13,7 +13,7 @@
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
-  import Add20 from "carbon-icons-svelte/lib/Add20";
+  import Add from "carbon-icons-svelte/lib/Add.svelte";
   import Database from "tauri-plugin-sql-api";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
@@ -91,7 +91,7 @@
     <HeaderUtilities>
       <HeaderGlobalAction
         aria-label="Follow new identity"
-        icon={Add20}
+        icon={Add}
         on:click={() => (follow_modal_open = true)}
       />
     </HeaderUtilities>
