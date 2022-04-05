@@ -28,17 +28,6 @@ struct Post {
   publisher: String,
   timestamp: i64,
 }
-impl Post {
-  fn new(body: String, files: Vec<String>, meta: Value, publisher: String, timestamp: i64) -> Post {
-    Post {
-      body: body,
-      files: files,
-      meta: meta,
-      publisher: publisher,
-      timestamp: timestamp,
-    }
-  }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PostRequest {
@@ -78,13 +67,13 @@ async fn post(request: PostRequest) -> PostResponse {
     form.add_reader_file("path", Cursor::new(data), filename);
   }
 
-  let post = Post::new(
-    request.body,
-    file_names.clone(),
-    request.meta,
-    ipfs_id,
-    request.timestamp,
-  );
+  let post = Post {
+    body: request.body,
+    files: file_names.clone(),
+    meta: request.meta,
+    publisher: ipfs_id,
+    timestamp: request.timestamp,
+  };
   println!("{:?}", post);
   let json = serde_json::to_vec(&post).unwrap();
   form.add_reader_file("path", Cursor::new(json), "post.json");
