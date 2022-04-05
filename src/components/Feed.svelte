@@ -7,6 +7,7 @@
   import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Post } from "../types.type";
   import { create } from "ipfs-http-client";
+  import { updateFeed } from "../Core.svelte";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
@@ -60,15 +61,17 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    let new_posts: Post[] = await invoke("update_feed", {
-      query: new_posts_query,
-    });
+    // let new_posts: Post[] = await invoke("update_feed", {
+    //   query: new_posts_query,
+    // });
+    // let new_posts: Post[] = await updateFeed()
+    await updateFeed();
 
-    if (new_posts.length > 0) {
-      feed = [...new_posts, ...feed];
-      newest_ts = feed[0].timestamp;
-      oldest_ts = feed[feed.length - 1].timestamp;
-    }
+    // if (new_posts.length > 0) {
+    //   feed = [...new_posts, ...feed];
+    //   newest_ts = feed[0].timestamp;
+    //   oldest_ts = feed[feed.length - 1].timestamp;
+    // }
   }
 
   onMount(async () => {
@@ -79,11 +82,12 @@
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();
-    // update_feed_interval = setInterval(updateIdentities, 60 * 1000);
+    await updateFeed();
+    update_feed_interval = setInterval(updateIdentities, 60 * 1000);
   });
 
   onDestroy(() => {
-    // clearInterval(update_feed_interval);
+    clearInterval(update_feed_interval);
   });
 </script>
 

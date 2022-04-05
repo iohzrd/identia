@@ -44,12 +44,16 @@
   export async function getIdentityFromIPFS(
     publisher: string
   ): Promise<Identity> {
-    console.log("getIdentityFromIPFS");
+    let name = publisher;
+    if (!publisher.includes("ipns/")) {
+      name = "/ipns/" + publisher;
+    }
+    console.log(`getIdentityFromIPFS: ${publisher}`);
     let bufs = [];
     const ipfs: IPFSHTTPClient = await create({
       url: "/ip4/127.0.0.1/tcp/5001",
     });
-    let cid = await ipfs.resolve(publisher);
+    let cid = await ipfs.resolve(name);
     if (!cid.includes("/identity.json")) {
       cid = cid + "/identity.json";
     }
