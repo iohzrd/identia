@@ -44,11 +44,11 @@ export type MediaResponse = {
 };
 
 export type Media = {
-  blobUrl: string;
   element: Element;
   filename: string;
-  thumbnailFor: string;
   mime: string;
+  thumbnailFor: string;
+  url: string;
 };
 
 export type Post = {

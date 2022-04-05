@@ -50,38 +50,41 @@
 
   async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
+    let cid = root_cid;
+    if (!root_cid.includes("ipfs/")) {
+      cid = "ipfs/" + root_cid;
+    }
+    const path: string = "http://localhost:8088/" + cid + "/" + filename;
+    console.log(path);
+    const fileType = {
+      ext: filename.split(".").pop(),
+      mime: ext2mime(filename.split(".").pop()),
+    };
     let mediaObj: Media = {
-      blobUrl: null,
+      url: path,
       element: null,
       thumbnailFor: null,
       filename: filename,
-      mime: null,
+      mime: fileType.mime,
     };
 
     if (isThumbnail) {
       mediaObj.thumbnailFor = filename;
       mediaObj.mime = "image";
     } else {
-      let bufs = [];
-      const path: string = root_cid + "/" + filename;
-      if (ipfs === undefined) {
-        ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-      }
-      for await (const buf of ipfs.cat(path)) {
-        bufs.push(buf);
-      }
-      const buf: Buffer = Buffer.concat(bufs);
-      const fileType = {
-        ext: filename.split(".").pop(),
-        mime: ext2mime(filename.split(".").pop()),
-      };
-
-      let blob = new Blob([buf], { type: fileType.mime });
-      const urlCreator = window.URL || window.webkitURL;
-      let blobUrl = urlCreator.createObjectURL(blob);
-      mediaObj.blobUrl = blobUrl;
-      mediaObj.filename = filename;
-      mediaObj.mime = fileType.mime;
+      // const path: string = root_cid + "/" + filename;
+      // if (ipfs === undefined) {
+      //   ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+      // }
+      // let bufs = [];
+      // for await (const buf of ipfs.cat(path)) {
+      //   bufs.push(buf);
+      // }
+      // const buf: Buffer = Buffer.concat(bufs);
+      // let blob = new Blob([buf], { type: fileType.mime });
+      // const urlCreator = window.URL || window.webkitURL;
+      // let url = urlCreator.createObjectURL(blob);
+      // mediaObj.url = url;
     }
 
     return mediaObj;
@@ -89,24 +92,29 @@
 
   async function loadVideo(filename, idx: number) {
     console.log("loadVideo");
-    let bufs = [];
-    const path: string = root_cid + "/" + filename;
-    if (ipfs === undefined) {
-      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    let cid = root_cid;
+    if (!root_cid.includes("ipfs/")) {
+      cid = "ipfs/" + root_cid;
     }
-    for await (const buf of ipfs.cat(path)) {
-      bufs.push(buf);
-    }
-    const buf: Buffer = Buffer.concat(bufs);
+    const path: string = "http://localhost:8088/" + cid + "/" + filename;
+    // let bufs = [];
+    // if (ipfs === undefined) {
+    //   ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    // }
+    // for await (const buf of ipfs.cat(path)) {
+    //   bufs.push(buf);
+    // }
+    // const buf: Buffer = Buffer.concat(bufs);
     const fileType = {
       ext: filename.split(".").pop(),
       mime: ext2mime(filename.split(".").pop()),
     };
 
-    const blob = new Blob([buf], { type: fileType.mime });
-    const urlCreator = window.URL || window.webkitURL;
+    // const blob = new Blob([buf], { type: fileType.mime });
+    // const urlCreator = window.URL || window.webkitURL;
     const newMediaObj: Media = {
-      blobUrl: urlCreator.createObjectURL(blob),
+      url: path,
+      // url: urlCreator.createObjectURL(blob),
       element: null,
       thumbnailFor: "",
       filename: filename,
@@ -187,6 +195,7 @@
                 {#if mediaObj.mime.includes("image")}
                   {#if mediaObj.thumbnailFor}
                     <div
+                      class="thumbnail"
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj.filename, idx)}
                     >
@@ -195,7 +204,7 @@
 
                     <!-- <img
                       class="thumbnail"
-                      src={mediaObj.blobUrl}
+                      src={mediaObj.url}
                       alt=""
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj, idx)}
@@ -203,7 +212,7 @@
                   {:else}
                     <img
                       class="thumbnail"
-                      src={mediaObj.blobUrl}
+                      src={mediaObj.url}
                       alt=""
                       bind:this={mediaObj.element}
                       on:click={() => openMediaModal(idx)}
@@ -212,14 +221,14 @@
                 {:else if mediaObj.mime.includes("audio")}
                   <audio
                     class="thumbnail"
-                    src={mediaObj.blobUrl}
+                    src={mediaObj.url}
                     height="300"
                     controls
                     bind:this={mediaObj.element}
                   />
                 {:else if mediaObj.mime.includes("video")}
                   <video
-                    src={mediaObj.blobUrl}
+                    src={mediaObj.url}
                     height="300"
                     controls
                     bind:this={mediaObj.element}

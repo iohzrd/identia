@@ -1,5 +1,5 @@
 <script lang="ts">
-  import PdfViewer from "svelte-pdf";
+  // import PdfViewer from "svelte-pdf";
   import type { Media } from "../types.type";
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
@@ -31,31 +31,28 @@
           <SplideSlide>
             <img
               class="image"
-              src={mediaObj.blobUrl}
+              src={mediaObj.url}
               alt=""
               bind:this={mediaObj.element}
             />
           </SplideSlide>
         {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
           <SplideSlide>
-            <video src={mediaObj.blobUrl} controls bind:this={mediaObj.element}>
+            <video src={mediaObj.url} controls bind:this={mediaObj.element}>
               <track kind="captions" />
             </video>
           </SplideSlide>
         {:else if mediaObj.mime && mediaObj.mime.includes("video")}
           <SplideSlide>
-            <video src={mediaObj.blobUrl} controls bind:this={mediaObj.element}>
+            <video src={mediaObj.url} controls bind:this={mediaObj.element}>
               <track kind="captions" />
             </video>
           </SplideSlide>
         {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
           <SplideSlide>
             <div style="text-align: center;">
-              <PdfViewer
-                url={mediaObj.blobUrl}
-                scale={1.0}
-                showBorder={false}
-              />
+              PDF
+              <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
             </div>
           </SplideSlide>
         {/if}

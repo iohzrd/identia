@@ -163,6 +163,18 @@ fn initialize_ipfs() {
     ])
     .output()
     .unwrap();
+  Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "-c",
+      identia_app_data_path().into_os_string().to_str().unwrap(),
+      "config",
+      "--json",
+      "Addresses.Gateway",
+      r#""/ip4/127.0.0.1/tcp/8088""#,
+    ])
+    .output()
+    .unwrap();
 }
 
 fn main() {

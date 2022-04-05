@@ -103,12 +103,8 @@
   }
 
   export async function deletePost(cid: string) {
-    console.log("deletePost");
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
-    const ipfs_id = (await ipfs.id()).id;
-    let identity: Identity = await getIdentityFromDB(ipfs_id);
+    console.log(`deletePost: ${cid}`);
+    let identity: Identity = await getIdentityFromDB();
     if (identity.posts.includes(cid)) {
       identity.posts = identity.posts.filter((p) => p !== cid);
       const identity_response = await publishIdentity(identity);
