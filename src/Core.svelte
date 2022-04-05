@@ -1,8 +1,8 @@
 <script context="module" lang="ts">
   import Database from "tauri-plugin-sql-api";
-  import type { AddResult, IDResult } from "ipfs-core-types/src/root";
+  import type { AddResult } from "ipfs-core-types/src/root";
   import type { IPFSHTTPClient } from "ipfs-http-client";
-  import type { Identity, IdentityResponse, Post } from "./types.type";
+  import type { Identity, Post } from "./types.type";
   import type { PublishResult } from "ipfs-core-types/src/name/index";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Buffer } from "buffer/index";
@@ -35,7 +35,7 @@
     }
     const db = await Database.load("sqlite:sqlite.db");
     const rows: Identity[] = await db.select(
-      "SELECT avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
+      "SELECT cid,avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
       [publisher]
     );
     return rows[0];
@@ -57,14 +57,17 @@
       bufs.push(buf);
     }
     const buf: Buffer = Buffer.concat(bufs);
-    return JSON.parse(buf.toString());
+    return {
+      cid: cid,
+      ...JSON.parse(buf.toString()),
+    };
   }
 
   export async function getPostFromDB(cid: string): Promise<Post> {
     console.log("getPostFromDB");
     const db = await Database.load("sqlite:sqlite.db");
     const rows: Post[] = await db.select(
-      "SELECT body,files,meta,publisher,timestamp FROM posts WHERE cid = ?",
+      "SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE cid = ?",
       [cid]
     );
     return rows[0];
@@ -88,11 +91,7 @@
 
   export async function followPublisher(publisher: string) {
     console.log("followPublisher");
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
-    const ipfs_id = (await ipfs.id()).id;
-    let identity: Identity = await getIdentityFromDB(ipfs_id);
+    let identity: Identity = await getIdentityFromDB();
     if (!identity.following.includes(publisher)) {
       identity.following.push(publisher);
       const identity_response = await publishIdentity(identity);
@@ -137,11 +136,7 @@
   export async function addPost(post: Post) {
     console.log("addPost");
     await addPostDB(post);
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
-    const ipfs_id = (await ipfs.id()).id;
-    const db_identity: Identity = await getIdentityFromDB(ipfs_id);
+    const db_identity: Identity = await getIdentityFromDB();
     db_identity.posts.unshift(post.cid);
     const identity_response = await publishIdentity(db_identity);
     console.log(identity_response);
@@ -151,11 +146,7 @@
 
   export async function updateIdentity(identity: Identity) {
     console.log("updateIdentity");
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
-    const ipfs_id = (await ipfs.id()).id;
-    const db_identity: Identity = await getIdentityFromDB(ipfs_id);
+    const db_identity: Identity = await getIdentityFromDB();
     const updated_identity = { ...db_identity, ...identity };
     const identity_response = await publishIdentity(updated_identity);
     console.log(identity_response);
@@ -163,9 +154,7 @@
     console.log(update_result);
   }
 
-  export async function publishIdentity(
-    identity: Identity
-  ): Promise<IdentityResponse> {
+  export async function publishIdentity(identity: Identity): Promise<Identity> {
     console.log("publishIdentity");
     identity.timestamp = new Date().getTime();
     const json = JSON.stringify(identity);
@@ -186,31 +175,45 @@
     );
     console.log("publish complete");
     console.log(publish_result);
-    const identity_response: IdentityResponse = {
+    return {
       cid: String(add_result.cid),
-      identity: identity,
+      ...identity,
     };
-    return identity_response;
   }
 
-  export async function updateIdentityDB(ir: IdentityResponse) {
-    console.log("getIdentityFromDB");
+  export async function updateIdentityDB(i: Identity) {
+    console.log("updateIdentityDB");
     const db = await Database.load("sqlite:sqlite.db");
     const result = await db.execute(
       "UPDATE identities SET cid=$1, avatar=$2, description=$3, display_name=$4, following=$5, meta=$6, posts=$7, publisher=$8, timestamp=$9 WHERE publisher=$10",
       [
-        ir.cid,
-        ir.identity.avatar,
-        ir.identity.description,
-        ir.identity.display_name,
-        ir.identity.following,
-        ir.identity.meta,
-        ir.identity.posts,
-        ir.identity.publisher,
-        ir.identity.timestamp,
-        ir.identity.publisher,
+        i.cid,
+        i.avatar,
+        i.description,
+        i.display_name,
+        i.following,
+        i.meta,
+        i.posts,
+        i.publisher,
+        i.timestamp,
+        i.publisher,
       ]
     );
     return result;
+  }
+
+  export async function updateFeed() {
+    console.log("updateFeed");
+    const i: Identity = await getIdentityFromDB();
+    i.following.forEach(async (publisher) => {
+      const following_identity: Identity = await getIdentityFromIPFS(publisher);
+      if (following_identity) {
+        await updateIdentityDB(following_identity);
+        following_identity.posts.forEach(async (cid) => {
+          let post = await getPostFromIPFS(cid);
+          let result = await addPostDB(post);
+        });
+      }
+    });
   }
 </script>

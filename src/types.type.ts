@@ -1,16 +1,11 @@
-export type AddObj = {
-  path: string;
-  content: string;
-};
-
 export type Comment = {
-  body: string;
   cid: string;
+  body: string;
   from: string;
-  kind: string;
   in_response_to: string;
-  topic: string;
+  kind: string;
   timestamp: number;
+  topic: string;
 };
 
 export type Feed = {
@@ -18,6 +13,7 @@ export type Feed = {
 };
 
 export type Identity = {
+  cid: string;
   avatar: string;
   description: string;
   display_name: string;
@@ -26,21 +22,6 @@ export type Identity = {
   posts: string[];
   publisher: string;
   timestamp: number;
-};
-
-export type IdentityRequest = {
-  publisher: string;
-};
-
-export type IdentityResponse = {
-  cid: string;
-  identity: Identity;
-};
-
-export type MediaResponse = {
-  data: any[];
-  ext: string;
-  mime: string;
 };
 
 export type Media = {
@@ -53,8 +34,8 @@ export type Media = {
 
 export type Post = {
   cid: string;
-  display_name: string;
   body: string;
+  display_name: string;
   files: string[];
   meta: object;
   publisher: string;
