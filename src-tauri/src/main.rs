@@ -194,7 +194,19 @@ fn main() {
         window.set_focus().unwrap();
       }
       SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
-        "exit_app" => app.exit(0),
+        "exit_app" => {
+          tauri::async_runtime::block_on(async move {
+            println!("shutting down IPFS");
+            let ipfs_client = IpfsClient::default();
+            match ipfs_client.shutdown().await {
+              Ok(ret) => {
+                println!("IPFS successfully terminated: {:?}", ret);
+                app.exit(0)
+              }
+              Err(e) => eprintln!("IPFS exited with: {:#?}", e),
+            };
+          });
+        }
         #[cfg(target_os = "linux")]
         "icon_1" => app
           .tray_handle()
