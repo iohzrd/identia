@@ -231,14 +231,14 @@
         const fid_db: Identity = await getIdentityFromDB(publisher);
         if (fid_ipfs && fid_ipfs.timestamp > fid_db.timestamp) {
           await updateIdentityDB(fid_ipfs);
-          fid_ipfs.posts.forEach(async (cid) => {
-            if (!(await postInDB(cid))) {
-              let post = await getPostFromIPFS(cid);
-              let result = await addPostDB(post);
-              console.log(result);
-            }
-          });
         }
+        fid_ipfs.posts.forEach(async (cid) => {
+          if (!(await postInDB(cid))) {
+            let post = await getPostFromIPFS(cid);
+            let result = await addPostDB(post);
+            console.log(result);
+          }
+        });
       }
     });
   }

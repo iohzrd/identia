@@ -1,6 +1,6 @@
 CREATE TABLE identities (
+    cid           TEXT NOT NULL,
     avatar        TEXT,
-    cid           TEXT,
     description   TEXT,
     display_name  TEXT,
     following     BLOB,
@@ -11,7 +11,7 @@ CREATE TABLE identities (
   );
 
 CREATE TABLE posts (
-    cid         TEXT,
+    cid         TEXT NOT NULL,
     body        TEXT,
     files       BLOB,
     meta        BLOB,
