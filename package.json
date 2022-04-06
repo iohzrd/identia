@@ -37,7 +37,7 @@
     "execa": "^6.1.0",
     "ext2mime": "^1.0.1",
     "go-ipfs": "^0.12.1",
-    "ipfs-http-client": "^56.0.1",
+    "ipfs-http-client": "^56.0.2",
     "is-ipfs": "^6.0.2",
     "linkify-html": "^3.0.5",
     "linkify-string": "^3.0.4",

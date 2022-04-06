@@ -37,13 +37,14 @@
   let media_modal_open = false;
 
   async function getPostsPage() {
-    console.log(`getFeedPage: ${publisher}`);
+    console.log("getFeedPage: ", publisher);
     if (identity && identity.posts) {
       if (posts.length > 0) {
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
       const db = await Database.load("sqlite:sqlite.db");
       let page: Post[] = await db.select(posts_query);
+      console.log("page:", page);
       if (page.length > 0) {
         posts = [...posts, ...page];
         posts_oldest_ts = posts[posts.length - 1].timestamp;

@@ -32,7 +32,7 @@
   let media_modal_open = false;
 
   async function getFeedPage() {
-    console.log(`getFeedPage: ${publisher}`);
+    console.log("getFeedPage: ", publisher);
     if (feed.length > 0) {
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
@@ -56,7 +56,7 @@
   }
 
   async function updateIdentities() {
-    console.log(`updateIdentities: ${publisher}`);
+    console.log("updateIdentities: ", publisher);
     if (feed.length > 0) {
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
