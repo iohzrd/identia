@@ -109,18 +109,6 @@
     };
   }
 
-  export async function followPublisher(publisher: string) {
-    console.log("followPublisher: ", publisher);
-    let identity: Identity = await getIdentityFromDB();
-    if (!identity.following.includes(publisher)) {
-      identity.following.push(publisher);
-      const identity_response = await publishIdentity(identity);
-      console.log(identity_response);
-      const update_result = await updateIdentityDB(identity_response);
-      console.log(update_result);
-    }
-  }
-
   export async function deletePost(cid: string) {
     console.log("deletePost: ", cid);
     let identity: Identity = await getIdentityFromDB();
@@ -135,8 +123,8 @@
     }
   }
 
-  export async function addPostDB(post: Post): Promise<QueryResult> {
-    console.log("addPostDB: ", post);
+  export async function insertPostDB(post: Post): Promise<QueryResult> {
+    console.log("insertPostDB: ", post);
     const db = await Database.load("sqlite:sqlite.db");
     // const { lastInsertId: id } = await db.execute('INSERT INTO todos (title) VALUES ($1)', [title]);
     return await db.execute(
@@ -154,13 +142,35 @@
 
   export async function addPost(post: Post) {
     console.log("addPost: ", post);
-    await addPostDB(post);
+    await insertPostDB(post);
     const db_identity: Identity = await getIdentityFromDB();
     db_identity.posts.unshift(post.cid);
     const identity_response = await publishIdentity(db_identity);
     console.log(identity_response);
     const update_result = await updateIdentityDB(identity_response);
     console.log(update_result);
+  }
+
+  export async function insertIdentityDB(
+    identity: Identity
+  ): Promise<QueryResult> {
+    console.log("insertIdentityDB: ", identity);
+    const db = await Database.load("sqlite:sqlite.db");
+    // const { lastInsertId: id } = await db.execute('INSERT INTO todos (title) VALUES ($1)', [title]);
+    return await db.execute(
+      "INSERT INTO identities (cid,avatar,description,display_name,following,meta,posts,publisher,timestamp) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+      [
+        identity.cid,
+        identity.avatar,
+        identity.description,
+        identity.display_name,
+        identity.following,
+        identity.meta,
+        identity.posts,
+        identity.publisher,
+        identity.timestamp,
+      ]
+    );
   }
 
   export async function updateIdentity(identity: Identity) {
@@ -171,6 +181,37 @@
     console.log(identity_response);
     const update_result = await updateIdentityDB(identity_response);
     console.log(update_result);
+  }
+
+  export async function updateIdentityDB(i: Identity) {
+    console.log("updateIdentityDB: ", i);
+    const db = await Database.load("sqlite:sqlite.db");
+    const result = await db.execute(
+      "UPDATE identities SET cid=$1, avatar=$2, description=$3, display_name=$4, following=$5, meta=$6, posts=$7, publisher=$8, timestamp=$9 WHERE publisher=$10",
+      [
+        i.cid,
+        i.avatar,
+        i.description,
+        i.display_name,
+        i.following,
+        i.meta,
+        i.posts,
+        i.publisher,
+        i.timestamp,
+        i.publisher,
+      ]
+    );
+    return result;
+  }
+
+  export async function identityInDB(publisher: string): Promise<boolean> {
+    console.log("identityInDB: ", publisher);
+    const db = await Database.load("sqlite:sqlite.db");
+    const rows: object[] = await db.select(
+      "SELECT timestamp FROM identities WHERE publisher = ?",
+      [publisher]
+    );
+    return rows.length > 0;
   }
 
   export async function publishIdentity(identity: Identity): Promise<Identity> {
@@ -201,25 +242,40 @@
     };
   }
 
-  export async function updateIdentityDB(i: Identity) {
-    console.log("updateIdentityDB: ", i);
-    const db = await Database.load("sqlite:sqlite.db");
-    const result = await db.execute(
-      "UPDATE identities SET cid=$1, avatar=$2, description=$3, display_name=$4, following=$5, meta=$6, posts=$7, publisher=$8, timestamp=$9 WHERE publisher=$10",
-      [
-        i.cid,
-        i.avatar,
-        i.description,
-        i.display_name,
-        i.following,
-        i.meta,
-        i.posts,
-        i.publisher,
-        i.timestamp,
-        i.publisher,
-      ]
-    );
-    return result;
+  export function getNewIdentity(publisher: string): Identity {
+    console.log("getNewIdentity: ", publisher);
+    return {
+      cid: "",
+      avatar: "",
+      description: "",
+      display_name: "",
+      following: [],
+      meta: {},
+      posts: [],
+      publisher: publisher,
+      timestamp: 0,
+    };
+  }
+
+  export async function getIdentity(publisher: string): Promise<Identity> {
+    console.log("getIdentity: ", publisher);
+    if (!(await identityInDB(publisher))) {
+      await insertIdentityDB(getNewIdentity(publisher));
+    }
+    return await getIdentityFromDB(publisher);
+  }
+
+  export async function followPublisher(publisher: string) {
+    console.log("followPublisher: ", publisher);
+    let identity: Identity = await getIdentityFromDB();
+    if (!identity.following.includes(publisher)) {
+      await getIdentity(publisher);
+      identity.following.push(publisher);
+      const identity_response = await publishIdentity(identity);
+      console.log(identity_response);
+      const update_result = await updateIdentityDB(identity_response);
+      console.log(update_result);
+    }
   }
 
   export async function updateFeed() {
@@ -229,14 +285,16 @@
       if (publisher != i.publisher) {
         const fid_ipfs: Identity = await getIdentityFromIPFS(publisher);
         const fid_db: Identity = await getIdentityFromDB(publisher);
-        if (fid_ipfs && fid_ipfs.timestamp > fid_db.timestamp) {
+        if (fid_ipfs) {
           await updateIdentityDB(fid_ipfs);
         }
         fid_ipfs.posts.forEach(async (cid) => {
           if (!(await postInDB(cid))) {
             let post = await getPostFromIPFS(cid);
-            let result = await addPostDB(post);
-            console.log(result);
+            if (publisher === post.publisher) {
+              let result = await insertPostDB(post);
+              console.log(result);
+            }
           }
         });
       }

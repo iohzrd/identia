@@ -54,7 +54,7 @@
     if (!root_cid.includes("ipfs/")) {
       cid = "ipfs/" + root_cid;
     }
-    const path: string = "http://localhost:8088/" + cid + "/" + filename;
+    const path: string = "http://localhost:8080/" + cid + "/" + filename;
     console.log(path);
     const fileType = {
       ext: filename.split(".").pop(),
@@ -96,7 +96,7 @@
     if (!root_cid.includes("ipfs/")) {
       cid = "ipfs/" + root_cid;
     }
-    const path: string = "http://localhost:8088/" + cid + "/" + filename;
+    const path: string = "http://localhost:8080/" + cid + "/" + filename;
     // let bufs = [];
     // if (ipfs === undefined) {
     //   ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });

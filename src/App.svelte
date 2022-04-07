@@ -13,19 +13,21 @@
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
+  // import Database from "tauri-plugin-sql-api";
   import Add from "carbon-icons-svelte/lib/Add.svelte";
-  import Database from "tauri-plugin-sql-api";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { IPFSHTTPClient } from "ipfs-http-client";
+  import type { Identity } from "./types.type";
   import { create } from "ipfs-http-client";
-  import { followPublisher } from "./Core.svelte";
+  import { followPublisher, getIdentity } from "./Core.svelte";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
 
+  let identity: Identity;
   let ipfs: IPFSHTTPClient;
   let ipfs_info: IDResult;
   let ipfs_id: string;
@@ -57,14 +59,20 @@
     publisher_to_follow = "";
   }
 
+  async function follow() {
+    follow_waiting = true;
+    await followPublisher(publisher_to_follow);
+    clearFollowModal();
+    follow_modal_open = false;
+  }
+
   onMount(async () => {
-    if (ipfs === undefined) {
-      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    }
+    ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     // const db = await Database.load(`sqlite:${ipfs_id}.db`);
-    const db = await Database.load(`sqlite:sqlite.db`);
+    // 12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz
+    identity = await getIdentity(ipfs_id);
   });
 
   onDestroy(() => {});
@@ -116,11 +124,8 @@
     {#if follow_waiting}
       <ProgressBar helperText="Please wait..." />
     {:else}
-      <Button
-        disabled={publisher_to_follow_invalid}
-        on:click={() => {
-          followPublisher(publisher_to_follow);
-        }}>Confirm</Button
+      <Button disabled={publisher_to_follow_invalid} on:click={follow}
+        >Follow</Button
       >
     {/if}
   </Modal>

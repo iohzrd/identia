@@ -16,7 +16,7 @@
   import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Identity, Post } from "../types.type";
   import { create } from "ipfs-http-client";
-  import { getIdentityFromDB, updateIdentity } from "../Core.svelte";
+  import { getIdentity, updateIdentity } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
 
   export let params = {};
@@ -61,19 +61,9 @@
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
-      await getIdentityFromDB(publisher).then((identity_res) => {
-        identity = identity_res;
-        console.log("identity");
-        console.log(identity);
-      });
+      identity = await getIdentity(publisher);
     }
     await getPostsPage();
-
-    if (identity && identity.meta) {
-      if (Array.isArray(identity.meta)) {
-        identity.meta = {};
-      }
-    }
   });
 
   onDestroy(() => {

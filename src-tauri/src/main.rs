@@ -160,7 +160,7 @@ fn initialize_ipfs() {
       "config",
       "--json",
       "Addresses.Gateway",
-      r#""/ip4/127.0.0.1/tcp/8088""#,
+      r#""/ip4/127.0.0.1/tcp/8080""#,
     ])
     .output()
     .unwrap();

@@ -9,7 +9,7 @@
   import { create } from "ipfs-http-client";
   import { updateFeed } from "../Core.svelte";
   import { inview } from "svelte-inview/dist/";
-  import { invoke } from "@tauri-apps/api/tauri";
+  // import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
   export let params = {};
