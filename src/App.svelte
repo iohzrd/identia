@@ -71,7 +71,6 @@
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     // const db = await Database.load(`sqlite:${ipfs_id}.db`);
-    // 12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz
     identity = await getIdentity(ipfs_id);
   });
 
