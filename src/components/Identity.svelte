@@ -8,20 +8,16 @@
     TextInput,
     Link,
   } from "carbon-components-svelte";
-  import Database from "tauri-plugin-sql-api";
   import MediaModalComponent from "./MediaModal.svelte";
   import MetaComponent from "./Meta.svelte";
   import PostComponent from "./Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Identity, Post } from "../types.type";
-  import { create } from "ipfs-http-client";
-  import { getIdentity, updateIdentity } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
+  import core from "../core";
 
   export let params = {};
 
-  let ipfs: IPFSHTTPClient;
   let ipfs_info: IDResult;
   let ipfs_id: string;
 
@@ -42,8 +38,7 @@
       if (posts.length > 0) {
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
-      const db = await Database.load("sqlite:sqlite.db");
-      let page: Post[] = await db.select(posts_query);
+      let page: Post[] = await core.select(posts_query);
       console.log("page:", page);
       if (page.length > 0) {
         posts = [...posts, ...page];
@@ -55,13 +50,11 @@
   onMount(async () => {
     console.log("onMount");
     console.log(params);
-    if (ipfs === undefined) {
-      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    }
-    ipfs_info = await ipfs.id();
+    // ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    ipfs_info = await core.ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
-      identity = await getIdentity(publisher);
+      identity = await core.getIdentity(publisher);
     }
     await getPostsPage();
   });
@@ -170,7 +163,7 @@
 
     <Button
       on:click={() => {
-        updateIdentity(identity);
+        core.updateIdentity(identity);
       }}>Save</Button
     >
   {/if}

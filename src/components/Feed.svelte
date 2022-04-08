@@ -1,22 +1,16 @@
 <script lang="ts">
-  import Database from "tauri-plugin-sql-api";
   import MediaModalComponent from "./MediaModal.svelte";
   import NewPostComponent from "./NewPost.svelte";
   import PostComponent from "./Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Post } from "../types.type";
-  import { create } from "ipfs-http-client";
-  import { updateFeed } from "../Core.svelte";
   import { inview } from "svelte-inview/dist/";
-  // import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
+  import core from "../core";
 
   export let params = {};
   $: publisher = params["publisher"];
 
-  let db;
-  let ipfs: IPFSHTTPClient;
   let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;
@@ -32,14 +26,12 @@
   let media_modal_open = false;
 
   async function getFeedPage() {
-    console.log("getFeedPage: ", publisher);
+    console.log("getFeedPage");
     if (feed.length > 0) {
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    let page: Post[] = await db.select(feed_query);
-    console.log("page");
-    console.log(page);
+    let page: Post[] = await core.select(feed_query);
     if (page.length > 0) {
       feed = [...feed, ...page];
       newest_ts = feed[0].timestamp;
@@ -61,8 +53,8 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    await updateFeed();
-    // let new_posts: Post[] = await db.select(new_posts_query);
+    await core.updateFeed();
+    // let new_posts: Post[] = await core.select(new_posts_query);
     // if (new_posts.length > 0) {
     //   feed = [...new_posts, ...feed];
     //   newest_ts = feed[0].timestamp;
@@ -71,14 +63,10 @@
   }
 
   onMount(async () => {
-    db = await Database.load(`sqlite:sqlite.db`);
-    if (ipfs === undefined) {
-      ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    }
-    ipfs_info = await ipfs.id();
+    // ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    ipfs_info = await core.ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();
-    await updateFeed();
     update_feed_interval = setInterval(updateIdentities, 60 * 1000);
   });
 

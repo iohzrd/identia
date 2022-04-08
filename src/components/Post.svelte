@@ -9,16 +9,14 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
+  // import { Buffer } from "buffer/index";
   import DocumentPdf from "carbon-icons-svelte/lib/DocumentPdf.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import core from "../core";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
-  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Media, Post } from "../types.type";
-  import { Buffer } from "buffer/index";
-  import { create } from "ipfs-http-client";
   import { format as formatTime } from "timeago.js";
-  import { getPostFromIPFS, deletePost } from "../Core.svelte";
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
 
@@ -31,7 +29,6 @@
   export let post: Post;
   let root_cid = post.cid || cid;
 
-  let ipfs: IPFSHTTPClient;
   let timer;
   let timestamp: string = formatTime(post.timestamp);
   let datetime: string = new Date(post.timestamp).toLocaleString();
@@ -129,7 +126,7 @@
       timestamp = formatTime(post.timestamp);
     }, 60000);
     if (!post) {
-      post = await getPostFromIPFS(cid);
+      post = await core.getPostFromIPFS(cid);
     }
 
     for await (const filename of post.files) {
@@ -173,7 +170,7 @@
           <OverflowMenuItem
             text="Delete post"
             on:click={() => {
-              deletePost(root_cid);
+              core.deletePost(root_cid);
             }}
           />
         {/if}

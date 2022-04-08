@@ -13,22 +13,18 @@
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
-  // import Database from "tauri-plugin-sql-api";
   import Add from "carbon-icons-svelte/lib/Add.svelte";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
+  import core from "./core";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { IPFSHTTPClient } from "ipfs-http-client";
   import type { Identity } from "./types.type";
-  import { create } from "ipfs-http-client";
-  import { followPublisher, getIdentity } from "./Core.svelte";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
 
   let identity: Identity;
-  let ipfs: IPFSHTTPClient;
   let ipfs_info: IDResult;
   let ipfs_id: string;
 
@@ -61,17 +57,16 @@
 
   async function follow() {
     follow_waiting = true;
-    await followPublisher(publisher_to_follow);
+    await core.followPublisher(publisher_to_follow);
     clearFollowModal();
     follow_modal_open = false;
   }
 
   onMount(async () => {
-    ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    ipfs_info = await ipfs.id();
+    // ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
+    ipfs_info = await core.ipfs.id();
     ipfs_id = ipfs_info.id;
-    // const db = await Database.load(`sqlite:${ipfs_id}.db`);
-    identity = await getIdentity(ipfs_id);
+    identity = await core.getIdentity(ipfs_id);
   });
 
   onDestroy(() => {});

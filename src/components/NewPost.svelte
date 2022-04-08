@@ -14,13 +14,12 @@
     ProgressBar,
     TextArea,
   } from "carbon-components-svelte";
+  // import { Buffer } from "buffer/index";
+  import core from "../core";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
-  // import { readBinaryFile } from "@tauri-apps/api/fs";
-  // import { Buffer } from "buffer/index";
-  import { addPost, getIdentityFromDB } from "../Core.svelte";
 
   export let onPost: Function;
 
@@ -92,7 +91,7 @@
         display_name: identity.display_name,
         publisher: identity.publisher,
       };
-      await addPost(post);
+      await core.addPost(post);
       onPost(post);
       body = "";
       files = [];
@@ -102,7 +101,7 @@
   }
 
   onMount(async () => {
-    identity = await getIdentityFromDB();
+    identity = await core.getIdentityFromDB();
   });
   onDestroy(() => {});
 </script>
