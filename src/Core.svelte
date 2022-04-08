@@ -8,11 +8,21 @@
   import { Buffer } from "buffer/index";
   import { create } from "ipfs-http-client";
 
+  let db = null;
+  const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {
+    db = instance;
+    return db;
+  });
+
+  const ipfs: IPFSHTTPClient = create({
+    url: "/ip4/127.0.0.1/tcp/5001",
+  });
+
   export async function deleteIdentityFromDB(
     publisher: string
   ): Promise<QueryResult> {
     console.log("deleteIdentityFromDB: ", publisher);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     return await db.execute("DELETE FROM identities WHERE publisher = ?", [
       publisher,
     ]);
@@ -20,7 +30,7 @@
 
   export async function deletePostFromDB(cid: string): Promise<QueryResult> {
     console.log("deletePostFromDB: ", cid);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     return await db.execute("DELETE FROM posts WHERE cid = ?", [cid]);
   }
 
@@ -29,12 +39,9 @@
   ): Promise<Identity> {
     console.log("getIdentityFromDB: ", publisher);
     if (publisher === undefined) {
-      const ipfs: IPFSHTTPClient = await create({
-        url: "/ip4/127.0.0.1/tcp/5001",
-      });
       publisher = (await ipfs.id()).id;
     }
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     const rows: Identity[] = await db.select(
       "SELECT cid,avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
       [publisher]
@@ -50,9 +57,6 @@
     if (!publisher.includes("/ipns/")) {
       publisher = "/ipns/" + publisher;
     }
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
     const cid = await ipfs.resolve(publisher);
     let path;
     if (!cid.includes("/identity.json")) {
@@ -71,7 +75,7 @@
 
   export async function postInDB(cid: string): Promise<boolean> {
     console.log("postInDB: ", cid);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     const rows: object[] = await db.select(
       "SELECT timestamp FROM posts WHERE cid = ?",
       [cid]
@@ -81,7 +85,7 @@
 
   export async function getPostFromDB(cid: string): Promise<Post> {
     console.log("getPostFromDB: ", cid);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     const rows: Post[] = await db.select(
       "SELECT cid,body,files,meta,publisher,timestamp FROM posts WHERE cid = ?",
       [cid]
@@ -96,9 +100,6 @@
       path = cid + "/post.json";
     }
     const bufs = [];
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }
@@ -125,7 +126,7 @@
 
   export async function insertPostDB(post: Post): Promise<QueryResult> {
     console.log("insertPostDB: ", post);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     // const { lastInsertId: id } = await db.execute('INSERT INTO todos (title) VALUES ($1)', [title]);
     return await db.execute(
       "INSERT INTO posts (cid,body,files,meta,publisher,timestamp) VALUES ($1,$2,$3,$4,$5,$6)",
@@ -155,7 +156,7 @@
     identity: Identity
   ): Promise<QueryResult> {
     console.log("insertIdentityDB: ", identity);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     // const { lastInsertId: id } = await db.execute('INSERT INTO todos (title) VALUES ($1)', [title]);
     return await db.execute(
       "INSERT INTO identities (cid,avatar,description,display_name,following,meta,posts,publisher,timestamp) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
@@ -185,7 +186,7 @@
 
   export async function updateIdentityDB(i: Identity) {
     console.log("updateIdentityDB: ", i);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     const result = await db.execute(
       "UPDATE identities SET cid=$1, avatar=$2, description=$3, display_name=$4, following=$5, meta=$6, posts=$7, publisher=$8, timestamp=$9 WHERE publisher=$10",
       [
@@ -206,7 +207,7 @@
 
   export async function identityInDB(publisher: string): Promise<boolean> {
     console.log("identityInDB: ", publisher);
-    const db = await Database.load("sqlite:sqlite.db");
+    await loadDB;
     const rows: object[] = await db.select(
       "SELECT timestamp FROM identities WHERE publisher = ?",
       [publisher]
@@ -220,9 +221,6 @@
     delete identity.cid;
     const json = JSON.stringify(identity);
     console.log(json);
-    const ipfs: IPFSHTTPClient = await create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
     const obj = {
       path: "identity.json",
       content: json,

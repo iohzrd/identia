@@ -61,12 +61,8 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    // let new_posts: Post[] = await invoke("update_feed", {
-    //   query: new_posts_query,
-    // });
-    // let new_posts: Post[] = await updateFeed()
     await updateFeed();
-
+    // let new_posts: Post[] = await db.select(new_posts_query);
     // if (new_posts.length > 0) {
     //   feed = [...new_posts, ...feed];
     //   newest_ts = feed[0].timestamp;
