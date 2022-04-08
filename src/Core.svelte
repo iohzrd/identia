@@ -53,12 +53,12 @@
     const ipfs: IPFSHTTPClient = await create({
       url: "/ip4/127.0.0.1/tcp/5001",
     });
-    let cid = await ipfs.resolve(publisher);
+    const cid = await ipfs.resolve(publisher);
     let path;
     if (!cid.includes("/identity.json")) {
       path = cid + "/identity.json";
     }
-    let bufs = [];
+    const bufs = [];
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }
@@ -95,7 +95,7 @@
     if (!cid.includes("/post.json")) {
       path = cid + "/post.json";
     }
-    let bufs = [];
+    const bufs = [];
     const ipfs: IPFSHTTPClient = await create({
       url: "/ip4/127.0.0.1/tcp/5001",
     });
@@ -111,7 +111,7 @@
 
   export async function deletePost(cid: string) {
     console.log("deletePost: ", cid);
-    let identity: Identity = await getIdentityFromDB();
+    const identity: Identity = await getIdentityFromDB();
     if (identity.posts.includes(cid)) {
       identity.posts = identity.posts.filter((p) => p !== cid);
       const identity_response = await publishIdentity(identity);
@@ -267,7 +267,7 @@
 
   export async function followPublisher(publisher: string) {
     console.log("followPublisher: ", publisher);
-    let identity: Identity = await getIdentityFromDB();
+    const identity: Identity = await getIdentityFromDB();
     if (!identity.following.includes(publisher)) {
       await getIdentity(publisher);
       identity.following.push(publisher);
@@ -284,19 +284,21 @@
     i.following.forEach(async (publisher) => {
       if (publisher != i.publisher) {
         const fid_ipfs: Identity = await getIdentityFromIPFS(publisher);
-        const fid_db: Identity = await getIdentityFromDB(publisher);
         if (fid_ipfs) {
-          await updateIdentityDB(fid_ipfs);
-        }
-        fid_ipfs.posts.forEach(async (cid) => {
-          if (!(await postInDB(cid))) {
-            let post = await getPostFromIPFS(cid);
-            if (publisher === post.publisher) {
-              let result = await insertPostDB(post);
-              console.log(result);
-            }
+          const fid_db: Identity = await getIdentityFromDB(publisher);
+          if (fid_db && fid_db.timestamp < fid_ipfs.timestamp) {
+            await updateIdentityDB(fid_ipfs);
+            fid_ipfs.posts.forEach(async (cid) => {
+              if (!(await postInDB(cid))) {
+                const post = await getPostFromIPFS(cid);
+                if (publisher === post.publisher) {
+                  const result = await insertPostDB(post);
+                  console.log(result);
+                }
+              }
+            });
           }
-        });
+        }
       }
     });
   }
