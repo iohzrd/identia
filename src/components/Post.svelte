@@ -9,13 +9,12 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
-  // import { Buffer } from "buffer/index";
   import DocumentPdf from "carbon-icons-svelte/lib/DocumentPdf.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import core from "../core";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
-  import type { Media, Post } from "../types.type";
+  import type { Media, Post } from "../types";
   import { format as formatTime } from "timeago.js";
   import { onMount, onDestroy } from "svelte";
   import { stripHtml } from "string-strip-html";
@@ -25,9 +24,7 @@
   export let media_modal_open: boolean;
 
   export let ipfs_id: string;
-  export let cid: string;
   export let post: Post;
-  let root_cid = post.cid || cid;
 
   let timer;
   let timestamp: string = formatTime(post.timestamp);
@@ -47,12 +44,11 @@
 
   async function getMediaObject(filename, isThumbnail = false) {
     console.log("getMediaObject");
-    let cid = root_cid;
-    if (!root_cid.includes("ipfs/")) {
-      cid = "ipfs/" + root_cid;
+    let cid = post.cid;
+    if (!post.cid.includes("ipfs/")) {
+      cid = "ipfs/" + post.cid;
     }
     const path: string = "http://localhost:8080/" + cid + "/" + filename;
-    console.log(path);
     const fileType = {
       ext: filename.split(".").pop(),
       mime: ext2mime(filename.split(".").pop()),
@@ -64,60 +60,16 @@
       filename: filename,
       mime: fileType.mime,
     };
-
     if (isThumbnail) {
       mediaObj.thumbnailFor = filename;
       mediaObj.mime = "image";
-    } else {
-      // const path: string = root_cid + "/" + filename;
-      // if (ipfs === undefined) {
-      //   ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-      // }
-      // let bufs = [];
-      // for await (const buf of ipfs.cat(path)) {
-      //   bufs.push(buf);
-      // }
-      // const buf: Buffer = Buffer.concat(bufs);
-      // let blob = new Blob([buf], { type: fileType.mime });
-      // const urlCreator = window.URL || window.webkitURL;
-      // let url = urlCreator.createObjectURL(blob);
-      // mediaObj.url = url;
     }
-
     return mediaObj;
   }
 
   async function loadVideo(filename, idx: number) {
-    console.log("loadVideo");
-    let cid = root_cid;
-    if (!root_cid.includes("ipfs/")) {
-      cid = "ipfs/" + root_cid;
-    }
-    const path: string = "http://localhost:8080/" + cid + "/" + filename;
-    // let bufs = [];
-    // if (ipfs === undefined) {
-    //   ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
-    // }
-    // for await (const buf of ipfs.cat(path)) {
-    //   bufs.push(buf);
-    // }
-    // const buf: Buffer = Buffer.concat(bufs);
-    const fileType = {
-      ext: filename.split(".").pop(),
-      mime: ext2mime(filename.split(".").pop()),
-    };
-
-    // const blob = new Blob([buf], { type: fileType.mime });
-    // const urlCreator = window.URL || window.webkitURL;
-    const newMediaObj: Media = {
-      url: path,
-      // url: urlCreator.createObjectURL(blob),
-      element: null,
-      thumbnailFor: "",
-      filename: filename,
-      mime: fileType.mime,
-    };
-    media[idx] = newMediaObj;
+    console.log("loadVideo: ", idx);
+    media[idx] = await getMediaObject(filename);
     media = media;
   }
 
@@ -125,9 +77,6 @@
     timer = setInterval(() => {
       timestamp = formatTime(post.timestamp);
     }, 60000);
-    if (!post) {
-      post = await core.getPostFromIPFS(cid);
-    }
 
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
@@ -170,7 +119,7 @@
           <OverflowMenuItem
             text="Delete post"
             on:click={() => {
-              core.deletePost(root_cid);
+              core.deletePost(post.cid);
             }}
           />
         {/if}

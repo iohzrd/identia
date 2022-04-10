@@ -19,7 +19,7 @@
   import Router from "svelte-spa-router";
   import core from "./core";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { Identity } from "./types.type";
+  import type { Identity } from "./types";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
@@ -63,7 +63,6 @@
   }
 
   onMount(async () => {
-    // ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     ipfs_info = await core.ipfs.id();
     ipfs_id = ipfs_info.id;
     identity = await core.getIdentity(ipfs_id);

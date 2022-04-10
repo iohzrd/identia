@@ -1,7 +1,7 @@
 import Database from "tauri-plugin-sql-api";
 import type { AddResult } from "ipfs-core-types/src/root";
 import type { IPFSHTTPClient } from "ipfs-http-client";
-import type { Identity, Post } from "./types.type";
+import type { Identity, Post } from "./types";
 import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
 import { Buffer } from "buffer/index";
@@ -46,9 +46,6 @@ async function getIdentityFromDB(
 ): Promise<Identity> {
   console.log("getIdentityFromDB: ", publisher);
   if (publisher === undefined) {
-    const ipfs: IPFSHTTPClient = create({
-      url: "/ip4/127.0.0.1/tcp/5001",
-    });
     publisher = (await ipfs.id()).id;
   }
   const rows: Identity[] = await select(
@@ -64,9 +61,6 @@ async function getIdentityFromIPFS(publisher: string): Promise<Identity> {
   if (!publisher.includes("/ipns/")) {
     publisher = "/ipns/" + publisher;
   }
-  const ipfs: IPFSHTTPClient = create({
-    url: "/ip4/127.0.0.1/tcp/5001",
-  });
   const cid = await ipfs.resolve(publisher);
   let path;
   if (!cid.includes("/identity.json")) {
@@ -107,9 +101,6 @@ async function getPostFromIPFS(cid: string): Promise<Post> {
   if (!cid.includes("/post.json")) {
     path = cid + "/post.json";
   }
-  const ipfs: IPFSHTTPClient = create({
-    url: "/ip4/127.0.0.1/tcp/5001",
-  });
   const bufs = [];
   for await (const buf of ipfs.cat(path)) {
     bufs.push(buf);
@@ -221,9 +212,6 @@ async function publishIdentity(identity: Identity): Promise<Identity> {
     path: "identity.json",
     content: json,
   };
-  const ipfs: IPFSHTTPClient = create({
-    url: "/ip4/127.0.0.1/tcp/5001",
-  });
   const add_result: AddResult = await ipfs.add(obj, {
     wrapWithDirectory: true,
   });
@@ -310,6 +298,7 @@ export default {
   followPublisher,
   getIdentity,
   getIdentityFromDB,
+  getPostFromDB,
   getPostFromIPFS,
   updateFeed,
   updateIdentity,

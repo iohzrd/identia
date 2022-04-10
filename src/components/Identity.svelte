@@ -12,7 +12,7 @@
   import MetaComponent from "./Meta.svelte";
   import PostComponent from "./Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { Identity, Post } from "../types.type";
+  import type { Identity, Post } from "../types";
   import { onMount, onDestroy } from "svelte";
   import core from "../core";
 
@@ -50,7 +50,6 @@
   onMount(async () => {
     console.log("onMount");
     console.log(params);
-    // ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     ipfs_info = await core.ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
@@ -141,7 +140,6 @@
           <div>
             <PostComponent
               {ipfs_id}
-              cid={null}
               {post}
               bind:media_modal_idx
               bind:media_modal_media

@@ -1,4 +1,4 @@
-export type Comment = {
+export interface Comment {
   cid: string;
   body: string;
   from: string;
@@ -6,13 +6,13 @@ export type Comment = {
   kind: string;
   timestamp: number;
   topic: string;
-};
+}
 
-export type Feed = {
+export interface Feed {
   feed: Post[];
-};
+}
 
-export type Identity = {
+export interface Identity {
   cid: string;
   avatar: string;
   description: string;
@@ -22,17 +22,17 @@ export type Identity = {
   posts: string[];
   publisher: string;
   timestamp: number;
-};
+}
 
-export type Media = {
+export interface Media {
   element: Element;
   filename: string;
   mime: string;
   thumbnailFor: string;
   url: string;
-};
+}
 
-export type Post = {
+export interface Post {
   cid: string;
   body: string;
   display_name: string;
@@ -40,16 +40,16 @@ export type Post = {
   meta: object;
   publisher: string;
   timestamp: number;
-};
+}
 
-export type PostRequest = {
+export interface PostRequest {
   body: string;
   files: string[];
   meta: object;
   timestamp: number;
-};
+}
 
-export type PostResponse = {
+export interface PostResponse {
   cid: string;
   files: string[];
-};
+}

@@ -3,7 +3,7 @@
   import NewPostComponent from "./NewPost.svelte";
   import PostComponent from "./Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { Post } from "../types.type";
+  import type { Post } from "../types";
   import { inview } from "svelte-inview/dist/";
   import { onMount, onDestroy } from "svelte";
   import core from "../core";
@@ -63,7 +63,6 @@
   }
 
   onMount(async () => {
-    // ipfs = await create({ url: "/ip4/127.0.0.1/tcp/5001" });
     ipfs_info = await core.ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();
@@ -83,10 +82,21 @@
 
 <NewPostComponent {onPost} />
 
+<!-- {#each feed_new as cid}
+  {#await core.getPostFromDB(cid.cid) then post}
+    <PostComponent
+      {ipfs_id}
+      {post}
+      bind:media_modal_idx
+      bind:media_modal_media
+      bind:media_modal_open
+    />
+  {/await}
+{/each} -->
+
 {#each feed as post}
   <PostComponent
     {ipfs_id}
-    cid={null}
     {post}
     bind:media_modal_idx
     bind:media_modal_media

@@ -1,11 +1,6 @@
 <script lang="ts">
   import FileDrop from "svelte-tauri-filedrop";
-  import type {
-    Identity,
-    Post,
-    PostRequest,
-    PostResponse,
-  } from "../types.type";
+  import type { Identity, Post, PostRequest, PostResponse } from "../types";
   import {
     Button,
     FileUploaderItem,
@@ -14,7 +9,6 @@
     ProgressBar,
     TextArea,
   } from "carbon-components-svelte";
-  // import { Buffer } from "buffer/index";
   import core from "../core";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";

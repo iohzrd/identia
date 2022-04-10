@@ -1,6 +1,6 @@
 <script lang="ts">
   // import PdfViewer from "svelte-pdf";
-  import type { Media } from "../types.type";
+  import type { Media } from "../types";
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
 
