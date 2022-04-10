@@ -122,6 +122,13 @@
               core.deletePost(post.cid);
             }}
           />
+        {:else}
+          <OverflowMenuItem
+            text="Unfollow publisher"
+            on:click={() => {
+              core.unfollowPublisher(post.publisher);
+            }}
+          />
         {/if}
       </OverflowMenu>
     </div>

@@ -41,6 +41,13 @@ async function deletePostFromDB(cid: string): Promise<QueryResult> {
   return await execute("DELETE FROM posts WHERE cid = ?", [cid]);
 }
 
+async function deletePublisherPostsFromDB(
+  publisher: string
+): Promise<QueryResult> {
+  console.log("deletePublisherPostsFromDB: ", publisher);
+  return await execute("DELETE FROM posts WHERE publisher = ?", [publisher]);
+}
+
 async function getIdentityFromDB(
   publisher: string = undefined
 ): Promise<Identity> {
@@ -263,6 +270,23 @@ async function followPublisher(publisher: string) {
   }
 }
 
+async function unfollowPublisher(publisher: string) {
+  console.log("unfollowPublisher: ", publisher);
+  const identity: Identity = await getIdentityFromDB();
+  if (
+    publisher !== identity.publisher &&
+    identity.following.includes(publisher)
+  ) {
+    const delete_result = await deletePublisherPostsFromDB(publisher);
+    console.log(delete_result);
+    identity.following = identity.following.filter((p) => p !== publisher);
+    const identity_response = await publishIdentity(identity);
+    console.log(identity_response);
+    const update_result = await updateIdentityDB(identity_response);
+    console.log(update_result);
+  }
+}
+
 async function updateFeed() {
   console.log("updateFeed");
   const i: Identity = await getIdentityFromDB();
@@ -300,6 +324,7 @@ export default {
   getIdentityFromDB,
   getPostFromDB,
   getPostFromIPFS,
+  unfollowPublisher,
   updateFeed,
   updateIdentity,
 };
