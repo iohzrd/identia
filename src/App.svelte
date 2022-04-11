@@ -17,21 +17,19 @@
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
-  import core from "./core";
+  import { followPublisher, ipfs } from "./core";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import type { Identity } from "./types";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
 
-  let identity: Identity;
   let ipfs_info: IDResult;
   let ipfs_id: string;
 
   let follow_modal_open = false;
   let follow_waiting = false;
   let publisher_to_follow: string = "";
-  $: publisher_to_follow_invalid = !multihash(publisher_to_follow);
+  $: publisher_invalid = !multihash(publisher_to_follow);
 
   const views = [
     {
@@ -57,15 +55,14 @@
 
   async function follow() {
     follow_waiting = true;
-    await core.followPublisher(publisher_to_follow);
+    await followPublisher(publisher_to_follow);
     clearFollowModal();
     follow_modal_open = false;
   }
 
   onMount(async () => {
-    ipfs_info = await core.ipfs.id();
+    ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
-    identity = await core.getIdentity(ipfs_id);
   });
 
   onDestroy(() => {});
@@ -107,7 +104,7 @@
     size="lg"
   >
     <TextInput
-      invalid={publisher_to_follow_invalid}
+      invalid={publisher_invalid}
       invalidText="Invalid IPNS id. Please try another."
       labelText="publisher to follow"
       placeholder="12D3KooW..."
@@ -117,9 +114,7 @@
     {#if follow_waiting}
       <ProgressBar helperText="Please wait..." />
     {:else}
-      <Button disabled={publisher_to_follow_invalid} on:click={follow}
-        >Follow</Button
-      >
+      <Button disabled={publisher_invalid} on:click={follow}>Follow</Button>
     {/if}
   </Modal>
 

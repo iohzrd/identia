@@ -2,11 +2,11 @@
   import MediaModalComponent from "./MediaModal.svelte";
   import NewPostComponent from "./NewPost.svelte";
   import PostComponent from "./Post.svelte";
+  import { getPostFromDB, ipfs, select, updateFeed } from "../core";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Post } from "../types";
   import { inview } from "svelte-inview/dist/";
   import { onMount, onDestroy } from "svelte";
-  import core from "../core";
 
   export let params = {};
   $: publisher = params["publisher"];
@@ -31,7 +31,7 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    let page: Post[] = await core.select(feed_query);
+    let page: Post[] = await select(feed_query);
     if (page.length > 0) {
       feed = [...feed, ...page];
       newest_ts = feed[0].timestamp;
@@ -53,8 +53,8 @@
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
-    await core.updateFeed();
-    // let new_posts: Post[] = await core.select(new_posts_query);
+    await updateFeed();
+    // let new_posts: Post[] = await select(new_posts_query);
     // if (new_posts.length > 0) {
     //   feed = [...new_posts, ...feed];
     //   newest_ts = feed[0].timestamp;
@@ -63,7 +63,7 @@
   }
 
   onMount(async () => {
-    ipfs_info = await core.ipfs.id();
+    ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();
     update_feed_interval = setInterval(updateIdentities, 60 * 1000);
@@ -83,7 +83,7 @@
 <NewPostComponent {onPost} />
 
 <!-- {#each feed_new as cid}
-  {#await core.getPostFromDB(cid.cid) then post}
+  {#await getPostFromDB(cid.cid) then post}
     <PostComponent
       {ipfs_id}
       {post}

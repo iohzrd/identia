@@ -33,7 +33,7 @@
     "buffer": "^6.0.3",
     "carbon-components-svelte": "^0.62.3",
     "carbon-icons-svelte": "^11.0.1",
-    "carbon-preprocess-svelte": "^0.8.1",
+    "carbon-preprocess-svelte": "^0.8.2",
     "execa": "^6.1.0",
     "ext2mime": "^2.0.0",
     "go-ipfs": "^0.12.2",

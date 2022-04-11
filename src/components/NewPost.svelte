@@ -9,7 +9,7 @@
     ProgressBar,
     TextArea,
   } from "carbon-components-svelte";
-  import core from "../core";
+  import { addPost, getIdentityFromDB } from "../core";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
@@ -85,7 +85,7 @@
         display_name: identity.display_name,
         publisher: identity.publisher,
       };
-      await core.addPost(post);
+      await addPost(post);
       onPost(post);
       body = "";
       files = [];
@@ -95,7 +95,7 @@
   }
 
   onMount(async () => {
-    identity = await core.getIdentityFromDB();
+    identity = await getIdentityFromDB();
   });
   onDestroy(() => {});
 </script>

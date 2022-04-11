@@ -14,7 +14,7 @@
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Identity, Post } from "../types";
   import { onMount, onDestroy } from "svelte";
-  import core from "../core";
+  import { getIdentity, ipfs, select, updateIdentity } from "../core";
 
   export let params = {};
 
@@ -38,7 +38,7 @@
       if (posts.length > 0) {
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
-      let page: Post[] = await core.select(posts_query);
+      let page: Post[] = await select(posts_query);
       console.log("page:", page);
       if (page.length > 0) {
         posts = [...posts, ...page];
@@ -50,10 +50,10 @@
   onMount(async () => {
     console.log("onMount");
     console.log(params);
-    ipfs_info = await core.ipfs.id();
+    ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
-      identity = await core.getIdentity(publisher);
+      identity = await getIdentity(publisher);
     }
     await getPostsPage();
   });
@@ -161,7 +161,7 @@
 
     <Button
       on:click={() => {
-        core.updateIdentity(identity);
+        updateIdentity(identity);
       }}>Save</Button
     >
   {/if}

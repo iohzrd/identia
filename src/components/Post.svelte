@@ -11,7 +11,7 @@
   } from "carbon-components-svelte";
   import DocumentPdf from "carbon-icons-svelte/lib/DocumentPdf.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
-  import core from "../core";
+  import { deletePost, unfollowPublisher } from "../core";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
@@ -119,14 +119,14 @@
           <OverflowMenuItem
             text="Delete post"
             on:click={() => {
-              core.deletePost(post.cid);
+              deletePost(post.cid);
             }}
           />
         {:else}
           <OverflowMenuItem
             text="Unfollow publisher"
             on:click={() => {
-              core.unfollowPublisher(post.publisher);
+              unfollowPublisher(post.publisher);
             }}
           />
         {/if}
