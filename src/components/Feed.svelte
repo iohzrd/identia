@@ -47,26 +47,26 @@
     oldest_ts = feed[feed.length - 1].timestamp;
   }
 
-  async function updateIdentities() {
-    console.log("updateIdentities: ", publisher);
+  async function getFeed() {
+    console.log("getFeed: ", publisher);
     if (feed.length > 0) {
       newest_ts = feed[0].timestamp;
       oldest_ts = feed[feed.length - 1].timestamp;
     }
     await updateFeed();
-    // let new_posts: Post[] = await select(new_posts_query);
-    // if (new_posts.length > 0) {
-    //   feed = [...new_posts, ...feed];
-    //   newest_ts = feed[0].timestamp;
-    //   oldest_ts = feed[feed.length - 1].timestamp;
-    // }
+    let new_posts: Post[] = await select(new_posts_query);
+    if (new_posts.length > 0) {
+      feed = [...new_posts, ...feed];
+      newest_ts = feed[0].timestamp;
+      oldest_ts = feed[feed.length - 1].timestamp;
+    }
   }
 
   onMount(async () => {
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
     getFeedPage();
-    update_feed_interval = setInterval(updateIdentities, 60 * 1000);
+    update_feed_interval = setInterval(getFeed, 60 * 1000);
   });
 
   onDestroy(() => {

@@ -84,8 +84,7 @@
       console.log(is_video);
       if (is_video) {
         // get thumbnail here...
-        const mediaObj: Media = await getMediaObject(filename, true);
-        media = [...media, mediaObj];
+        media = [...media, await getMediaObject(filename, true)];
       } else {
         media = [...media, await getMediaObject(filename)];
       }

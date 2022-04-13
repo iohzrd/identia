@@ -8,7 +8,7 @@ import { Buffer } from "buffer/index";
 import { create } from "ipfs-http-client";
 
 let db = null;
- const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {
+const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {
   db = instance;
   return db;
 });
@@ -29,7 +29,9 @@ export async function select(query: string, bindValues?: unknown[]) {
   return await db.select(query, bindValues ?? []);
 }
 
-export async function deleteIdentityFromDB(publisher: string): Promise<QueryResult> {
+export async function deleteIdentityFromDB(
+  publisher: string
+): Promise<QueryResult> {
   console.log("deleteIdentityFromDB: ", publisher);
   return await execute("DELETE FROM identities WHERE publisher = ?", [
     publisher,
@@ -62,7 +64,9 @@ export async function getIdentityFromDB(
   return rows[0];
 }
 
-export async function getIdentityFromIPFS(publisher: string): Promise<Identity> {
+export async function getIdentityFromIPFS(
+  publisher: string
+): Promise<Identity> {
   console.log("getIdentityFromIPFS: ", publisher);
 
   if (!publisher.includes("/ipns/")) {
@@ -108,6 +112,7 @@ export async function getPostFromIPFS(cid: string): Promise<Post> {
   if (!cid.includes("/post.json")) {
     path = cid + "/post.json";
   }
+  await ipfs.pin.add(cid);
   const bufs = [];
   for await (const buf of ipfs.cat(path)) {
     bufs.push(buf);
@@ -152,7 +157,9 @@ export async function addPost(post: Post) {
   console.log(update_result);
 }
 
-export async function insertIdentityDB(identity: Identity): Promise<QueryResult> {
+export async function insertIdentityDB(
+  identity: Identity
+): Promise<QueryResult> {
   console.log("insertIdentityDB: ", identity);
   return await execute(
     "INSERT INTO identities (cid,avatar,description,display_name,following,meta,posts,publisher,timestamp) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
