@@ -11,6 +11,10 @@
     typeof Array.isArray(media_modal_media) && media_modal_media.length > 0
       ? media_modal_media[media_modal_idx].filename
       : "";
+
+  const options = {
+    start: media_modal_idx,
+  };
 </script>
 
 <Modal
@@ -22,53 +26,30 @@
   size="lg"
 >
   {#if media_modal_open}
-    <Splide
-      options={{ start: media_modal_idx }}
-      on:move={(e) => (media_modal_idx = e.detail.index)}
-    >
+    <Splide {options} on:move={(e) => (media_modal_idx = e.detail.index)}>
       {#each media_modal_media as mediaObj}
-        {#if mediaObj.mime && mediaObj.mime.includes("image")}
-          <SplideSlide>
-            <img
-              class="image"
-              src={mediaObj.url}
-              alt=""
-              bind:this={mediaObj.element}
-            />
-          </SplideSlide>
-        {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-          <SplideSlide>
-            <video src={mediaObj.url} controls bind:this={mediaObj.element}>
-              <track kind="captions" />
-            </video>
-          </SplideSlide>
-        {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-          <SplideSlide>
-            <video src={mediaObj.url} controls bind:this={mediaObj.element}>
-              <track kind="captions" />
-            </video>
-          </SplideSlide>
-        {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-          <SplideSlide>
-            <div style="text-align: center;">
+        <SplideSlide>
+          <div class="img-container">
+            {#if mediaObj.mime && mediaObj.mime.includes("image")}
+              <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />
+            {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
               PDF
               <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
-            </div>
-          </SplideSlide>
-        {/if}
+            {/if}
+          </div>
+        </SplideSlide>
       {/each}
     </Splide>
   {/if}
 </Modal>
 
 <style>
-  .image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin: auto;
-    max-height: 100%;
-    max-width: 100%;
+  .img-container {
+    height: 100%;
+  }
+  img {
+    height: auto;
+    width: 100%;
     object-fit: contain;
   }
 </style>

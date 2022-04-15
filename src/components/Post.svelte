@@ -9,15 +9,21 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
-  import DocumentPdf from "carbon-icons-svelte/lib/DocumentPdf.svelte";
+  import Download from "carbon-icons-svelte/lib/Download.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
-  import { deletePost, unfollowPublisher } from "../core";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
+  import type { FsBinaryFileOption } from "@tauri-apps/api/fs";
   import type { Media, Post } from "../types";
+  import type { SaveDialogOptions } from "@tauri-apps/api/dialog";
+  import { Buffer } from "buffer/index";
+  // import { create } from "ipfs-http-client/index";
+  import { deletePost, ipfs, unfollowPublisher } from "../core";
   import { format as formatTime } from "timeago.js";
   import { onMount, onDestroy } from "svelte";
+  import { save } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
+  import { writeBinaryFile } from "@tauri-apps/api/fs";
 
   export let media_modal_idx: number;
   export let media_modal_media: Media[];
@@ -26,8 +32,9 @@
   export let ipfs_id: string;
   export let post: Post;
 
-  let timer;
-  let timestamp: string = formatTime(post.timestamp);
+  let timeout;
+  let timeout_time = 1000;
+  let timeago: string = formatTime(post.timestamp);
   let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
   let bodyHTML = linkifyStr(stripHtml(post.body).result, {
@@ -67,16 +74,72 @@
     return mediaObj;
   }
 
+  async function getMediaBinary(filename) {
+    console.log("getMediaBinary");
+    let path: string = post.cid + "/" + filename;
+    const bufs = [];
+    for await (const buf of ipfs.cat(path)) {
+      bufs.push(buf);
+    }
+    const buf: Buffer = Buffer.concat(bufs);
+
+    return buf;
+  }
+
+  async function getMediaBlob(filename) {
+    console.log("getMediaBlob");
+    const fileType = {
+      ext: filename.split(".").pop(),
+      mime: ext2mime(filename.split(".").pop()),
+    };
+    const buf = await getMediaBinary(filename);
+    return new Blob([buf], { type: fileType.mime });
+  }
+
+  async function getMediaBlobUrl(filename) {
+    console.log("getMediaBlobUrl");
+    const blob = await getMediaBlob(filename);
+    const urlCreator = window.URL || window.webkitURL;
+    return urlCreator.createObjectURL(blob);
+  }
+
+  async function saveMedia(filename) {
+    console.log("saveMedia");
+    const dialog_options: SaveDialogOptions = {
+      defaultPath: filename,
+    };
+    const path = await save(dialog_options);
+    const save_options: FsBinaryFileOption = {
+      path: path,
+      contents: await getMediaBinary(filename),
+    };
+    await writeBinaryFile(save_options);
+  }
+
   async function loadVideo(filename, idx: number) {
     console.log("loadVideo: ", idx);
     media[idx] = await getMediaObject(filename);
     media = media;
   }
 
+  function newTimeout() {
+    timeago = formatTime(post.timestamp);
+    let delta = new Date().getTime() - post.timestamp;
+    if (delta < 60 * 1000) {
+      // less than a minue, update once a second
+      timeout_time = 1000;
+    } else if (delta < 60 * 60 * 1000) {
+      // less than an hour, update once a minute
+      timeout_time = 60 * 1000;
+    } else {
+      // update once an hour
+      timeout_time = 60 * 60 * 1000;
+    }
+    timeout = setTimeout(newTimeout, timeout_time);
+  }
+
   onMount(async () => {
-    timer = setInterval(() => {
-      timestamp = formatTime(post.timestamp);
-    }, 60000);
+    timeout = setTimeout(newTimeout, timeout_time);
 
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
@@ -92,7 +155,7 @@
   });
 
   onDestroy(() => {
-    clearInterval(timer);
+    clearTimeout(timeout);
     // this is required to avoid a memory leak...
     media.forEach((mediaObj) => {
       if (mediaObj.element && mediaObj.element.src) {
@@ -111,7 +174,7 @@
       <Link href="#/identity/{post.publisher}">
         {post.display_name || post.publisher}
       </Link>
-      - {timestamp} ({datetime})
+      - {timeago} ({datetime})
 
       <OverflowMenu flipped style="float:right;">
         {#if post.publisher === ipfs_id}
@@ -188,9 +251,15 @@
                     <track kind="captions" />
                   </video>
                 {:else if mediaObj.mime.includes("pdf")}
-                  <Button kind="secondary" on:click={() => openMediaModal(idx)}>
+                  <Button
+                    download={mediaObj.filename}
+                    href={mediaObj.url}
+                    icon={Download}
+                    iconDescription="Download"
+                    kind="secondary"
+                    on:click={() => saveMedia(mediaObj.filename)}
+                  >
                     {mediaObj.filename}
-                    <DocumentPdf size={32} />
                   </Button>
                 {/if}
               {/if}
