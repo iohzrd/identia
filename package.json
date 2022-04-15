@@ -51,7 +51,6 @@
     "svelte": "^3.47.0",
     "svelte-check": "^2.7.0",
     "svelte-inview": "^3.0.0",
-    "svelte-pdf": "^1.0.10",
     "svelte-preprocess": "^4.10.6",
     "svelte-spa-router": "^3.2.0",
     "svelte-tauri-filedrop": "^1.0.0",
