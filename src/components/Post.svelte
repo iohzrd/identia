@@ -13,17 +13,15 @@
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
-  import type { FsBinaryFileOption } from "@tauri-apps/api/fs";
   import type { Media, Post } from "../types";
-  import type { SaveDialogOptions } from "@tauri-apps/api/dialog";
   import { Buffer } from "buffer/index";
-  // import { create } from "ipfs-http-client/index";
   import { deletePost, ipfs, unfollowPublisher } from "../core";
   import { format as formatTime } from "timeago.js";
   import { onMount, onDestroy } from "svelte";
   import { save } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
+  import { homeDir, join } from "@tauri-apps/api/path";
 
   export let media_modal_idx: number;
   export let media_modal_media: Media[];
@@ -105,15 +103,15 @@
 
   async function saveMedia(filename) {
     console.log("saveMedia");
-    const dialog_options: SaveDialogOptions = {
-      defaultPath: filename,
-    };
-    const path = await save(dialog_options);
-    const save_options: FsBinaryFileOption = {
-      path: path,
+    const home = await homeDir();
+    const path = await join(home, filename);
+    const user_path = await save({
+      defaultPath: path,
+    });
+    await writeBinaryFile({
+      path: user_path,
       contents: await getMediaBinary(filename),
-    };
-    await writeBinaryFile(save_options);
+    });
   }
 
   async function loadVideo(filename, idx: number) {

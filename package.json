@@ -22,9 +22,9 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.3",
+    "@rollup/plugin-commonjs": "^21.1.0",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.2.0",
+    "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.2",
     "@splidejs/svelte-splide": "^0.2.1",
