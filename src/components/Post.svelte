@@ -14,14 +14,14 @@
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
-  import { Buffer } from "buffer/index";
+  import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "../core";
   import { format as formatTime } from "timeago.js";
+  import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
   import { save } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
-  import { homeDir, join } from "@tauri-apps/api/path";
 
   export let media_modal_idx: number;
   export let media_modal_media: Media[];
@@ -47,8 +47,8 @@
     media_modal_open = true;
   }
 
-  async function getMediaObject(filename, isThumbnail = false) {
-    console.log("getMediaObject");
+  async function getMedia(filename, isThumbnail = false) {
+    console.log("getMedia");
     let cid = post.cid;
     if (!post.cid.includes("ipfs/")) {
       cid = "ipfs/" + post.cid;
@@ -79,9 +79,7 @@
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }
-    const buf: Buffer = Buffer.concat(bufs);
-
-    return buf;
+    return concat(bufs);
   }
 
   async function getMediaBlob(filename) {
@@ -116,7 +114,7 @@
 
   async function loadVideo(filename, idx: number) {
     console.log("loadVideo: ", idx);
-    media[idx] = await getMediaObject(filename);
+    media[idx] = await getMedia(filename);
     media = media;
   }
 
@@ -145,9 +143,9 @@
       console.log(is_video);
       if (is_video) {
         // get thumbnail here...
-        media = [...media, await getMediaObject(filename, true)];
+        media = [...media, await getMedia(filename, true)];
       } else {
-        media = [...media, await getMediaObject(filename)];
+        media = [...media, await getMedia(filename)];
       }
     }
   });

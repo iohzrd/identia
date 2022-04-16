@@ -4,7 +4,7 @@ import type { IPFSHTTPClient } from "ipfs-http-client";
 import type { Identity, Post } from "./types";
 import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import { Buffer } from "buffer/index";
+import { concat } from "uint8arrays/concat";
 import { create } from "ipfs-http-client";
 
 let db = null;
@@ -81,7 +81,7 @@ export async function getIdentityFromIPFS(
   for await (const buf of ipfs.cat(path)) {
     bufs.push(buf);
   }
-  const buf: Buffer = Buffer.concat(bufs);
+  const buf = concat(bufs);
   return {
     cid: cid,
     ...JSON.parse(buf.toString()),
@@ -117,7 +117,7 @@ export async function getPostFromIPFS(cid: string): Promise<Post> {
   for await (const buf of ipfs.cat(path)) {
     bufs.push(buf);
   }
-  const buf: Buffer = Buffer.concat(bufs);
+  const buf = concat(bufs);
   return {
     cid: cid,
     ...JSON.parse(buf.toString()),
