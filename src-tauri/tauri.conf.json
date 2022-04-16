@@ -18,8 +18,7 @@
       "category": "P2P",
       "copyright": "iohzrd",
       "deb": {
-        "depends": [],
-        "useBootstrapper": false
+        "depends": []
       },
       "externalBin": ["../node_modules/go-ipfs/go-ipfs/ipfs"],
       "icon": [
@@ -37,8 +36,7 @@
         "frameworks": [],
         "minimumSystemVersion": "",
         "providerShortName": null,
-        "signingIdentity": null,
-        "useBootstrapper": false
+        "signingIdentity": null
       },
       "resources": [],
       "shortDescription": "",
