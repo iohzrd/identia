@@ -164,6 +164,18 @@ fn initialize_ipfs() {
     ])
     .output()
     .unwrap();
+  Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "-c",
+      identia_app_data_path().into_os_string().to_str().unwrap(),
+      "config",
+      "--json",
+      "Datastore.StorageMax",
+      r#""1000GB""#,
+    ])
+    .output()
+    .unwrap();
 }
 
 fn main() {
