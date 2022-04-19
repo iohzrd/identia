@@ -6,6 +6,7 @@
   windows_subsystem = "windows"
 )]
 
+use feed_rs::{model::Feed, parser};
 use ipfs_api::{Form, IpfsApi, IpfsClient};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -15,6 +16,7 @@ use std::path::Path;
 use std::{fs, path::PathBuf};
 use std::{thread, time::Duration};
 use tauri;
+use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 use tauri::api::path::config_dir;
 use tauri::api::process::Command;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
@@ -100,6 +102,27 @@ async fn post(request: PostRequest) -> PostResponse {
     cid: cid,
     files: file_names,
   }
+}
+
+#[tauri::command]
+async fn fetch_external(url: String) -> Feed {
+  println!("fetchExternal");
+  let client = ClientBuilder::new().build().unwrap();
+  let response = client
+    .send(
+      HttpRequestBuilder::new("GET", url)
+        .unwrap()
+        .response_type(ResponseType::Binary),
+    )
+    .await;
+  if let Ok(response) = response {
+    let bytes = response.bytes();
+  }
+
+  let rss = r#""#;
+  let feed = parser::parse(rss.as_bytes()).unwrap();
+  // Ok(feed)
+  feed
 }
 
 fn identia_app_data_path() -> PathBuf {
