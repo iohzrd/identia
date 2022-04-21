@@ -119,7 +119,7 @@
 
   <Content>
     <Grid>
-      <Router {routes} restoreScrollState={true} />
+      <Router {routes} />
     </Grid>
   </Content>
 

@@ -27,7 +27,7 @@
 >
   {#if media_modal_open}
     <Splide {options} on:move={(e) => (media_modal_idx = e.detail.index)}>
-      {#each media_modal_media as mediaObj}
+      {#each media_modal_media as mediaObj (mediaObj.filename)}
         <SplideSlide>
           {#if mediaObj.mime && mediaObj.mime.includes("image")}
             <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />

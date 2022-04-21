@@ -136,7 +136,7 @@
 
     <FormGroup legendText="posts">
       {#if identity && identity.posts}
-        {#each posts as post}
+        {#each posts as post (post.cid)}
           <div>
             <PostComponent
               {ipfs_id}

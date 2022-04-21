@@ -200,7 +200,7 @@
           <br />
         {/if}
         <Row>
-          {#each media as mediaObj, idx}
+          {#each media as mediaObj, idx (mediaObj.filename)}
             <Column sm={4} md={4} lg={4}>
               {#if mediaObj.mime}
                 {#if mediaObj.mime.includes("image")}
