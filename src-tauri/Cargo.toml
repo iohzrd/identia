@@ -14,7 +14,7 @@ tauri-build = { version = "1.0.0-rc.5", features = [] }
 [dependencies]
 feed-rs = "1.0"
 ipfs-api = "0.15"
-ipfs-api-backend-hyper = {version = "0.4", features = ["with-send-sync", "with-builder"] }
+ipfs-api-backend-hyper = { version = "0.4", features = ["with-send-sync", "with-builder"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri = { version = "1.0.0-rc.6", features = ["api-all", "system-tray"] }
