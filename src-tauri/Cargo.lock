@@ -2158,15 +2158,15 @@ dependencies = [
 
 [[package]]
 name = "ndk-context"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e3c5cc68637e21fe8f077f6a1c9e0b9ca495bb74895226b476310f613325884"
+checksum = "27b02d87554356db9e9a873add8782d4ea6e3e58ea071a9adb9a2e8ddb884a8b"
 
 [[package]]
 name = "ndk-glue"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b1454575120e3265d2442222299c711ace58ba417532ee4f0fc71b860016b93"
+checksum = "3648f3609716eb7dbf5f5b5d4b84fcd67dd4c34efcdb12e4a6c0929c2ac48349"
 dependencies = [
  "lazy_static",
  "libc",

@@ -29,14 +29,11 @@
     <Splide {options} on:move={(e) => (media_modal_idx = e.detail.index)}>
       {#each media_modal_media as mediaObj}
         <SplideSlide>
-          <div class="img-container">
-            {#if mediaObj.mime && mediaObj.mime.includes("image")}
-              <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />
-            {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-              PDF
-              <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
-            {/if}
-          </div>
+          {#if mediaObj.mime && mediaObj.mime.includes("image")}
+            <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />
+          {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
+            <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
+          {/if}
         </SplideSlide>
       {/each}
     </Splide>
@@ -44,12 +41,22 @@
 </Modal>
 
 <style>
-  .img-container {
-    height: 100%;
-  }
   img {
     height: auto;
     width: 100%;
-    object-fit: contain;
   }
+
+  /* img {
+    height: auto;
+    width: 100%;
+    object-fit: contain;
+  } */
+
+  /* @media only screen and (orientation: landscape) {
+    img {
+      height: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
+  } */
 </style>

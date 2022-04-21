@@ -2,26 +2,32 @@
   import {
     Button,
     Content,
+    Grid,
     Header,
     HeaderGlobalAction,
-    HeaderNav,
-    HeaderNavItem,
     HeaderUtilities,
     Loading,
     Modal,
     ProgressBar,
+    SideNav,
+    SideNavItems,
+    SideNavLink,
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
   import Add from "carbon-icons-svelte/lib/Add.svelte";
+  import ExternalComponent from "./components/External.svelte";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
-  import { followPublisher, ipfs } from "./core";
   import type { IDResult } from "ipfs-core-types/src/root";
+  import { followPublisher, ipfs } from "./core";
+  import { invoke } from "@tauri-apps/api";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
+
+  let isSideNavOpen = false;
 
   let ipfs_info: IDResult;
   let ipfs_id: string;
@@ -40,11 +46,16 @@
       label: "Identity",
       path: "/identity/",
     },
+    {
+      label: "External",
+      path: "/external/",
+    },
   ];
 
   const routes = {
     "/:publisher?": FeedComponent,
     "/identity/:publisher?": IdentityComponent,
+    "/external/:publisher?": ExternalComponent,
     // "*": NotFound,
   };
 
@@ -63,28 +74,39 @@
   onMount(async () => {
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id;
+    // let test = await invoke("fetch_external", {
+    //   url: "https://lukesmith.xyz/rss.xml",
+    // });
+    // console.log("fetch_external test");
+    // console.log(test);
   });
 
   onDestroy(() => {});
 </script>
 
 {#if ipfs_id}
-  <Header company="identia">
-    <div slot="skip-to-content">
+  <Header
+    bind:isSideNavOpen
+    platformName="identia"
+    persistentHamburgerMenu={true}
+  >
+    <svelte:fragment slot="skip-to-content">
       <SkipToContent />
-    </div>
+    </svelte:fragment>
 
-    <HeaderNav>
-      {#each views as view}
-        <HeaderNavItem
-          href="#{view.path}{ipfs_id}"
-          text={view.label}
-          isSelected={$location === view.path + ipfs_id}
-        >
-          {view.label}
-        </HeaderNavItem>
-      {/each}
-    </HeaderNav>
+    <SideNav bind:isOpen={isSideNavOpen}>
+      <SideNavItems>
+        {#each views as view}
+          <SideNavLink
+            href="#{view.path}{ipfs_id}"
+            text={view.label}
+            isSelected={$location === view.path + ipfs_id}
+          >
+            {view.label}
+          </SideNavLink>
+        {/each}
+      </SideNavItems>
+    </SideNav>
 
     <HeaderUtilities>
       <HeaderGlobalAction
@@ -94,6 +116,12 @@
       />
     </HeaderUtilities>
   </Header>
+
+  <Content>
+    <Grid>
+      <Router {routes} restoreScrollState={true} />
+    </Grid>
+  </Content>
 
   <Modal
     bind:open={follow_modal_open}
@@ -117,10 +145,6 @@
       <Button disabled={publisher_invalid} on:click={follow}>Follow</Button>
     {/if}
   </Modal>
-
-  <Content>
-    <Router {routes} />
-  </Content>
 {:else}
   <Loading />
 {/if}

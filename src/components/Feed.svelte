@@ -14,10 +14,10 @@
   let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;
-  let feed: Post[] = [];
-  let newest_ts: number = new Date().getTime();
-  let oldest_ts: number = new Date().getTime();
   let limit: number = 10;
+  let feed: Post[] = [];
+  $: newest_ts = feed.length > 0 ? feed[0].timestamp : ts();
+  $: oldest_ts = feed.length > 0 ? feed[feed.length - 1].timestamp : ts();
   $: feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
   $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${publisher}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
 
@@ -25,40 +25,28 @@
   let media_modal_media = [];
   let media_modal_open = false;
 
+  function ts() {
+    return new Date().getTime();
+  }
+
   async function getFeedPage() {
     console.log("getFeedPage");
-    if (feed.length > 0) {
-      newest_ts = feed[0].timestamp;
-      oldest_ts = feed[feed.length - 1].timestamp;
-    }
     let page: Post[] = await select(feed_query);
     if (page.length > 0) {
       feed = [...feed, ...page];
-      newest_ts = feed[0].timestamp;
-      oldest_ts = feed[feed.length - 1].timestamp;
     }
   }
 
   function onPost(post: Post) {
-    // feed.unshift(post);
-    // feed = feed;
     feed = [post, ...feed];
-    newest_ts = feed[0].timestamp;
-    oldest_ts = feed[feed.length - 1].timestamp;
   }
 
   async function getFeed() {
     console.log("getFeed: ", publisher);
-    if (feed.length > 0) {
-      newest_ts = feed[0].timestamp;
-      oldest_ts = feed[feed.length - 1].timestamp;
-    }
     await updateFeed();
     let new_posts: Post[] = await select(new_posts_query);
     if (new_posts.length > 0) {
       feed = [...new_posts, ...feed];
-      newest_ts = feed[0].timestamp;
-      oldest_ts = feed[feed.length - 1].timestamp;
     }
   }
 
@@ -76,19 +64,8 @@
 
 <NewPostComponent {onPost} />
 
-<!-- {#each feed_new as cid}
-  {#await getPostFromDB(cid.cid) then post}
-    <PostComponent
-      {ipfs_id}
-      {post}
-      bind:media_modal_idx
-      bind:media_modal_media
-      bind:media_modal_open
-    />
-  {/await}
-{/each} -->
-
-{#each feed as post}
+<!-- keyed each block required for reactivity... -->
+{#each feed as post (post.cid)}
   <PostComponent
     {ipfs_id}
     {post}

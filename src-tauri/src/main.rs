@@ -6,7 +6,8 @@
   windows_subsystem = "windows"
 )]
 
-use feed_rs::{model::Feed, parser};
+// use chrono::{offset::Utc, DateTime};
+use feed_rs::parser;
 use ipfs_api::{Form, IpfsApi, IpfsClient};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -104,25 +105,49 @@ async fn post(request: PostRequest) -> PostResponse {
   }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct ExternalIdentity {
+  url: String, // href
+  title: String,
+  description: String,
+  entries: Vec<ExternalEntry>, // authors: Vec<String>,
+                               // timestamp: i64
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ExternalEntry {
+  id: String,
+}
+
 #[tauri::command]
-async fn fetch_external(url: String) -> Feed {
-  println!("fetchExternal");
+async fn fetch_external(url: String) -> ExternalIdentity {
+  println!("fetch_external");
   let client = ClientBuilder::new().build().unwrap();
   let response = client
     .send(
       HttpRequestBuilder::new("GET", url)
         .unwrap()
-        .response_type(ResponseType::Binary),
+        .response_type(ResponseType::Text),
     )
-    .await;
-  if let Ok(response) = response {
-    let bytes = response.bytes();
-  }
+    .await
+    .unwrap();
+  let data: &[u8] = &response.bytes().await.unwrap().data;
+  let feed = parser::parse(data).unwrap();
+  println!("{:#?}", feed);
+  let entries = feed
+    .entries
+    .iter()
+    .map(|entry| ExternalEntry {
+      id: entry.id.clone(),
+    })
+    .collect::<Vec<_>>();
 
-  let rss = r#""#;
-  let feed = parser::parse(rss.as_bytes()).unwrap();
-  // Ok(feed)
-  feed
+  ExternalIdentity {
+    url: feed.links[0].href.clone(),
+    title: feed.title.unwrap().content,
+    description: feed.description.unwrap().content,
+    entries: entries, // timestamp: chrono(feed.updated),
+  }
 }
 
 fn identia_app_data_path() -> PathBuf {
@@ -257,7 +282,7 @@ fn main() {
       },
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![post])
+    .invoke_handler(tauri::generate_handler![post, fetch_external])
     .setup(|_app| {
       initialize_ipfs();
       tauri::async_runtime::spawn(async move {
