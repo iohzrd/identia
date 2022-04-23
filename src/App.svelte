@@ -2,31 +2,40 @@
   import {
     Button,
     Content,
+    Grid,
     Header,
     HeaderGlobalAction,
-    HeaderNav,
-    HeaderNavItem,
     HeaderUtilities,
     Loading,
     Modal,
     ProgressBar,
+    SideNav,
+    SideNavItems,
+    SideNavLink,
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
-  import Add20 from "carbon-icons-svelte/lib/Add20";
-  import Feed from "./components/Feed.svelte";
-  import Identity from "./components/Identity.svelte";
+  import Add from "carbon-icons-svelte/lib/Add.svelte";
+  import ExternalComponent from "./components/External.svelte";
+  import FeedComponent from "./components/Feed.svelte";
+  import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import type { IDResult } from "ipfs-core-types/src/root";
+  import { followPublisher, ipfs } from "./core";
+  import { invoke } from "@tauri-apps/api";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
 
-  let follow_modal_open = false;
+  let isSideNavOpen = false;
+
+  let ipfs_info: IDResult;
   let ipfs_id: string;
-  let publisher_to_follow: string = "";
-  $: publisher_to_follow_invalid = !multihash(publisher_to_follow);
+
+  let follow_modal_open = false;
   let follow_waiting = false;
+  let publisher_to_follow: string = "";
+  $: publisher_invalid = !multihash(publisher_to_follow);
 
   const views = [
     {
@@ -37,63 +46,82 @@
       label: "Identity",
       path: "/identity/",
     },
+    {
+      label: "External",
+      path: "/external/",
+    },
   ];
 
   const routes = {
-    "/:publisher?": Feed,
-    "/identity/:publisher?": Identity,
+    "/:publisher?": FeedComponent,
+    "/identity/:publisher?": IdentityComponent,
+    "/external/:publisher?": ExternalComponent,
     // "*": NotFound,
   };
-
-  async function followPublisher() {
-    console.log("followPublisher");
-    follow_waiting = true;
-    let follow_success = await invoke("follow_publisher", {
-      publisher: publisher_to_follow.trim(),
-    });
-    if (follow_success) {
-      clearFollowModal();
-    }
-  }
 
   function clearFollowModal() {
     follow_waiting = false;
     publisher_to_follow = "";
   }
 
+  async function follow() {
+    follow_waiting = true;
+    await followPublisher(publisher_to_follow);
+    clearFollowModal();
+    follow_modal_open = false;
+  }
+
   onMount(async () => {
-    ipfs_id = await invoke("ipfs_id");
+    ipfs_info = await ipfs.id();
+    ipfs_id = ipfs_info.id;
+    // let test = await invoke("fetch_external", {
+    //   url: "https://lukesmith.xyz/rss.xml",
+    // });
+    // console.log("fetch_external test");
+    // console.log(test);
   });
 
   onDestroy(() => {});
 </script>
 
 {#if ipfs_id}
-  <Header company="identia">
-    <div slot="skip-to-content">
+  <Header
+    bind:isSideNavOpen
+    platformName="identia"
+    persistentHamburgerMenu={true}
+  >
+    <svelte:fragment slot="skip-to-content">
       <SkipToContent />
-    </div>
+    </svelte:fragment>
 
-    <HeaderNav>
-      {#each views as view}
-        <HeaderNavItem
-          href="#{view.path}{ipfs_id}"
-          text={view.label}
-          isSelected={$location === view.path + ipfs_id}
-        >
-          {view.label}
-        </HeaderNavItem>
-      {/each}
-    </HeaderNav>
+    <SideNav bind:isOpen={isSideNavOpen}>
+      <SideNavItems>
+        {#each views as view}
+          <SideNavLink
+            href="#{view.path}{ipfs_id}"
+            text={view.label}
+            isSelected={$location === view.path + ipfs_id}
+          >
+            {view.label}
+          </SideNavLink>
+        {/each}
+      </SideNavItems>
+    </SideNav>
 
     <HeaderUtilities>
       <HeaderGlobalAction
         aria-label="Follow new identity"
-        icon={Add20}
+        icon={Add}
         on:click={() => (follow_modal_open = true)}
       />
     </HeaderUtilities>
   </Header>
+
+  <Content>
+    <Grid>
+      <Router {routes} />
+    </Grid>
+  </Content>
 
   <Modal
     bind:open={follow_modal_open}
@@ -104,7 +132,7 @@
     size="lg"
   >
     <TextInput
-      invalid={publisher_to_follow_invalid}
+      invalid={publisher_invalid}
       invalidText="Invalid IPNS id. Please try another."
       labelText="publisher to follow"
       placeholder="12D3KooW..."
@@ -114,15 +142,9 @@
     {#if follow_waiting}
       <ProgressBar helperText="Please wait..." />
     {:else}
-      <Button disabled={publisher_to_follow_invalid} on:click={followPublisher}
-        >Confirm</Button
-      >
+      <Button disabled={publisher_invalid} on:click={follow}>Follow</Button>
     {/if}
   </Modal>
-
-  <Content>
-    <Router {routes} />
-  </Content>
 {:else}
   <Loading />
 {/if}

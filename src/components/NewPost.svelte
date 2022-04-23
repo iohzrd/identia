@@ -1,6 +1,4 @@
 <script lang="ts">
-  import FileDrop from "svelte-tauri-filedrop";
-  import type { PostRequest, PostResponse } from "../types.type";
   import {
     Button,
     FileUploaderItem,
@@ -9,12 +7,17 @@
     ProgressBar,
     TextArea,
   } from "carbon-components-svelte";
+  import FileDrop from "svelte-tauri-filedrop";
+  import type { Identity, Post, PostRequest, PostResponse } from "../types";
+  import { addPost, getIdentityFromDB } from "../core";
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
   import { open } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
 
   export let onPost: Function;
+
+  let identity: Identity;
 
   let body: string = "";
   let files: string[] = [];
@@ -40,19 +43,26 @@
     files = files.slice(0, i).concat(files.slice(i + 1));
   }
 
-  function openDialog() {
-    open({
+  async function openDialog() {
+    const res = await open({
       defaultPath: null,
       filters: [],
       multiple: true,
       directory: false,
-    }).then(function (res) {
-      console.log("openDialog.then");
-      console.log(res);
-      if (Array.isArray(res)) {
-        files = res;
-      }
     });
+    console.log("openDialog.then");
+    console.log(res);
+    const bufs = [];
+    if (Array.isArray(res)) {
+      files = res;
+      // res.forEach(async (path) => {
+      //   console.log("path");
+      //   console.log(path);
+      //   const test = await readBinaryFile(path);
+      //   const buf = Buffer.from(test);
+      //   console.log(buf);
+      // });
+    }
   }
 
   async function post() {
@@ -61,12 +71,22 @@
       body: stripHtml(body).result,
       files: files,
       meta: meta,
+      timestamp: new Date().getTime(),
     };
     let postResponse: PostResponse = await invoke("post", {
-      postRequest: postRequest,
+      request: postRequest,
     });
+    console.log("post_response");
+    console.log(postResponse);
     if (postResponse) {
-      onPost(postResponse);
+      let post: Post = {
+        ...postRequest,
+        ...postResponse,
+        display_name: identity.display_name,
+        publisher: identity.publisher,
+      };
+      await addPost(post);
+      onPost(post);
       body = "";
       files = [];
       meta = {};
@@ -74,7 +94,9 @@
     posting = false;
   }
 
-  onMount(async () => {});
+  onMount(async () => {
+    identity = await getIdentityFromDB();
+  });
   onDestroy(() => {});
 </script>
 

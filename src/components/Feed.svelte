@@ -1,76 +1,62 @@
 <script lang="ts">
-  import MediaModal from "./MediaModal.svelte";
-  import NewPost from "./NewPost.svelte";
-  import Post from "./Post.svelte";
-  import type { PostResponse } from "../types.type";
+  import MediaModalComponent from "./MediaModal.svelte";
+  import NewPostComponent from "./NewPost.svelte";
+  import PostComponent from "./Post.svelte";
+  import { getPostFromDB, ipfs, select, updateFeed } from "../core";
+  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { Post } from "../types";
   import { inview } from "svelte-inview/dist/";
-  import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
-  export let params = {};
-  $: publisher = params["publisher"];
-
+  let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;
-  let feed: PostResponse[] = [];
-  let newest_ts: number = Math.floor(new Date().getTime());
-  let oldest_ts: number = Math.floor(new Date().getTime());
   let limit: number = 10;
+  let feed: Post[] = [];
+  $: newest_ts = feed.length > 0 ? feed[0].timestamp : ts();
+  $: oldest_ts = feed.length > 0 ? feed[feed.length - 1].timestamp : ts();
   $: feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${publisher}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
+  $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${ipfs_id}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
 
   let media_modal_idx = 0;
   let media_modal_media = [];
   let media_modal_open = false;
 
+  function ts() {
+    return new Date().getTime();
+  }
+
   async function getFeedPage() {
-    console.log(`getFeedPage: ${publisher}`);
-    if (feed.length > 0) {
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
-    }
-    let page: PostResponse[] = await invoke("query_posts", {
-      query: feed_query,
-    });
+    console.log("getFeedPage: ", feed_query);
+    let page: Post[] = await select(feed_query);
     if (page.length > 0) {
-      // feed.push(...page);
-      // feed = feed;
       feed = [...feed, ...page];
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
     }
   }
 
-  function onPost(post: PostResponse) {
-    // feed.unshift(post);
-    // feed = feed;
+  function onPost(post: Post) {
+    console.log("onPost: ", post);
     feed = [post, ...feed];
-    newest_ts = feed[0].post.timestamp;
-    oldest_ts = feed[feed.length - 1].post.timestamp;
   }
 
-  async function updateIdentities() {
-    console.log(`updateIdentities: ${publisher}`);
-    if (feed.length > 0) {
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
-    }
-    let new_posts: PostResponse[] = await invoke("update_feed", {
-      query: new_posts_query,
-    });
+  async function getFeed() {
+    console.log("getFeed: ", new_posts_query);
+    await updateFeed();
+    let new_posts: Post[] = await select(new_posts_query);
     if (new_posts.length > 0) {
-      // feed.unshift(...new_posts);
-      // feed = feed;
-      feed = [...new_posts, ...feed];
-      newest_ts = feed[0].post.timestamp;
-      oldest_ts = feed[feed.length - 1].post.timestamp;
+      // the filter ensures posts from onPost and getFeed don't collide, which would cause an error.
+      feed = [
+        ...new_posts.filter((post) => post.publisher != ipfs_id),
+        ...feed,
+      ];
     }
   }
 
   onMount(async () => {
-    ipfs_id = await invoke("ipfs_id");
+    ipfs_info = await ipfs.id();
+    ipfs_id = ipfs_info.id;
     getFeedPage();
-    update_feed_interval = setInterval(updateIdentities, 60 * 1000);
+    update_feed_interval = setInterval(getFeed, 60 * 1000);
   });
 
   onDestroy(() => {
@@ -78,15 +64,13 @@
   });
 </script>
 
-<MediaModal bind:media_modal_idx bind:media_modal_media bind:media_modal_open />
+<NewPostComponent {onPost} />
 
-<NewPost {onPost} />
-
-{#each feed as post_response}
-  <Post
+<!-- keyed each block required for reactivity... -->
+{#each feed as post (post.cid)}
+  <PostComponent
     {ipfs_id}
-    cid={null}
-    {post_response}
+    {post}
     bind:media_modal_idx
     bind:media_modal_media
     bind:media_modal_open
@@ -103,3 +87,9 @@
     }}
   />
 {/if}
+
+<MediaModalComponent
+  bind:media_modal_idx
+  bind:media_modal_media
+  bind:media_modal_open
+/>

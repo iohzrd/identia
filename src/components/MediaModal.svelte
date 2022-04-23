@@ -1,16 +1,20 @@
 <script lang="ts">
-  import PdfViewer from "svelte-pdf";
-  import type { MediaObj } from "../types.type";
+  // import PdfViewer from "svelte-pdf";
+  import type { Media } from "../types";
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
 
   export let media_modal_idx: number;
-  export let media_modal_media: MediaObj[];
+  export let media_modal_media: Media[];
   export let media_modal_open: boolean;
   $: filename =
     typeof Array.isArray(media_modal_media) && media_modal_media.length > 0
       ? media_modal_media[media_modal_idx].filename
       : "";
+
+  const options = {
+    start: media_modal_idx,
+  };
 </script>
 
 <Modal
@@ -22,56 +26,37 @@
   size="lg"
 >
   {#if media_modal_open}
-    <Splide
-      options={{ start: media_modal_idx }}
-      on:move={(e) => (media_modal_idx = e.detail.index)}
-    >
-      {#each media_modal_media as mediaObj}
-        {#if mediaObj.mime && mediaObj.mime.includes("image")}
-          <SplideSlide>
-            <img
-              class="image"
-              src={mediaObj.blobUrl}
-              alt=""
-              bind:this={mediaObj.element}
-            />
-          </SplideSlide>
-        {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-          <SplideSlide>
-            <video src={mediaObj.blobUrl} controls bind:this={mediaObj.element}>
-              <track kind="captions" />
-            </video>
-          </SplideSlide>
-        {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-          <SplideSlide>
-            <video src={mediaObj.blobUrl} controls bind:this={mediaObj.element}>
-              <track kind="captions" />
-            </video>
-          </SplideSlide>
-        {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-          <SplideSlide>
-            <div style="text-align: center;">
-              <PdfViewer
-                url={mediaObj.blobUrl}
-                scale={1.0}
-                showBorder={false}
-              />
-            </div>
-          </SplideSlide>
-        {/if}
+    <Splide {options} on:move={(e) => (media_modal_idx = e.detail.index)}>
+      {#each media_modal_media as mediaObj (mediaObj.filename)}
+        <SplideSlide>
+          {#if mediaObj.mime && mediaObj.mime.includes("image")}
+            <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />
+          {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
+            <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
+          {/if}
+        </SplideSlide>
       {/each}
     </Splide>
   {/if}
 </Modal>
 
 <style>
-  .image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin: auto;
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
+  img {
+    height: auto;
+    width: 100%;
   }
+
+  /* img {
+    height: auto;
+    width: 100%;
+    object-fit: contain;
+  } */
+
+  /* @media only screen and (orientation: landscape) {
+    img {
+      height: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
+  } */
 </style>

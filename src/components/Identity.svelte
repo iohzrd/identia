@@ -8,21 +8,22 @@
     TextInput,
     Link,
   } from "carbon-components-svelte";
-  // import { UserProfile20 } from "carbon-icons-svelte";
-  import MediaModal from "./MediaModal.svelte";
-  import Meta from "./Meta.svelte";
-  import Post from "./Post.svelte";
-  import type { Identity, IdentityResponse, PostResponse } from "../types.type";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import MediaModalComponent from "./MediaModal.svelte";
+  import MetaComponent from "./Meta.svelte";
+  import PostComponent from "./Post.svelte";
+  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { Identity, Post } from "../types";
   import { onMount, onDestroy } from "svelte";
+  import { getIdentity, ipfs, select, updateIdentity } from "../core";
 
   export let params = {};
 
-  let ipfs_id = "";
-  let identity_res: IdentityResponse;
+  let ipfs_info: IDResult;
+  let ipfs_id: string;
+
   let identity: Identity;
-  let posts: PostResponse[] = [];
-  let posts_oldest_ts: number = Math.floor(new Date().getTime());
+  let posts: Post[] = [];
+  let posts_oldest_ts: number = new Date().getTime();
   let posts_limit: number = 5;
   $: publisher = params["publisher"];
   $: posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher = '${publisher}' AND posts.timestamp < ${posts_oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${posts_limit}`;
@@ -32,48 +33,29 @@
   let media_modal_open = false;
 
   async function getPostsPage() {
-    console.log(`getFeedPage: ${publisher}`);
+    console.log("getFeedPage: ", publisher);
     if (identity && identity.posts) {
       if (posts.length > 0) {
-        posts_oldest_ts = posts[posts.length - 1].post.timestamp;
+        posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
-      let page: PostResponse[] = await invoke("query_posts", {
-        query: posts_query,
-      });
+      let page: Post[] = await select(posts_query);
+      console.log("page:", page);
       if (page.length > 0) {
         posts = [...posts, ...page];
-        posts_oldest_ts = posts[posts.length - 1].post.timestamp;
+        posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
     }
-  }
-
-  async function updateIdentityAux() {
-    console.log(`updateMeta`);
-    let identity_res: IdentityResponse[] = await invoke("update_identity_aux", {
-      desc: identity.description,
-      dn: identity.display_name,
-      meta: identity.meta,
-    });
-    console.log(identity_res);
   }
 
   onMount(async () => {
     console.log("onMount");
     console.log(params);
-    ipfs_id = await invoke("ipfs_id");
+    ipfs_info = await ipfs.id();
+    ipfs_id = ipfs_info.id;
     if (params["publisher"]) {
-      identity_res = await invoke("get_identity", {
-        publisher: params["publisher"],
-      });
-      identity = identity_res.identity;
+      identity = await getIdentity(publisher);
     }
     await getPostsPage();
-
-    if (identity && identity.meta) {
-      if (Array.isArray(identity.meta)) {
-        identity.meta = {};
-      }
-    }
   });
 
   onDestroy(() => {
@@ -82,7 +64,11 @@
   });
 </script>
 
-<MediaModal bind:media_modal_idx bind:media_modal_media bind:media_modal_open />
+<MediaModalComponent
+  bind:media_modal_idx
+  bind:media_modal_media
+  bind:media_modal_open
+/>
 
 <Form on:submit>
   {#if identity}
@@ -141,18 +127,20 @@
 
     <FormGroup legendText="meta">
       {#if identity && identity.meta}
-        <Meta meta={identity.meta} readonly={ipfs_id !== identity.publisher} />
+        <MetaComponent
+          meta={identity.meta}
+          readonly={ipfs_id !== identity.publisher}
+        />
       {/if}
     </FormGroup>
 
     <FormGroup legendText="posts">
       {#if identity && identity.posts}
-        {#each posts as post_response}
+        {#each posts as post (post.cid)}
           <div>
-            <Post
+            <PostComponent
               {ipfs_id}
-              cid={null}
-              {post_response}
+              {post}
               bind:media_modal_idx
               bind:media_modal_media
               bind:media_modal_open
@@ -168,12 +156,12 @@
     </FormGroup>
 
     <FormGroup legendText="last known cid">
-      {identity_res["cid"]}
+      {identity["cid"]}
     </FormGroup>
 
     <Button
       on:click={() => {
-        updateIdentityAux();
+        updateIdentity(identity);
       }}>Save</Button
     >
   {/if}

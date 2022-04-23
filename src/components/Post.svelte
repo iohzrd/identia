@@ -9,79 +9,35 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
-  import DocumentPdf32 from "carbon-icons-svelte/lib/DocumentPdf32";
-  import { format as formatTime } from "timeago.js";
-  import linkifyStr from "linkify-string";
-  import type { MediaObj, PostResponse, FileTypeResponse } from "../types.type";
-  import { Buffer } from "buffer/index";
-  import { create } from "ipfs-http-client/index";
-  import { invoke } from "@tauri-apps/api/tauri";
-  import { onMount, onDestroy } from "svelte";
-  import { stripHtml } from "string-strip-html";
+  import Download from "carbon-icons-svelte/lib/Download.svelte";
+  import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import ext2mime from "ext2mime";
+  import linkifyStr from "linkify-string";
+  import type { Media, Post } from "../types";
+  import { Buffer } from "buffer/index";
+  import { deletePost, ipfs, unfollowPublisher } from "../core";
+  import { format as formatTime } from "timeago.js";
+  import { homeDir, join } from "@tauri-apps/api/path";
+  import { onMount, onDestroy } from "svelte";
+  import { save } from "@tauri-apps/api/dialog";
+  import { stripHtml } from "string-strip-html";
+  import { writeBinaryFile } from "@tauri-apps/api/fs";
 
-  export let ipfs_id: string;
-  export let cid: String;
-  export let post_response: PostResponse;
   export let media_modal_idx: number;
-  export let media_modal_media: MediaObj[];
+  export let media_modal_media: Media[];
   export let media_modal_open: boolean;
 
-  let timer;
-  let timestamp: string = formatTime(post_response.post.timestamp);
-  let datetime: string = new Date(
-    post_response.post.timestamp
-  ).toLocaleString();
+  export let ipfs_id: string;
+  export let post: Post;
+
+  let timeout;
+  let timeout_time = 1000;
+  let timeago: string = formatTime(post.timestamp);
+  let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
-  let bodyHTML = linkifyStr(stripHtml(post_response.post.body).result, {
+  let bodyHTML = linkifyStr(stripHtml(post.body).result, {
     target: "_blank",
   }).replace(/\n/g, "<br>");
-
-  async function getPostFromCid() {
-    console.log("getPostFromCid");
-    post_response = await invoke("get_post_ipfs", {
-      cid: cid,
-    });
-  }
-
-  async function getMediaObject(filename, isThumbnail = false) {
-    console.log("getMediaObject");
-    let bufs = [];
-    const root_cid = post_response.cid || cid;
-    const path: string = root_cid + "/" + filename;
-    const ipfs = await create("/ip4/127.0.0.1/tcp/5001");
-    for await (const buf of ipfs.cat(path)) {
-      bufs.push(buf);
-    }
-    const buf: Buffer = Buffer.concat(bufs);
-    const fileType = {
-      ext: filename.split(".").pop(),
-      mime: ext2mime(filename.split(".").pop()),
-    };
-    const blob = new Blob([buf], { type: fileType.mime });
-    const urlCreator = window.URL || window.webkitURL;
-    const mediaObj: MediaObj = {
-      blobUrl: urlCreator.createObjectURL(blob),
-      element: null,
-      thumbnailFor: "",
-      filename: filename,
-      mime: fileType.mime,
-    };
-    return mediaObj;
-  }
-
-  function isVideo(filename: string) {
-    return ext2mime(filename.split(".").pop()).includes("video");
-  }
-
-  async function deletePost() {
-    console.log("deletePost");
-    const root_cid = post_response.cid || cid;
-    console.log(root_cid);
-    post_response = await invoke("delete_post", {
-      cid: root_cid,
-    });
-  }
 
   function openMediaModal(idx) {
     console.log("openMediaModal");
@@ -91,29 +47,111 @@
     media_modal_open = true;
   }
 
-  onMount(async () => {
-    timer = setInterval(() => {
-      timestamp = formatTime(post_response.post.timestamp);
-    }, 60000);
-    if (!post_response) {
-      await getPostFromCid();
+  async function getMedia(filename, isThumbnail = false) {
+    console.log("getMedia");
+    let cid = post.cid;
+    if (!post.cid.includes("ipfs/")) {
+      cid = "ipfs/" + post.cid;
     }
+    const path: string = "http://localhost:8080/" + cid + "/" + filename;
+    const fileType = {
+      ext: filename.split(".").pop(),
+      mime: ext2mime(filename.split(".").pop()),
+    };
+    let mediaObj: Media = {
+      url: path,
+      element: null,
+      thumbnailFor: null,
+      filename: filename,
+      mime: fileType.mime,
+    };
+    if (isThumbnail) {
+      mediaObj.thumbnailFor = filename;
+      mediaObj.mime = "image";
+    }
+    return mediaObj;
+  }
 
-    for await (const filename of post_response.post.files) {
+  async function getMediaBinary(filename) {
+    console.log("getMediaBinary");
+    let path: string = post.cid + "/" + filename;
+    const bufs = [];
+    for await (const buf of ipfs.cat(path)) {
+      bufs.push(buf);
+    }
+    return Buffer.concat(bufs);
+  }
+
+  async function getMediaBlob(filename) {
+    console.log("getMediaBlob");
+    const fileType = {
+      ext: filename.split(".").pop(),
+      mime: ext2mime(filename.split(".").pop()),
+    };
+    const buf = await getMediaBinary(filename);
+    return new Blob([buf], { type: fileType.mime });
+  }
+
+  async function getMediaBlobUrl(filename) {
+    console.log("getMediaBlobUrl");
+    const blob = await getMediaBlob(filename);
+    const urlCreator = window.URL || window.webkitURL;
+    return urlCreator.createObjectURL(blob);
+  }
+
+  async function saveMedia(filename) {
+    console.log("saveMedia");
+    const home = await homeDir();
+    const path = await join(home, filename);
+    const user_path = await save({
+      defaultPath: path,
+    });
+    await writeBinaryFile({
+      path: user_path,
+      contents: await getMediaBinary(filename),
+    });
+  }
+
+  async function loadVideo(filename, idx: number) {
+    console.log("loadVideo: ", idx);
+    media[idx] = await getMedia(filename);
+    media = media;
+  }
+
+  function newTimeout() {
+    timeago = formatTime(post.timestamp);
+    let delta = new Date().getTime() - post.timestamp;
+    if (delta < 60 * 1000) {
+      // less than a minue, update once a second
+      timeout_time = 1000;
+    } else if (delta < 60 * 60 * 1000) {
+      // less than an hour, update once a minute
+      timeout_time = 60 * 1000;
+    } else {
+      // update once an hour
+      timeout_time = 60 * 60 * 1000;
+    }
+    timeout = setTimeout(newTimeout, timeout_time);
+  }
+
+  onMount(async () => {
+    timeout = setTimeout(newTimeout, timeout_time);
+
+    for await (const filename of post.files) {
+      const is_video = ext2mime(filename.split(".").pop()).includes("video");
       console.log("isVideo");
-      console.log(isVideo(filename));
-      if (isVideo(filename)) {
+      console.log(is_video);
+      if (is_video) {
         // get thumbnail here...
-        const mediaObj: MediaObj = await getMediaObject(filename, true);
-        media = [...media, mediaObj];
+        media = [...media, await getMedia(filename, true)];
       } else {
-        media = [...media, await getMediaObject(filename)];
+        media = [...media, await getMedia(filename)];
       }
     }
   });
 
   onDestroy(() => {
-    clearInterval(timer);
+    clearTimeout(timeout);
     // this is required to avoid a memory leak...
     media.forEach((mediaObj) => {
       if (mediaObj.element && mediaObj.element.src) {
@@ -126,64 +164,100 @@
   });
 </script>
 
-{#if post_response.post}
+{#if post}
   <Tile style="outline: 2px solid black">
     <div>
-      <Link href="#/identity/{post_response.post.publisher}">
-        {post_response.display_name || post_response.post.publisher}
+      <Link href="#/identity/{post.publisher}">
+        {post.display_name || post.publisher}
       </Link>
-      - {timestamp} ({datetime})
+      - {timeago} ({datetime})
 
       <OverflowMenu flipped style="float:right;">
-        {#if post_response.post.publisher === ipfs_id}
-          <OverflowMenuItem text="Delete post" on:click={deletePost} />
+        {#if post.publisher === ipfs_id}
+          <OverflowMenuItem
+            text="Delete post"
+            on:click={() => {
+              deletePost(post.cid);
+            }}
+          />
+        {:else}
+          <OverflowMenuItem
+            text="Unfollow publisher"
+            on:click={() => {
+              unfollowPublisher(post.publisher);
+            }}
+          />
         {/if}
       </OverflowMenu>
     </div>
     <br />
-    {#if post_response.post.body || post_response.post.files}
+    {#if post.body || post.files}
       <Grid fullWidth>
-        {#if post_response.post.body}
+        {#if post.body}
           <div>
             {@html bodyHTML}
           </div>
           <br />
         {/if}
         <Row>
-          {#each media as mediaObj, idx}
+          {#each media as mediaObj, idx (mediaObj.filename)}
             <Column sm={4} md={4} lg={4}>
-              {#if mediaObj.mime && mediaObj.mime.includes("image")}
-                <img
-                  class="thumbnail"
-                  src={mediaObj.blobUrl}
-                  alt=""
-                  bind:this={mediaObj.element}
-                  on:click={() => openMediaModal(idx)}
-                />
-              {:else if mediaObj.mime && mediaObj.mime.includes("audio")}
-                <video
-                  class="thumbnail"
-                  src={mediaObj.blobUrl}
-                  height="300"
-                  controls
-                  bind:this={mediaObj.element}
-                >
-                  <track kind="captions" />
-                </video>
-              {:else if mediaObj.mime && mediaObj.mime.includes("video")}
-                <video
-                  src={mediaObj.blobUrl}
-                  height="300"
-                  controls
-                  bind:this={mediaObj.element}
-                >
-                  <track kind="captions" />
-                </video>
-              {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
-                <Button kind="secondary" on:click={() => openMediaModal(idx)}>
-                  {mediaObj.filename}
-                  <DocumentPdf32 />
-                </Button>
+              {#if mediaObj.mime}
+                {#if mediaObj.mime.includes("image")}
+                  {#if mediaObj.thumbnailFor}
+                    <div
+                      class="thumbnail"
+                      bind:this={mediaObj.element}
+                      on:click={() => loadVideo(mediaObj.filename, idx)}
+                    >
+                      <PlayFilled size={32} />
+                    </div>
+
+                    <!-- <img
+                      class="thumbnail"
+                      src={mediaObj.url}
+                      alt=""
+                      bind:this={mediaObj.element}
+                      on:click={() => loadVideo(mediaObj, idx)}
+                    /> -->
+                  {:else}
+                    <img
+                      class="thumbnail"
+                      src={mediaObj.url}
+                      alt=""
+                      bind:this={mediaObj.element}
+                      on:click={() => openMediaModal(idx)}
+                    />
+                  {/if}
+                {:else if mediaObj.mime.includes("audio")}
+                  <audio
+                    class="thumbnail"
+                    src={mediaObj.url}
+                    height="300"
+                    controls
+                    bind:this={mediaObj.element}
+                  />
+                {:else if mediaObj.mime.includes("video")}
+                  <video
+                    src={mediaObj.url}
+                    height="300"
+                    controls
+                    bind:this={mediaObj.element}
+                  >
+                    <track kind="captions" />
+                  </video>
+                {:else if mediaObj.mime.includes("pdf")}
+                  <Button
+                    download={mediaObj.filename}
+                    href={mediaObj.url}
+                    icon={Download}
+                    iconDescription="Download"
+                    kind="secondary"
+                    on:click={() => saveMedia(mediaObj.filename)}
+                  >
+                    {mediaObj.filename}
+                  </Button>
+                {/if}
               {/if}
             </Column>
           {/each}
