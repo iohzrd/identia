@@ -80,19 +80,14 @@
       </FormGroup> -->
 
     <FormGroup>
-      {#if ipfs_id !== identity.publisher}
-        <div>
-          {identity["description"]}
-        </div>
-      {:else}
-        <TextArea
-          bind:value={identity["description"]}
-          labelText="description"
-          placeholder={ipfs_id === identity.publisher
-            ? "Enter a description..."
-            : ""}
-        />
-      {/if}
+      <TextArea
+        bind:value={identity["description"]}
+        labelText="description"
+        readonly={ipfs_id !== identity.publisher}
+        placeholder={ipfs_id === identity.publisher
+          ? "Enter a description..."
+          : ""}
+      />
     </FormGroup>
 
     <FormGroup>
@@ -160,6 +155,7 @@
     </FormGroup>
 
     <Button
+      disabled={ipfs_id !== identity.publisher}
       on:click={() => {
         updateIdentity(identity);
       }}>Save</Button

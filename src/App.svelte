@@ -94,20 +94,6 @@
       <SkipToContent />
     </svelte:fragment>
 
-    <SideNav bind:isOpen={isSideNavOpen}>
-      <SideNavItems>
-        {#each views as view}
-          <SideNavLink
-            href="#{view.path}{ipfs_id}"
-            text={view.label}
-            isSelected={$location === view.path + ipfs_id}
-          >
-            {view.label}
-          </SideNavLink>
-        {/each}
-      </SideNavItems>
-    </SideNav>
-
     <HeaderUtilities>
       <HeaderGlobalAction
         aria-label="Follow new identity"
@@ -116,6 +102,20 @@
       />
     </HeaderUtilities>
   </Header>
+
+  <SideNav bind:isOpen={isSideNavOpen}>
+    <SideNavItems>
+      {#each views as view}
+        <SideNavLink
+          href="#{view.path}{ipfs_id}"
+          text={view.label}
+          isSelected={$location === view.path + ipfs_id}
+        >
+          {view.label}
+        </SideNavLink>
+      {/each}
+    </SideNavItems>
+  </SideNav>
 
   <Content>
     <Grid>
