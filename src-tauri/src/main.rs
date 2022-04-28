@@ -22,6 +22,7 @@ use tauri::api::path::config_dir;
 use tauri::api::process::Command;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
+use urlencoding::encode;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Post {
@@ -65,7 +66,9 @@ async fn post(request: PostRequest) -> PostResponse {
 
   for filepath in file_paths {
     let data = fs::read(filepath.clone()).expect("Something went wrong reading the file");
-    let filename = String::from(Path::new(&filepath).file_name().unwrap().to_str().unwrap());
+    // let filename = String::from(Path::new(&filepath).file_name().unwrap().to_str().unwrap());
+    let filename: String =
+      encode(Path::new(&filepath).file_name().unwrap().to_str().unwrap()).into_owned();
     file_names.push(filename.clone());
     form.add_reader_file("path", Cursor::new(data), filename);
   }
@@ -81,27 +84,28 @@ async fn post(request: PostRequest) -> PostResponse {
   let json = serde_json::to_vec(&post).unwrap();
   form.add_reader_file("path", Cursor::new(json), "post.json");
 
+  let mut cid = String::from("");
+  let mut res_file_names: Vec<String> = Vec::new();
   let ipfs_client = IpfsClient::default();
-  let cid = match ipfs_client.add_with_form(form, add).await {
+  match ipfs_client.add_with_form(form, add).await {
     Ok(res) => {
       println!("res: {:?}", res);
-      let mut cid = String::from("");
       for add in res {
         if add.name == String::from("") {
           cid = add.hash
+        } else {
+          res_file_names.push(add.name);
         }
       }
-      cid
     }
     Err(e) => {
       eprintln!("{:#?}", e);
-      String::from("")
     }
   };
 
   PostResponse {
     cid: cid,
-    files: file_names,
+    files: res_file_names,
   }
 }
 

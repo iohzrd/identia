@@ -18,6 +18,7 @@ ipfs-api-backend-hyper = { version = "0.4", features = ["with-send-sync", "with-
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri = { version = "1.0.0-rc.8", features = ["api-all", "gtk-tray", "system-tray"] }
+urlencoding = "2"
 
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/iohzrd/tauri-plugin-sql"
