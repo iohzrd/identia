@@ -8,7 +8,7 @@
 
 // use chrono::{offset::Utc, DateTime};
 use feed_rs::parser;
-use ipfs_api::{Form, IpfsApi, IpfsClient};
+use ipfs_api_backend_hyper::{request::Add, Form, IpfsApi, IpfsClient};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
@@ -59,9 +59,11 @@ async fn post(request: PostRequest) -> PostResponse {
   let file_paths: Vec<String> = request.files.clone();
   let mut file_names: Vec<String> = Vec::new();
 
-  let add = ipfs_api::request::Add::builder()
-    .wrap_with_directory(true)
-    .build();
+  let add = Add {
+    wrap_with_directory: Some(true),
+    ..Default::default()
+  };
+
   let mut form = Form::default();
 
   for filepath in file_paths {
