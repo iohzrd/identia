@@ -27,12 +27,12 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.2",
-    "@splidejs/svelte-splide": "^0.2.2",
-    "@tauri-apps/cli": "^1.0.0-rc.11",
+    "@splidejs/svelte-splide": "^0.2.4",
+    "@tauri-apps/cli": "^1.0.0-rc.13",
     "@tsconfig/svelte": "^3.0.0",
     "buffer": "^6.0.3",
-    "carbon-components-svelte": "^0.64.0",
-    "carbon-icons-svelte": "^11.0.1",
+    "carbon-components-svelte": "^0.64.2",
+    "carbon-icons-svelte": "^11.1.0",
     "carbon-preprocess-svelte": "^0.9.0",
     "execa": "^6.1.0",
     "ext2mime": "^2.0.0",
@@ -42,7 +42,7 @@
     "linkify-html": "^3.0.5",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.5",
-    "rollup": "^2.74.1",
+    "rollup": "^2.75.1",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-svelte": "^7.1.0",
@@ -57,10 +57,10 @@
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#release",
     "timeago.js": "^4.0.2",
     "tslib": "^2.4.0",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.2"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.0-rc.5",
+    "@tauri-apps/api": "^1.0.0-rc.6",
     "sirv-cli": "^2.0.2"
   }
 }
