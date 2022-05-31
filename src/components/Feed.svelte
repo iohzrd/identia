@@ -54,7 +54,7 @@
 
   onMount(async () => {
     ipfs_info = await ipfs.id();
-    ipfs_id = ipfs_info.id;
+    ipfs_id = ipfs_info.id.toString();
     getFeedPage();
     update_feed_interval = setInterval(getFeed, 60 * 1000);
   });

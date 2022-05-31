@@ -51,7 +51,7 @@
     console.log("onMount");
     console.log(params);
     ipfs_info = await ipfs.id();
-    ipfs_id = ipfs_info.id;
+    ipfs_id = ipfs_info.id.toString();
     if (params["publisher"]) {
       identity = await getIdentity(publisher);
     }

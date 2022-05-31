@@ -73,7 +73,7 @@
 
   onMount(async () => {
     ipfs_info = await ipfs.id();
-    ipfs_id = ipfs_info.id;
+    ipfs_id = ipfs_info.id.toString();
     // let test = await invoke("fetch_external", {
     //   url: "https://lukesmith.xyz/rss.xml",
     // });

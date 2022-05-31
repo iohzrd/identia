@@ -55,7 +55,7 @@ export async function getIdentityFromDB(
 ): Promise<Identity> {
   console.log("getIdentityFromDB: ", publisher);
   if (publisher === undefined) {
-    publisher = (await ipfs.id()).id;
+    publisher = (await ipfs.id()).id.toString();
   }
   const rows: Identity[] = await select(
     "SELECT cid,avatar,description,display_name,following,meta,posts,publisher,timestamp FROM identities WHERE publisher = ?",
