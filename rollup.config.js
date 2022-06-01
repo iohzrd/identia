@@ -47,6 +47,7 @@ export default {
     // this is required to avoid an error from: string-strip-html -> ranges-apply -> tiny-invariant
     replace({
       "process.env.NODE_ENV": JSON.stringify("production"),
+      include: ["node_modules/tiny-invariant/dist/*.js"],
       preventAssignment: true,
     }),
     svelte({
