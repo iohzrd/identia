@@ -51,7 +51,7 @@
     "svelte": "^3.48.0",
     "svelte-check": "^2.7.2",
     "svelte-inview": "^3.0.0",
-    "svelte-preprocess": "^4.10.6",
+    "svelte-preprocess": "^4.10.7",
     "svelte-spa-router": "^3.2.0",
     "svelte-tauri-filedrop": "^1.0.0",
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#release",
