@@ -9,7 +9,7 @@ Successor to [follow](https://github.com/iohzrd/follow)
 
 ## Run
 
-Follow [this guide](https://tauri.studio/en/docs/getting-started/intro) to setup dev dependencies...
+Follow [this guide](https://tauri.studio/v1/guides/getting-started/prerequisites) to setup dev dependencies...
 
 ```
 npm install
