@@ -20,6 +20,7 @@ use tauri;
 use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 use tauri::api::path::config_dir;
 use tauri::api::process::Command;
+use tauri::Icon;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 use urlencoding::encode;
@@ -265,24 +266,20 @@ fn main() {
         #[cfg(target_os = "linux")]
         "icon_1" => app
           .tray_handle()
-          .set_icon(tauri::TrayIcon::File(PathBuf::from("../icons/icon.png")))
+          .set_icon(Icon::File(PathBuf::from("../icons/icon.png")))
           .unwrap(),
         #[cfg(target_os = "macos")]
         "icon_1" => {
           app.tray_handle().set_icon_as_template(true).unwrap();
           app
             .tray_handle()
-            .set_icon(tauri::TrayIcon::Raw(
-              include_bytes!("../icons/icon.png").to_vec(),
-            ))
+            .set_icon(Icon::Rgba(include_bytes!("../icons/icon.png").to_vec()))
             .unwrap();
         }
         #[cfg(target_os = "windows")]
         "icon_1" => app
           .tray_handle()
-          .set_icon(tauri::TrayIcon::Raw(
-            include_bytes!("../icons/icon.ico").to_vec(),
-          ))
+          .set_icon(Icon::Rgba(include_bytes!("../icons/icon.ico").to_vec()))
           .unwrap(),
         _ => {}
       },
