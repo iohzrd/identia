@@ -53,7 +53,7 @@
     if (!post.cid.includes("ipfs/")) {
       cid = "ipfs/" + post.cid;
     }
-    const path: string = "http://localhost:8080/" + cid + "/" + filename;
+    const path: string = "http://127.0.0.1:8080/" + cid + "/" + filename;
     const fileType = {
       ext: filename.split(".").pop(),
       mime: ext2mime(filename.split(".").pop()),
