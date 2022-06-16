@@ -273,13 +273,13 @@ fn main() {
           app.tray_handle().set_icon_as_template(true).unwrap();
           app
             .tray_handle()
-            .set_icon(Icon::Rgba(include_bytes!("../icons/icon.png").to_vec()))
+            .set_icon(Icon::Raw(include_bytes!("../icons/icon.png").to_vec()))
             .unwrap();
         }
         #[cfg(target_os = "windows")]
         "icon_1" => app
           .tray_handle()
-          .set_icon(Icon::Rgba(include_bytes!("../icons/icon.ico").to_vec()))
+          .set_icon(Icon::Raw(include_bytes!("../icons/icon.ico").to_vec()))
           .unwrap(),
         _ => {}
       },
