@@ -171,12 +171,15 @@ fn create_dir_if_necessary(path: PathBuf) {
 
 fn initialize_ipfs() {
   create_dir_if_necessary(identia_app_data_path());
-  println!("Initializing IPFS");
+  println!(
+    "Initializing IPFS: {:?}",
+    identia_app_data_path().into_os_string().to_str().unwrap()
+  );
   let cmd = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "init",
-      "-c",
+      "--repo-dir",
       identia_app_data_path().into_os_string().to_str().unwrap(),
     ])
     .output()
@@ -186,7 +189,7 @@ fn initialize_ipfs() {
   Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
-      "-c",
+      "--repo-dir",
       identia_app_data_path().into_os_string().to_str().unwrap(),
       "config",
       "--json",
@@ -198,7 +201,7 @@ fn initialize_ipfs() {
   Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
-      "-c",
+      "--repo-dir",
       identia_app_data_path().into_os_string().to_str().unwrap(),
       "config",
       "--json",
@@ -210,7 +213,7 @@ fn initialize_ipfs() {
   Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
-      "-c",
+      "--repo-dir",
       identia_app_data_path().into_os_string().to_str().unwrap(),
       "config",
       "--json",
@@ -222,7 +225,7 @@ fn initialize_ipfs() {
   Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
-      "-c",
+      "--repo-dir",
       identia_app_data_path().into_os_string().to_str().unwrap(),
       "config",
       "--json",
@@ -298,7 +301,7 @@ fn main() {
           .expect("failed to setup ipfs sidecar")
           .args(&[
             "daemon",
-            "-c",
+            "--repo-dir",
             identia_app_data_path().into_os_string().to_str().unwrap(),
             "--migrate=true",
           ])
