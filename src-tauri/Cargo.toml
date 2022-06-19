@@ -7,6 +7,7 @@ license = "AGPL-3.0"
 repository = "https://github.com/iohzrd/tauri-svelte"
 default-run = "identia"
 edition = "2021"
+rust-version = "1.57"
 
 [build-dependencies]
 tauri-build = { version = "1", features = [] }
@@ -25,5 +26,9 @@ features = ["sqlite"]
 branch = "dev"
 
 [features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
 default = [ "custom-protocol" ]
+# this feature is used used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
 custom-protocol = [ "tauri/custom-protocol" ]

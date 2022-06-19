@@ -11,10 +11,7 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true,
-      "http": {
-        "scope": ["https://**"]
-      }
+      "all": true
     },
     "bundle": {
       "active": true,
@@ -37,7 +34,6 @@
         "entitlements": null,
         "exceptionDomain": "",
         "frameworks": [],
-        "minimumSystemVersion": "",
         "providerShortName": null,
         "signingIdentity": null
       },
@@ -51,7 +47,7 @@
       }
     },
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: asset: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+      "csp": null
     },
     "systemTray": {
       "iconPath": "icons/icon.png"
