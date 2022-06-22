@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -8,6 +8,7 @@
   "private": true,
   "scripts": {
     "build": "rollup -c",
+    "bump": "node scripts/bump-versions.js && npm run update",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "dev": "rollup -c -w",
     "info": "tauri info",

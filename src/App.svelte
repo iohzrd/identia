@@ -21,7 +21,7 @@
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
   import type { IDResult } from "ipfs-core-types/src/root";
-  import { followPublisher, ipfs } from "./core";
+  import { followPublisher, getIdentity, ipfs } from "./core";
   import { invoke } from "@tauri-apps/api";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
@@ -73,6 +73,7 @@
 
   onMount(async () => {
     ipfs_info = await ipfs.id();
+    await getIdentity(ipfs_info.id.toString());
     ipfs_id = ipfs_info.id.toString();
     // let test = await invoke("fetch_external", {
     //   url: "https://lukesmith.xyz/rss.xml",
