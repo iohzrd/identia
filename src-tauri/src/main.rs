@@ -218,7 +218,7 @@ fn initialize_ipfs() {
       "config",
       "--json",
       "Addresses.Gateway",
-      r#""/ip4/127.0.0.1/tcp/8080""#,
+      "/ip4/127.0.0.1/tcp/8080",
     ])
     .output()
     .unwrap();
@@ -230,7 +230,7 @@ fn initialize_ipfs() {
       "config",
       "--json",
       "Datastore.StorageMax",
-      r#""1000GB""#,
+      "1000GB",
     ])
     .output()
     .unwrap();
