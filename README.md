@@ -110,8 +110,6 @@ https://discord.gg/aErhA6TBPS
 
 ```
 12D3KooWHxU85q4JWsDXq4ZHjBCdjHHGL9wnMtqBMMgArkn6xcyz
-12D3KooWDED1CudLX9sdi1qBzy5tHS4Xi2Mpk45E5wrqteri1R8z
-12D3KooWQoQ3QUPezmCv2w8JJ5RXPqtjupkLB4JtV9obVfc5PZMX
 ```
 
 ## Support me
