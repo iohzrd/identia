@@ -13,7 +13,7 @@
   let update_feed_interval = null;
   let limit: number = 10;
   let feed: Post[] = [];
-  $: newest_ts = feed.length > 0 ? feed[0].timestamp : ts();
+  $: newest_ts = feed.length > 0 ? feed[0].timestamp : 0;
   $: oldest_ts = feed.length > 0 ? feed[feed.length - 1].timestamp : ts();
   $: feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
   $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${ipfs_id}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;

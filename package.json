@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -39,7 +39,7 @@
     "execa": "^6.1.0",
     "ext2mime": "^2.0.0",
     "go-ipfs": "^0.13.0",
-    "ipfs-http-client": "^57.0.1",
+    "ipfs-http-client": "^57.0.2",
     "is-ipfs": "^6.0.2",
     "linkify-html": "^3.0.5",
     "linkify-string": "^3.0.4",
