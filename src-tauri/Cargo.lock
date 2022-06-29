@@ -1476,7 +1476,7 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "identia"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "feed-rs",
  "ipfs-api-backend-hyper",
