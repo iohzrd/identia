@@ -2,14 +2,17 @@
   import {
     Button,
     Content,
-    Grid,
     Header,
     HeaderGlobalAction,
+    HeaderNav,
+    HeaderNavItem,
     HeaderUtilities,
+    Link,
     Loading,
     Modal,
     ProgressBar,
     SideNav,
+    SideNavDivider,
     SideNavItems,
     SideNavLink,
     SkipToContent,
@@ -22,15 +25,19 @@
   import Router from "svelte-spa-router";
   import type { IDResult } from "ipfs-core-types/src/root";
   import { followPublisher, getIdentity, ipfs } from "./core";
-  import { invoke } from "@tauri-apps/api";
+  // import { invoke } from "@tauri-apps/api";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
+  import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
 
   let isSideNavOpen = false;
 
-  let ipfs_info: IDResult;
+  let app_version: string;
   let ipfs_id: string;
+  let ipfs_info: IDResult;
+  let ipfs_version: string;
+  let tauri_version: string;
 
   let follow_modal_open = false;
   let follow_waiting = false;
@@ -72,7 +79,11 @@
   }
 
   onMount(async () => {
+    app_version = await getVersion();
+    tauri_version = await getTauriVersion();
     ipfs_info = await ipfs.id();
+    ipfs_version = ipfs_info.agentVersion.split("/")[1];
+    console.log(ipfs_info);
     await getIdentity(ipfs_info.id.toString());
     ipfs_id = ipfs_info.id.toString();
     // let test = await invoke("fetch_external", {
@@ -95,6 +106,18 @@
       <SkipToContent />
     </svelte:fragment>
 
+    <HeaderNav>
+      {#each views as view}
+        <HeaderNavItem
+          href="#{view.path}{ipfs_id}"
+          text={view.label}
+          isSelected={$location === view.path + ipfs_id}
+        >
+          {view.label}
+        </HeaderNavItem>
+      {/each}
+    </HeaderNav>
+
     <HeaderUtilities>
       <HeaderGlobalAction
         aria-label="Follow new identity"
@@ -102,26 +125,34 @@
         on:click={() => (follow_modal_open = true)}
       />
     </HeaderUtilities>
+
+    <SideNav bind:isOpen={isSideNavOpen}>
+      <SideNavItems>
+        {#each views as view}
+          <SideNavLink
+            href="#{view.path}{ipfs_id}"
+            text={view.label}
+            isSelected={$location === view.path + ipfs_id}
+          >
+            {view.label}
+          </SideNavLink>
+        {/each}
+        <SideNavDivider />
+        <SideNavLink href="https://github.com/iohzrd/identia" target="_blank">
+          identia: v{app_version}
+        </SideNavLink>
+        <SideNavLink href="https://github.com/ipfs/go-ipfs" target="_blank">
+          ipfs: v{ipfs_version}
+        </SideNavLink>
+        <SideNavLink href="https://github.com/tauri-apps/tauri" target="_blank">
+          tauri: v{tauri_version}
+        </SideNavLink>
+      </SideNavItems>
+    </SideNav>
   </Header>
 
-  <SideNav bind:isOpen={isSideNavOpen}>
-    <SideNavItems>
-      {#each views as view}
-        <SideNavLink
-          href="#{view.path}{ipfs_id}"
-          text={view.label}
-          isSelected={$location === view.path + ipfs_id}
-        >
-          {view.label}
-        </SideNavLink>
-      {/each}
-    </SideNavItems>
-  </SideNav>
-
   <Content>
-    <Grid>
-      <Router {routes} />
-    </Grid>
+    <Router {routes} />
   </Content>
 
   <Modal
