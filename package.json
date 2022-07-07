@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.12",
+  "version": "0.4.13",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -30,7 +30,7 @@
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.3",
     "@splidejs/svelte-splide": "^0.2.5",
-    "@tauri-apps/cli": "^1.0.2",
+    "@tauri-apps/cli": "^1.0.3",
     "@tsconfig/svelte": "^3.0.0",
     "buffer": "^6.0.3",
     "carbon-components-svelte": "^0.67.0",
@@ -38,7 +38,7 @@
     "carbon-preprocess-svelte": "^0.9.1",
     "execa": "^6.1.0",
     "ext2mime": "^2.0.0",
-    "go-ipfs": "^0.13.0",
+    "go-ipfs": "^0.13.1",
     "ipfs-http-client": "^57.0.3",
     "is-ipfs": "^6.0.2",
     "linkify-html": "^3.0.5",
@@ -50,7 +50,7 @@
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
     "semver": "^7.3.7",
-    "string-strip-html": "^9.1.12",
+    "string-strip-html": "^10.0.0",
     "svelte": "^3.48.0",
     "svelte-check": "^2.8.0",
     "svelte-inview": "^3.0.1",
@@ -63,7 +63,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.1",
+    "@tauri-apps/api": "^1.0.2",
     "sirv-cli": "^2.0.2"
   }
 }
