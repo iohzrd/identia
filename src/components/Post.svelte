@@ -11,6 +11,7 @@
   } from "carbon-components-svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import VideoPlayer from "svelte-video-player";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
@@ -201,12 +202,11 @@
         {/if}
         <Row>
           {#each media as mediaObj, idx (mediaObj.filename)}
-            <Column sm={4} md={4} lg={4}>
+            <Column sm={8} md={8} lg={4}>
               {#if mediaObj.mime}
                 {#if mediaObj.mime.includes("image")}
                   {#if mediaObj.thumbnailFor}
                     <div
-                      class="thumbnail"
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj.filename, idx)}
                     >
@@ -214,38 +214,39 @@
                     </div>
 
                     <!-- <img
-                      class="thumbnail"
-                      src={mediaObj.url}
                       alt=""
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj, idx)}
+                      src={mediaObj.url}
                     /> -->
                   {:else}
                     <img
-                      class="thumbnail"
-                      src={mediaObj.url}
                       alt=""
                       bind:this={mediaObj.element}
                       on:click={() => openMediaModal(idx)}
+                      src={mediaObj.url}
                     />
                   {/if}
                 {:else if mediaObj.mime.includes("audio")}
                   <audio
-                    class="thumbnail"
-                    src={mediaObj.url}
-                    height="300"
-                    controls
                     bind:this={mediaObj.element}
+                    controls
+                    src={mediaObj.url}
                   />
                 {:else if mediaObj.mime.includes("video")}
-                  <video
-                    src={mediaObj.url}
-                    height="300"
-                    controls
+                  <VideoPlayer
+                    color="#0f62fe"
+                    source={mediaObj.url}
                     bind:this={mediaObj.element}
+                  />
+
+                  <!-- <video
+                    bind:this={mediaObj.element}
+                    controls
+                    src={mediaObj.url}
                   >
                     <track kind="captions" />
-                  </video>
+                  </video> -->
                 {:else if mediaObj.mime.includes("pdf")}
                   <Button
                     download={mediaObj.filename}
@@ -268,9 +269,16 @@
 {/if}
 
 <style>
-  .thumbnail {
-    width: auto;
-    height: 200px;
-    object-fit: cover;
+  img {
+    height: auto;
+    width: 100%;
+    object-fit: contain;
   }
+
+  /* video {
+    height: auto;
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+  } */
 </style>

@@ -238,6 +238,7 @@ fn initialize_ipfs() {
 
 fn main() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_window_state::Builder::default().build())
     .system_tray(
       SystemTray::new()
         .with_menu(SystemTrayMenu::new().add_item(CustomMenuItem::new("exit_app", "Quit"))),
