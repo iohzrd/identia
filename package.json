@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -44,7 +44,7 @@
     "linkify-html": "^3.0.5",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.5",
-    "rollup": "^2.75.7",
+    "rollup": "^2.76.0",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-svelte": "^7.1.0",

@@ -1,6 +1,6 @@
 [package]
 name = "identia"
-version = "0.4.14"
+version = "0.4.15"
 description = "Decentralized, censorship resistant social media on IPFS"
 authors = [ "iohzrd" ]
 license = "AGPL-3.0"
