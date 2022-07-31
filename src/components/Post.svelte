@@ -11,7 +11,6 @@
   } from "carbon-components-svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
-  import VideoPlayer from "svelte-video-player";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
@@ -193,7 +192,7 @@
     </div>
     <br />
     {#if post.body || post.files}
-      <Grid fullWidth>
+      <div>
         {#if post.body}
           <div>
             {@html bodyHTML}
@@ -234,19 +233,13 @@
                     src={mediaObj.url}
                   />
                 {:else if mediaObj.mime.includes("video")}
-                  <VideoPlayer
-                    color="#0f62fe"
-                    source={mediaObj.url}
-                    bind:this={mediaObj.element}
-                  />
-
-                  <!-- <video
+                  <video
                     bind:this={mediaObj.element}
                     controls
                     src={mediaObj.url}
                   >
                     <track kind="captions" />
-                  </video> -->
+                  </video>
                 {:else if mediaObj.mime.includes("pdf")}
                   <Button
                     download={mediaObj.filename}
@@ -263,22 +256,21 @@
             </Column>
           {/each}
         </Row>
-      </Grid>
+      </div>
     {/if}
   </Tile>
 {/if}
 
 <style>
   img {
+    height: 150px;
+    width: 150px;
+    object-fit: cover;
+  }
+
+  video {
     height: auto;
     width: 100%;
     object-fit: contain;
   }
-
-  /* video {
-    height: auto;
-    width: 100%;
-    max-height: 400px;
-    object-fit: contain;
-  } */
 </style>
