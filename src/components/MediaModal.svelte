@@ -11,10 +11,6 @@
     typeof Array.isArray(media_modal_media) && media_modal_media.length > 0
       ? media_modal_media[media_modal_idx].filename
       : "";
-
-  const options = {
-    start: media_modal_idx,
-  };
 </script>
 
 <Modal
@@ -26,7 +22,10 @@
   size="lg"
 >
   {#if media_modal_open}
-    <Splide {options} on:move={(e) => (media_modal_idx = e.detail.index)}>
+    <Splide
+      options={{ start: media_modal_idx }}
+      on:move={(e) => (media_modal_idx = e.detail.index)}
+    >
       {#each media_modal_media as mediaObj (mediaObj.filename)}
         <SplideSlide>
           {#if mediaObj.mime && mediaObj.mime.includes("image")}
