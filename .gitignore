@@ -1,5 +1,6 @@
 /node_modules/
 /public/build/
 
-.DS_Store
 *.db
+.DS_Store
+.vscode
