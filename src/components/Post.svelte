@@ -14,7 +14,7 @@
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
-  import { Buffer } from "buffer/index";
+  import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "../core";
   import { format as formatTime } from "timeago.js";
   import { homeDir, join } from "@tauri-apps/api/path";
@@ -79,7 +79,7 @@
     for await (const buf of ipfs.cat(path)) {
       bufs.push(buf);
     }
-    return Buffer.concat(bufs);
+    return concat(bufs);
   }
 
   async function getMediaBlob(filename) {

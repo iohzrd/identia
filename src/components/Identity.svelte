@@ -13,8 +13,9 @@
   import PostComponent from "./Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Identity, Post } from "../types";
-  import { onMount, onDestroy } from "svelte";
+  import { format as formatTime } from "timeago.js";
   import { getIdentity, ipfs, select, updateIdentity } from "../core";
+  import { onMount, onDestroy } from "svelte";
 
   export let params = {};
 
@@ -22,6 +23,9 @@
   let ipfs_id: string;
 
   let identity: Identity;
+  $: timeago = formatTime(identity ? identity["timestamp"] : 0);
+  $: datetime = new Date(identity ? identity["timestamp"] : 0).toLocaleString();
+
   let posts: Post[] = [];
   let posts_oldest_ts: number = new Date().getTime();
   let posts_limit: number = 5;
@@ -146,8 +150,8 @@
       <ClickableTile on:click={getPostsPage}>Load more posts</ClickableTile>
     </FormGroup>
 
-    <FormGroup legendText="timestamp">
-      {identity["timestamp"]}
+    <FormGroup legendText="Last published">
+      {timeago} ({datetime})
     </FormGroup>
 
     <FormGroup legendText="last known cid">

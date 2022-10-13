@@ -2,12 +2,13 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run build",
-    "devPath": "../public",
-    "distDir": "../public"
+    "devPath": "../dist",
+    "distDir": "../dist",
+    "withGlobalTauri": false
   },
   "package": {
     "productName": "identia",
-    "version": "0.4.18"
+    "version": "0.4.20"
   },
   "tauri": {
     "allowlist": {
@@ -20,9 +21,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [
-        "../node_modules/go-ipfs/go-ipfs/ipfs"
-      ],
+      "externalBin": ["../node_modules/go-ipfs/go-ipfs/ipfs"],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

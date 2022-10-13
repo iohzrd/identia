@@ -1,5 +1,5 @@
 // const execa = require("execa");
-const fs = require("fs");
+import fs from "fs";
 
 let extension = "";
 if (process.platform === "win32") {

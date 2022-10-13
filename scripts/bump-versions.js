@@ -1,6 +1,6 @@
-const TOML = require("@ltd/j-toml");
-const fs = require("fs");
-const semver = require("semver");
+import TOML from "@ltd/j-toml";
+import fs from "fs";
+import semver from "semver";
 
 async function main() {
   let p_path = "package.json";
