@@ -1,4 +1,5 @@
 import Database from "tauri-plugin-sql-api";
+import all from "it-all";
 import type { AddResult } from "ipfs-core-types/src/root";
 import type { IPFSHTTPClient } from "ipfs-http-client";
 import type { Identity, Post } from "./types";
@@ -6,6 +7,7 @@ import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
 import { concat } from "uint8arrays/concat";
 import { create } from "ipfs-http-client";
+import { toString } from "uint8arrays/to-string";
 
 let db = null;
 const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {
@@ -77,14 +79,9 @@ export async function getIdentityFromIPFS(
   if (!cid.includes("/identity.json")) {
     path = cid + "/identity.json";
   }
-  const bufs = [];
-  for await (const buf of ipfs.cat(path)) {
-    bufs.push(buf);
-  }
-  const buf = concat(bufs);
   return {
     cid: cid,
-    ...JSON.parse(buf.toString()),
+    ...JSON.parse(toString(concat(await all(ipfs.cat(path))))),
   };
 }
 
@@ -113,14 +110,9 @@ export async function getPostFromIPFS(cid: string): Promise<Post> {
     path = cid + "/post.json";
   }
   await ipfs.pin.add(cid);
-  const bufs = [];
-  for await (const buf of ipfs.cat(path)) {
-    bufs.push(buf);
-  }
-  const buf = concat(bufs);
   return {
     cid: cid,
-    ...JSON.parse(buf.toString()),
+    ...JSON.parse(toString(concat(await all(ipfs.cat(path))))),
   };
 }
 

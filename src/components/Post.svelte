@@ -11,6 +11,7 @@
   } from "carbon-components-svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import all from "it-all";
   import ext2mime from "ext2mime";
   import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
@@ -75,11 +76,7 @@
   async function getMediaBinary(filename) {
     console.log("getMediaBinary");
     let path: string = post.cid + "/" + filename;
-    const bufs = [];
-    for await (const buf of ipfs.cat(path)) {
-      bufs.push(buf);
-    }
-    return concat(bufs);
+    return concat(await all(ipfs.cat(path)));
   }
 
   async function getMediaBlob(filename) {
@@ -208,6 +205,7 @@
                     <div
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj.filename, idx)}
+                      on:keypress
                     >
                       <PlayFilled size={32} />
                     </div>
@@ -223,6 +221,7 @@
                       alt=""
                       bind:this={mediaObj.element}
                       on:click={() => openMediaModal(idx)}
+                      on:keypress
                       src={mediaObj.url}
                     />
                   {/if}
