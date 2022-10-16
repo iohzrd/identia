@@ -125,6 +125,8 @@ export async function deletePost(cid: string) {
     console.log(identity_response);
     const update_result = await updateIdentityDB(identity_response);
     console.log(update_result);
+  }
+  if (postInDB(cid)) {
     const delete_result = await deletePostFromDB(cid);
     console.log(delete_result);
   }
