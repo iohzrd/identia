@@ -67,6 +67,9 @@
 
   async function post() {
     posting = true;
+    if (body === "" && files.length === 1) {
+      body = files[0].split(".").slice(0, -1).toString().split("/").pop();
+    }
     let postRequest: PostRequest = {
       body: stripHtml(body).result,
       files: files,
