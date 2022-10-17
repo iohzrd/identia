@@ -5,9 +5,8 @@ import type { IPFSHTTPClient } from "ipfs-http-client";
 import type { Identity, Post } from "./types";
 import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import { concat } from "uint8arrays/concat";
+import { concat, toString } from "uint8arrays";
 import { create } from "ipfs-http-client";
-import { toString } from "uint8arrays/to-string";
 
 let db = null;
 const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {
