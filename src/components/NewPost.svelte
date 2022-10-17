@@ -23,7 +23,6 @@
   let files: string[] = [];
   let meta: object = {};
   let posting = false;
-  $: body = body === "" && files.length > 0 ? getFilename(files[0]) : body;
 
   function getFilename(path: string) {
     return path.split("/").pop();
@@ -42,6 +41,9 @@
   function handleFiles(paths: string[]) {
     paths = paths.map((path) => decodeURIComponent(path));
     files = arrayUnique([...files, ...paths]);
+    if (body === "" && files.length > 0) {
+      body = getFilename(files[0]);
+    }
   }
 
   function removeFile(i) {
@@ -56,17 +58,8 @@
       directory: false,
     });
     console.log("openDialog.then");
-    console.log(res);
-    const bufs = [];
     if (Array.isArray(res)) {
-      files = res;
-      // res.forEach(async (path) => {
-      //   console.log("path");
-      //   console.log(path);
-      //   const test = await readBinaryFile(path);
-      //   const buf = Buffer.from(test);
-      //   console.log(buf);
-      // });
+      handleFiles(res);
     }
   }
 

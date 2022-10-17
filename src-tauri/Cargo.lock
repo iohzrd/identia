@@ -3689,7 +3689,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-sql"
 version = "0.1.0"
-source = "git+https://github.com/iohzrd/tauri-plugin-sql?branch=dev#c304b9ef0c8eadf284e80238deb21cd96d1d6ea3"
+source = "git+https://github.com/iohzrd/tauri-plugin-sql?branch=dev#0d03c4b8d8c9439aa175fd94ab49f3dd1988afc8"
 dependencies = [
  "futures",
  "serde",
@@ -4326,9 +4326,9 @@ dependencies = [
 
 [[package]]
 name = "webkit2gtk"
-version = "0.18.1"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e35143128317257daa794f00be0f5545faedf778a10dab54ac4b06fd74a44f4"
+checksum = "b8f859735e4a452aeb28c6c56a852967a8a76c8eb1cc32dbf931ad28a13d6370"
 dependencies = [
  "bitflags",
  "cairo-rs",
