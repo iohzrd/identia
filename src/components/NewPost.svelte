@@ -23,6 +23,11 @@
   let files: string[] = [];
   let meta: object = {};
   let posting = false;
+  $: body = body === "" && files.length > 0 ? getFilename(files[0]) : body;
+
+  function getFilename(path: string) {
+    return path.split("/").pop();
+  }
 
   function arrayUnique(array) {
     let a = array.concat();
@@ -67,9 +72,6 @@
 
   async function post() {
     posting = true;
-    if (body === "" && files.length === 1) {
-      body = files[0].split(".").slice(0, -1).toString().split("/").pop();
-    }
     let postRequest: PostRequest = {
       body: stripHtml(body).result,
       files: files,

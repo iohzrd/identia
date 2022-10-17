@@ -13,7 +13,6 @@
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import all from "it-all";
   import ext2mime from "ext2mime";
-  import linkifyStr from "linkify-string";
   import type { Media, Post } from "../types";
   import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "../core";
@@ -36,9 +35,7 @@
   let timeago: string = formatTime(post.timestamp);
   let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
-  let bodyHTML = linkifyStr(stripHtml(post.body).result, {
-    target: "_blank",
-  }).replace(/\n/g, "<br>");
+  let bodyHTML = linkify(stripHtml(post.body).result);
 
   function openMediaModal(idx) {
     console.log("openMediaModal");
@@ -46,6 +43,17 @@
     media_modal_idx = idx;
     media_modal_media = media;
     media_modal_open = true;
+  }
+
+  function linkify(text) {
+    const urlPattern =
+      /(?:https?:)?\/\/(?:(?:[\w-]+\.)+[\w/#@~.-]*)(?:\?(?:[\w&=.!,;$#%-]+)?)?/gi;
+    return (text || "").replace(urlPattern, function (url) {
+      return `<a target="_blank" href="${url}">${url}</a>`.replace(
+        /\n/g,
+        "<br>"
+      );
+    });
   }
 
   async function getMedia(filename, isThumbnail = false) {

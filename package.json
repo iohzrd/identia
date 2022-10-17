@@ -43,7 +43,6 @@
     "ipfs-http-client": "^58.0.1",
     "is-ipfs": "^7.0.2",
     "it-all": "^1.0.6",
-    "linkify-string": "^4.0.2",
     "semver": "^7.3.8",
     "string-strip-html": "^11.6.14",
     "svelte": "^3.52.0",
