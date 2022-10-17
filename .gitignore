@@ -7,10 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Build and runtime artifacts
+*.db
+*.local
 dist
 dist-ssr
-*.local
+node_modules
+public/build
+src-tauri/WixTools
 
 # Editor directories and files
 .vscode/*
