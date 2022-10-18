@@ -102,6 +102,15 @@ export async function getPostFromDB(cid: string): Promise<Post> {
   return rows[0];
 }
 
+export async function getPostCidsFromDB(publisher: string): Promise<string[]> {
+  console.log("getPostsFromDB: ", publisher);
+  const rows: Post[] = await select(
+    "SELECT cid FROM posts WHERE publisher = ? ORDER BY timestamp DESC",
+    [publisher]
+  );
+  return rows.map((e) => e.cid);
+}
+
 export async function getPostFromIPFS(cid: string): Promise<Post> {
   console.log("getPostFromIPFS: ", cid);
   let path;
@@ -117,18 +126,14 @@ export async function getPostFromIPFS(cid: string): Promise<Post> {
 
 export async function deletePost(cid: string) {
   console.log("deletePost: ", cid);
+  const delete_result = await deletePostFromDB(cid);
+  console.log(delete_result);
   const identity: Identity = await getIdentityFromDB();
-  if (identity.posts.includes(cid)) {
-    identity.posts = identity.posts.filter((p) => p !== cid);
-    const identity_response = await publishIdentity(identity);
-    console.log(identity_response);
-    const update_result = await updateIdentityDB(identity_response);
-    console.log(update_result);
-  }
-  if (postInDB(cid)) {
-    const delete_result = await deletePostFromDB(cid);
-    console.log(delete_result);
-  }
+  identity.posts = await getPostCidsFromDB(identity.publisher);
+  const identity_response = await publishIdentity(identity);
+  console.log(identity_response);
+  const update_result = await updateIdentityDB(identity_response);
+  console.log(update_result);
 }
 
 export async function insertPostDB(post: Post): Promise<QueryResult> {
