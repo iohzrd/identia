@@ -27,6 +27,7 @@
   export let media_modal_media: Media[];
   export let media_modal_open: boolean;
 
+  export let deletePostFromFeedByCid: Function;
   export let ipfs_id: string;
   export let post: Post;
 
@@ -54,6 +55,11 @@
         "<br>"
       );
     });
+  }
+
+  async function onDelete(cid) {
+    await deletePost(cid);
+    deletePostFromFeedByCid(cid);
   }
 
   async function getMedia(filename, isThumbnail = false) {
@@ -182,7 +188,7 @@
           <OverflowMenuItem
             text="Delete post"
             on:click={() => {
-              deletePost(post.cid);
+              onDelete(post.cid);
             }}
           />
         {:else}

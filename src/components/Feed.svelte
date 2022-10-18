@@ -39,6 +39,11 @@
     feed = [post, ...feed];
   }
 
+  function deletePostFromFeedByCid(cid: string) {
+    console.log("deletePostFromFeedByCid: ", cid);
+    feed = feed.filter((post) => post.cid != cid);
+  }
+
   async function getFeed() {
     console.log("getFeed: ", new_posts_query);
     await updateFeed();
@@ -69,6 +74,7 @@
 <!-- keyed each block required for reactivity... -->
 {#each feed as post (post.cid)}
   <PostComponent
+    {deletePostFromFeedByCid}
     {ipfs_id}
     {post}
     bind:media_modal_idx
