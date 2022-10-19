@@ -7,7 +7,7 @@
 )]
 
 // use chrono::{offset::Utc, DateTime};
-use feed_rs::parser;
+// use feed_rs::parser;
 use ipfs_api_backend_hyper::{request::Add, Form, IpfsApi, IpfsClient};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -17,7 +17,7 @@ use std::path::Path;
 use std::{fs, path::PathBuf};
 use std::{thread, time::Duration};
 use tauri;
-use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
+// use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 use tauri::api::path::config_dir;
 use tauri::api::process::Command;
 use tauri::Icon;
@@ -112,50 +112,50 @@ async fn post(request: PostRequest) -> PostResponse {
   }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ExternalIdentity {
-  url: String, // href
-  title: String,
-  description: String,
-  entries: Vec<ExternalEntry>, // authors: Vec<String>,
-                               // timestamp: i64
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// struct ExternalIdentity {
+//   url: String, // href
+//   title: String,
+//   description: String,
+//   entries: Vec<ExternalEntry>, // authors: Vec<String>,
+//                                // timestamp: i64
+// }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ExternalEntry {
-  id: String,
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// struct ExternalEntry {
+//   id: String,
+// }
 
-#[tauri::command]
-async fn fetch_external(url: String) -> ExternalIdentity {
-  println!("fetch_external");
-  let client = ClientBuilder::new().build().unwrap();
-  let response = client
-    .send(
-      HttpRequestBuilder::new("GET", url)
-        .unwrap()
-        .response_type(ResponseType::Text),
-    )
-    .await
-    .unwrap();
-  let data: &[u8] = &response.bytes().await.unwrap().data;
-  let feed = parser::parse(data).unwrap();
-  println!("{:#?}", feed);
-  let entries = feed
-    .entries
-    .iter()
-    .map(|entry| ExternalEntry {
-      id: entry.id.clone(),
-    })
-    .collect::<Vec<_>>();
+// #[tauri::command]
+// async fn fetch_external(url: String) -> ExternalIdentity {
+//   println!("fetch_external");
+//   let client = ClientBuilder::new().build().unwrap();
+//   let response = client
+//     .send(
+//       HttpRequestBuilder::new("GET", url)
+//         .unwrap()
+//         .response_type(ResponseType::Text),
+//     )
+//     .await
+//     .unwrap();
+//   let data: &[u8] = &response.bytes().await.unwrap().data;
+//   let feed = parser::parse(data).unwrap();
+//   println!("{:#?}", feed);
+//   let entries = feed
+//     .entries
+//     .iter()
+//     .map(|entry| ExternalEntry {
+//       id: entry.id.clone(),
+//     })
+//     .collect::<Vec<_>>();
 
-  ExternalIdentity {
-    url: feed.links[0].href.clone(),
-    title: feed.title.unwrap().content,
-    description: feed.description.unwrap().content,
-    entries: entries, // timestamp: chrono(feed.updated),
-  }
-}
+//   ExternalIdentity {
+//     url: feed.links[0].href.clone(),
+//     title: feed.title.unwrap().content,
+//     description: feed.description.unwrap().content,
+//     entries: entries, // timestamp: chrono(feed.updated),
+//   }
+// }
 
 fn identia_app_data_path() -> PathBuf {
   config_dir()
@@ -289,7 +289,8 @@ fn main() {
       },
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![post, fetch_external])
+    // .invoke_handler(tauri::generate_handler![post, fetch_external])
+    .invoke_handler(tauri::generate_handler![post])
     .setup(|_app| {
       initialize_ipfs();
       tauri::async_runtime::spawn(async move {

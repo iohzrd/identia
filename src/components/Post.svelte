@@ -2,10 +2,10 @@
   import {
     Button,
     Column,
-    Grid,
     Link,
     OverflowMenu,
     OverflowMenuItem,
+    ProgressBar,
     Row,
     Tile,
   } from "carbon-components-svelte";
@@ -27,10 +27,11 @@
   export let media_modal_media: Media[];
   export let media_modal_open: boolean;
 
-  export let deletePostFromFeedByCid: Function;
+  export let removePostFromFeed: Function;
   export let ipfs_id: string;
   export let post: Post;
 
+  let deleting: boolean = false;
   let timeout;
   let timeout_time = 1000;
   let timeago: string = formatTime(post.timestamp);
@@ -57,9 +58,10 @@
     });
   }
 
-  async function onDelete(cid) {
+  async function removePostFromDbAndFeed(cid) {
+    deleting = true;
     await deletePost(cid);
-    deletePostFromFeedByCid(cid);
+    removePostFromFeed(cid);
   }
 
   async function getMedia(filename, isThumbnail = false) {
@@ -178,28 +180,32 @@
 {#if post}
   <Tile style="outline: 2px solid black">
     <div>
-      <Link href="#/identity/{post.publisher}">
-        {post.display_name || post.publisher}
-      </Link>
-      - {timeago} ({datetime})
+      {#if deleting}
+        <ProgressBar helperText="Deleting..." />
+      {:else}
+        <Link href="#/identity/{post.publisher}">
+          {post.display_name || post.publisher}
+        </Link>
+        - {timeago} ({datetime})
 
-      <OverflowMenu flipped style="float:right;">
-        {#if post.publisher === ipfs_id}
-          <OverflowMenuItem
-            text="Delete post"
-            on:click={() => {
-              onDelete(post.cid);
-            }}
-          />
-        {:else}
-          <OverflowMenuItem
-            text="Unfollow publisher"
-            on:click={() => {
-              unfollowPublisher(post.publisher);
-            }}
-          />
-        {/if}
-      </OverflowMenu>
+        <OverflowMenu flipped style="float:right;">
+          {#if post.publisher === ipfs_id}
+            <OverflowMenuItem
+              text="Delete post"
+              on:click={() => {
+                removePostFromDbAndFeed(post.cid);
+              }}
+            />
+          {:else}
+            <OverflowMenuItem
+              text="Unfollow publisher"
+              on:click={() => {
+                unfollowPublisher(post.publisher);
+              }}
+            />
+          {/if}
+        </OverflowMenu>
+      {/if}
     </div>
     <br />
     {#if post.body || post.files}

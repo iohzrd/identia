@@ -15,7 +15,7 @@
   import { open } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
 
-  export let onPost: Function;
+  export let insertPostIntoFeed: Function;
 
   let identity: Identity;
 
@@ -84,7 +84,7 @@
         publisher: identity.publisher,
       };
       await addPost(post);
-      onPost(post);
+      insertPostIntoFeed(post);
       body = "";
       files = [];
       meta = {};

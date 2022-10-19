@@ -148,7 +148,8 @@ export async function addPost(post: Post) {
   console.log("addPost: ", post);
   await insertPostDB(post);
   const db_identity: Identity = await getIdentityFromDB();
-  db_identity.posts.unshift(post.cid);
+  // db_identity.posts.unshift(post.cid);
+  db_identity.posts = await getPostCidsFromDB(db_identity.publisher);
   const identity_response = await publishIdentity(db_identity);
   console.log(identity_response);
   const update_result = await updateIdentityDB(identity_response);

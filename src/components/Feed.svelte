@@ -34,13 +34,13 @@
     }
   }
 
-  function onPost(post: Post) {
-    console.log("onPost: ", post);
+  function insertPostIntoFeed(post: Post) {
+    console.log("insertPostIntoFeed: ", post);
     feed = [post, ...feed];
   }
 
-  function deletePostFromFeedByCid(cid: string) {
-    console.log("deletePostFromFeedByCid: ", cid);
+  function removePostFromFeed(cid: string) {
+    console.log("removePostFromFeed: ", cid);
     feed = feed.filter((post) => post.cid != cid);
   }
 
@@ -69,12 +69,12 @@
   });
 </script>
 
-<NewPostComponent {onPost} />
+<NewPostComponent {insertPostIntoFeed} />
 
 <!-- keyed each block required for reactivity... -->
 {#each feed as post (post.cid)}
   <PostComponent
-    {deletePostFromFeedByCid}
+    {removePostFromFeed}
     {ipfs_id}
     {post}
     bind:media_modal_idx
