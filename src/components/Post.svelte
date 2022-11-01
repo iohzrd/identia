@@ -37,7 +37,7 @@
   let timeago: string = formatTime(post.timestamp);
   let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
-  let bodyHTML = linkify(stripHtml(post.body).result);
+  let bodyHTML = linkify(stripHtml(post.body).result).replace(/\n/g, "<br>");
 
   function openMediaModal(idx) {
     console.log("openMediaModal");
@@ -51,10 +51,7 @@
     const urlPattern =
       /(?:https?:)?\/\/(?:(?:[\w-]+\.)+[\w/#@~.-]*)(?:\?(?:[\w&=.!,;$#%-]+)?)?/gi;
     return (text || "").replace(urlPattern, function (url) {
-      return `<a target="_blank" href="${url}">${url}</a>`.replace(
-        /\n/g,
-        "<br>"
-      );
+      return `<a target="_blank" href="${url}">${url}</a>`;
     });
   }
 
