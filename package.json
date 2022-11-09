@@ -24,13 +24,13 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.1.0"
+    "@tauri-apps/api": "^1.2.0"
   },
   "devDependencies": {
     "@ltd/j-toml": "^1.35.2",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/vite-plugin-svelte": "^1.1.0",
-    "@tauri-apps/cli": "^1.1.1",
+    "@tauri-apps/cli": "^1.2.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/node": "^18.11.9",
     "carbon-components-svelte": "^0.70.12",

@@ -175,7 +175,7 @@ fn initialize_ipfs() {
     "Initializing IPFS: {:?}",
     identia_app_data_path().into_os_string().to_str().unwrap()
   );
-  let cmd = Command::new_sidecar("ipfs")
+  let mut output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "init",
@@ -184,9 +184,8 @@ fn initialize_ipfs() {
     ])
     .output()
     .unwrap();
-  format!("IPFS init: {:?}", cmd);
-  println!("configuring IPFS");
-  Command::new_sidecar("ipfs")
+  format!("IPFS init: {:?}", output);
+  output =  Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "--repo-dir",
@@ -194,11 +193,10 @@ fn initialize_ipfs() {
       "config",
       "--json",
       "API.HTTPHeaders.Access-Control-Allow-Origin",
-      r#"["http://127.0.0.1:5001","tauri://localhost","https://tauri.localhost"]"#,
-    ])
-    .output()
-    .unwrap();
-  Command::new_sidecar("ipfs")
+      r#"["http://localhost:1420","http://127.0.0.1:1430","http://127.0.0.1:5001","tauri://localhost","https://tauri.localhost"]"#,
+    ]).output().unwrap();
+  println!("configuring Access-Control-Allow-Origin: {:?}", output);
+  output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "--repo-dir",
@@ -210,7 +208,8 @@ fn initialize_ipfs() {
     ])
     .output()
     .unwrap();
-  Command::new_sidecar("ipfs")
+  println!("configuring Access-Control-Allow-Methods: {:?}", output);
+  output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "--repo-dir",
@@ -218,11 +217,12 @@ fn initialize_ipfs() {
       "config",
       "--json",
       "Addresses.Gateway",
-      "/ip4/127.0.0.1/tcp/8080",
+      r#""/ip4/127.0.0.1/tcp/8080""#,
     ])
     .output()
     .unwrap();
-  Command::new_sidecar("ipfs")
+  println!("configuring Addresses.Gateway: {:?}", output);
+  output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
       "--repo-dir",
@@ -230,10 +230,20 @@ fn initialize_ipfs() {
       "config",
       "--json",
       "Datastore.StorageMax",
-      "1000GB",
+      r#""1000GB""#,
     ])
     .output()
     .unwrap();
+  println!("configuring StorageMax: {:?}", output);
+}
+
+async fn shutdown_ipfs() {
+  println!("shutting down IPFS");
+  let ipfs_client = IpfsClient::default();
+  match ipfs_client.shutdown().await {
+    Ok(ret) => println!("IPFS successfully terminated: {:?}", ret),
+    Err(e) => eprintln!("IPFS exited with: {:#?}", e),
+  };
 }
 
 fn main() {
@@ -256,15 +266,7 @@ fn main() {
       SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
         "exit_app" => {
           tauri::async_runtime::block_on(async move {
-            println!("shutting down IPFS");
-            let ipfs_client = IpfsClient::default();
-            match ipfs_client.shutdown().await {
-              Ok(ret) => {
-                println!("IPFS successfully terminated: {:?}", ret);
-                app.exit(0)
-              }
-              Err(e) => eprintln!("IPFS exited with: {:#?}", e),
-            };
+            shutdown_ipfs().await;
           });
         }
         #[cfg(target_os = "linux")]

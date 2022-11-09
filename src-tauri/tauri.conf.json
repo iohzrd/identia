@@ -1,8 +1,8 @@
 {
   "build": {
     "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run build",
-    "devPath": "../dist",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
   },
@@ -12,7 +12,21 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "dialog": {
+        "all": true
+      },
+      "fs": {
+        "all": true
+      },
+      "http": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "sidecar": true
+      }
     },
     "bundle": {
       "active": true,
@@ -21,9 +35,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [
-        "../node_modules/go-ipfs/go-ipfs/ipfs"
-      ],
+      "externalBin": ["../node_modules/go-ipfs/go-ipfs/ipfs"],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
