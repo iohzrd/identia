@@ -27,6 +27,7 @@
   $: datetime = new Date(identity ? identity["timestamp"] : 0).toLocaleString();
 
   let posts: Post[] = [];
+  let following: Identity[] = [];
   let posts_oldest_ts: number = new Date().getTime();
   let posts_limit: number = 5;
   $: publisher = params["publisher"];
@@ -58,6 +59,11 @@
     ipfs_id = ipfs_info.id.toString();
     if (params["publisher"]) {
       identity = await getIdentity(publisher);
+      following = await Promise.all(
+        identity.following.map(async (publisher) => {
+          return await getIdentity(publisher);
+        })
+      );
     }
     await getPostsPage();
   });
@@ -115,10 +121,20 @@
     </FormGroup>
 
     <FormGroup legendText="following">
-      {#if identity && identity.following}
+      {#if following}
+        {#each following as identity}
+          <div>
+            <Link href="#/identity/{identity.publisher}">
+              {identity.display_name || identity.publisher}
+            </Link>
+          </div>
+        {/each}
+      {:else if identity && identity.following}
         {#each identity.following as id}
           <div>
-            <Link href="#/identity/{id}">{id}</Link>
+            <Link href="#/identity/{id}">
+              {id}
+            </Link>
           </div>
         {/each}
       {/if}
