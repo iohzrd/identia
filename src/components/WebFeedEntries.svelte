@@ -26,7 +26,9 @@
   let timeago: string = formatTime(entry.timestamp);
   let datetime: string = new Date(entry.timestamp).toLocaleString();
 
-  let repost;
+  function repost() {
+    console.log("repost not yet implemented");
+  }
 
   function newTimeout() {
     timeago = formatTime(entry.timestamp);
