@@ -9,7 +9,7 @@ export interface Comment {
 }
 
 export interface Feed {
-  feed: Post[];
+  feed: (Post | WebFeedEntry)[];
 }
 
 export interface Identity {
@@ -52,4 +52,42 @@ export interface PostRequest {
 export interface PostResponse {
   cid: string;
   files: string[];
+}
+
+export interface WebFeed {
+  body: string;
+  entries: WebFeedEntry[];
+  id: string;
+  title: string;
+  url: string;
+  timestamp: number;
+}
+
+export interface WebFeedEntry {
+  // custom
+  cid: string;
+  description: string;
+  publisher: string;
+  publisher_url: string;
+  timestamp: number;
+  // from feed-rs
+  authors: WebFeedPerson[];
+  categories: string[];
+  content: string;
+  contributors: WebFeedPerson[];
+  id: string;
+  links: string[];
+  // media: TODO
+  published: string | null;
+  rights: string | null;
+  source: string | null;
+  summary: string;
+  title: string | null;
+  updated: string | null;
+}
+
+export interface WebFeedPerson {
+  name: string;
+  uri: string | null;
+  email: string | null;
 }

@@ -2,10 +2,10 @@
   import MediaModalComponent from "./MediaModal.svelte";
   import NewPostComponent from "./NewPost.svelte";
   import PostComponent from "./Post.svelte";
-  import { getPostFromDB, ipfs, select, updateFeed } from "../core";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Post } from "../types";
   import { inview } from "svelte-inview/dist/";
+  import { ipfs, select, updateFeed } from "../core";
   import { onMount, onDestroy } from "svelte";
 
   let ipfs_info: IDResult;

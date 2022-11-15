@@ -13,6 +13,7 @@
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import all from "it-all";
   import ext2mime from "ext2mime";
+  import linkifyHtml from "linkify-html";
   import type { Media, Post } from "../types";
   import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "../core";
@@ -22,6 +23,9 @@
   import { save } from "@tauri-apps/api/dialog";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
+
+  // import getVideoId from "get-video-id";
+  // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
 
   export let media_modal_idx: number;
   export let media_modal_media: Media[];
@@ -37,7 +41,45 @@
   let timeago: string = formatTime(post.timestamp);
   let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
-  let bodyHTML = linkify(stripHtml(post.body).result).replace(/\n/g, "<br>");
+
+  let stripOpts = {
+    onlyStripTags: ["script", "style", "xml", "sandbox"],
+    stripTogetherWithTheirContents: ["script", "style", "xml", "sandbox"],
+  };
+  let bodyHTML = post.body;
+  bodyHTML = stripHtml(bodyHTML, stripOpts).result.replace(/\n/g, "<br>");
+  bodyHTML = linkifyHtml(bodyHTML, { target: "_blank" });
+
+  // let links = extractLinks(post.body);
+  // let video_ids = links
+  //   .map((link) => getVideoId(link))
+  //   .filter((link) => link.id);
+
+  // function extractLinks(str, lower = false) {
+  //   const regexp =
+  //     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?!&//=]*)/gi;
+  //   if (typeof str !== "string") {
+  //     return [];
+  //   }
+  //   if (str) {
+  //     let urls = str.match(regexp);
+  //     if (urls) {
+  //       return lower ? urls.map((item) => item.toLowerCase()) : urls;
+  //     } else {
+  //       return [];
+  //     }
+  //   } else {
+  //     return [];
+  //   }
+  // }
+
+  // function linkify(text) {
+  //   const urlPattern =
+  //     /(?:https?:)?\/\/(?:(?:[\w-]+\.)+[\w/#@~.-]*)(?:\?(?:[\w&=.!,;$#%-]+)?)?/gi;
+  //   return (text || "").replace(urlPattern, function (url) {
+  //     return `<a target="_blank" href="${url}">${url}</a>`;
+  //   });
+  // }
 
   function openMediaModal(idx) {
     console.log("openMediaModal");
@@ -45,14 +87,6 @@
     media_modal_idx = idx;
     media_modal_media = media;
     media_modal_open = true;
-  }
-
-  function linkify(text) {
-    const urlPattern =
-      /(?:https?:)?\/\/(?:(?:[\w-]+\.)+[\w/#@~.-]*)(?:\?(?:[\w&=.!,;$#%-]+)?)?/gi;
-    return (text || "").replace(urlPattern, function (url) {
-      return `<a target="_blank" href="${url}">${url}</a>`;
-    });
   }
 
   async function removePostFromDbAndFeed(cid) {
@@ -162,14 +196,15 @@
 
   onDestroy(() => {
     clearTimeout(timeout);
-    // this is required to avoid a memory leak...
-    media.forEach((mediaObj) => {
-      if (mediaObj.element && mediaObj.element.src) {
-        mediaObj.element.src = "";
-        mediaObj.element.removeAttribute("src");
-      }
-    });
-    media = media;
+    // // this is required to avoid a memory leak,
+    // // from posts which contain blob media...
+    // media.forEach((mediaObj) => {
+    //   if (mediaObj.element && mediaObj.element.src) {
+    //     mediaObj.element.src = "";
+    //     mediaObj.element.removeAttribute("src");
+    //   }
+    // });
+    // media = media;
     media = [];
   });
 </script>
@@ -177,31 +212,31 @@
 {#if post}
   <Tile style="outline: 2px solid black">
     <div>
+      <OverflowMenu flipped style="float:right;">
+        {#if post.publisher === ipfs_id}
+          <OverflowMenuItem
+            text="Delete post"
+            on:click={() => {
+              removePostFromDbAndFeed(post.cid);
+            }}
+          />
+        {:else}
+          <OverflowMenuItem
+            text="Unfollow publisher"
+            on:click={() => {
+              unfollowPublisher(post.publisher);
+            }}
+          />
+        {/if}
+      </OverflowMenu>
+
       {#if deleting}
         <ProgressBar helperText="Deleting..." />
       {:else}
-        <Link href="#/identity/{post.publisher}">
+        <Link size="lg" href="#/identity/{post.publisher}">
           {post.display_name || post.publisher}
         </Link>
         - {timeago} ({datetime})
-
-        <OverflowMenu flipped style="float:right;">
-          {#if post.publisher === ipfs_id}
-            <OverflowMenuItem
-              text="Delete post"
-              on:click={() => {
-                removePostFromDbAndFeed(post.cid);
-              }}
-            />
-          {:else}
-            <OverflowMenuItem
-              text="Unfollow publisher"
-              on:click={() => {
-                unfollowPublisher(post.publisher);
-              }}
-            />
-          {/if}
-        </OverflowMenu>
       {/if}
     </div>
     <br />
@@ -211,6 +246,19 @@
           <div>
             {@html bodyHTML}
           </div>
+          <!-- <div>
+            {#each video_ids as link, idx (link)}
+              <Player controls>
+                {#if link.service === "dailymotion"}
+                  <Dailymotion videoId={link.id} />
+                {:else if link.service === "vimeo"}
+                  <Vimeo videoId={link.id} />
+                {:else if link.service === "youtube"}
+                  <Youtube videoId={link.id} />
+                {/if}
+              </Player>
+            {/each}
+          </div> -->
           <br />
         {/if}
         <Row>

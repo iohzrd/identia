@@ -19,13 +19,12 @@
     TextInput,
   } from "carbon-components-svelte";
   import Add from "carbon-icons-svelte/lib/Add.svelte";
-  import ExternalComponent from "./components/External.svelte";
+  import WebFeedComponent from "./components/WebFeed.svelte";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
   import type { IDResult } from "ipfs-core-types/src/root";
   import { followPublisher, getIdentity, ipfs } from "./core";
-  // import { invoke } from "@tauri-apps/api";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
@@ -54,15 +53,15 @@
       path: "/identity/",
     },
     {
-      label: "External",
-      path: "/external/",
+      label: "Web Feed",
+      path: "/webfeed/",
     },
   ];
 
   const routes = {
     "/:publisher?": FeedComponent,
     "/identity/:publisher?": IdentityComponent,
-    "/external/:publisher?": ExternalComponent,
+    "/webfeed/:publisher?": WebFeedComponent,
     // "*": NotFound,
   };
 
@@ -86,11 +85,6 @@
     console.log(ipfs_info);
     await getIdentity(ipfs_info.id.toString());
     ipfs_id = ipfs_info.id.toString();
-    // let test = await invoke("fetch_external", {
-    //   url: "https://lukesmith.xyz/rss.xml",
-    // });
-    // console.log("fetch_external test");
-    // console.log(test);
   });
 
   onDestroy(() => {});

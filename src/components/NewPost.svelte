@@ -63,10 +63,14 @@
     }
   }
 
+  let stripOpts = {
+    onlyStripTags: ["script", "style", "xml"],
+    stripTogetherWithTheirContents: ["script", "style", "xml"],
+  };
   async function post() {
     posting = true;
     let postRequest: PostRequest = {
-      body: stripHtml(body).result,
+      body: stripHtml(body, stripOpts).result,
       files: files,
       meta: meta,
       timestamp: new Date().getTime(),

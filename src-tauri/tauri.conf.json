@@ -25,6 +25,7 @@
         "all": true
       },
       "shell": {
+        "open": true,
         "sidecar": true
       }
     },
@@ -35,9 +36,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [
-        "../node_modules/go-ipfs/go-ipfs/ipfs"
-      ],
+      "externalBin": ["../node_modules/go-ipfs/go-ipfs/ipfs"],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
