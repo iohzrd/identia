@@ -21,7 +21,8 @@
   );
   longestBody = stripHtml(longestBody, stripOpts).result;
   longestBody = linkifyHtml(longestBody, { target: "_blank" });
-  longestBody = longestBody.replaceAll(/[\n\r]+/g, "<br>");
+  longestBody = longestBody.replace(/\r\n?/g, "\n");
+  longestBody = longestBody.replace(/\n+/g, "<br>");
   let first_br = longestBody.indexOf("<br>");
 </script>
 
