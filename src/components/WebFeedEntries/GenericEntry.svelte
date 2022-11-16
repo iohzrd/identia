@@ -23,6 +23,7 @@
   longestBody = linkifyHtml(longestBody, { target: "_blank" });
   longestBody = longestBody.replace(/\r\n?/g, "\n");
   longestBody = longestBody.replace(/\n+/g, "<br>");
+  longestBody = longestBody.replaceAll("<br />", "<br>");
   let first_br = longestBody.indexOf("<br>");
 </script>
 
