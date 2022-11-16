@@ -13,14 +13,15 @@
     stripTogetherWithTheirContents: ["script", "style", "xml", "sandbox"],
   };
 
-  let possibleBodies = [entry.content, entry.description, entry.summary];
+  // let possibleBodies = [entry.content, entry.description, entry.summary];
+  let possibleBodies = [entry.content, entry.summary];
   let longestBody: string = possibleBodies.reduce(
     (savedText, text) => (text.length > savedText.length ? text : savedText),
     ""
   );
-  longestBody = longestBody.replace(/\n/g, "<br>").replace("<br />", "<br>");
   longestBody = stripHtml(longestBody, stripOpts).result;
   longestBody = linkifyHtml(longestBody, { target: "_blank" });
+  longestBody = longestBody.replaceAll(/[\n\r]+/g, "<br>");
   let first_br = longestBody.indexOf("<br>");
 </script>
 
