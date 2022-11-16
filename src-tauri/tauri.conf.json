@@ -19,7 +19,9 @@
         "all": true
       },
       "http": {
-        "all": true
+        "all": true,
+        "request": false,
+        "scope": ["http://**", "https://**"]
       },
       "path": {
         "all": true

@@ -62,7 +62,6 @@ export interface WebFeed {
   url: string;
   timestamp: number;
 }
-
 export interface WebFeedEntry {
   // custom
   cid: string;
@@ -77,13 +76,50 @@ export interface WebFeedEntry {
   contributors: WebFeedPerson[];
   id: string;
   links: string[];
-  // media: TODO
+  media: WebFeedMediaObject[];
   published: string | null;
   rights: string | null;
   source: string | null;
   summary: string;
   title: string | null;
   updated: string | null;
+}
+export interface WebFeedMediaCommunity {
+  stars_avg: number | null;
+  stars_count: number | null;
+  stars_max: number | null;
+  stars_min: number | null;
+  stats_favorites: number | null;
+  stats_views: number | null;
+}
+
+export interface WebFeedMediaCredit {
+  entity: string;
+}
+
+export interface WebFeedMediaContent {
+  url: string | null;
+  content_type: string | null;
+  height: number | null;
+  width: number | null;
+  duration: number | null;
+  size: number | null;
+  rating: string | null;
+}
+
+export interface WebFeedMediaObject {
+  title: string | null;
+  content: WebFeedMediaContent[];
+  duration: number | null;
+  thumbnails: WebFeedMediaThumbnail[];
+  texts: string[];
+  description: string | null;
+  community: WebFeedMediaCommunity | null;
+  credits: WebFeedMediaCredit[];
+}
+
+export interface WebFeedMediaThumbnail {
+  time: number | null;
 }
 
 export interface WebFeedPerson {

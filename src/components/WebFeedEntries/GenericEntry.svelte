@@ -1,35 +1,41 @@
 <script lang="ts">
+  import GenericMediaComponent from "./GenericMedia.svelte";
   import linkifyHtml from "linkify-html";
   import type { WebFeedEntry } from "../../types";
-  import { onMount, onDestroy } from "svelte";
+  import { ExpandableTile } from "carbon-components-svelte";
   import { stripHtml } from "string-strip-html";
 
   export let entry: WebFeedEntry;
-
   let deleting: boolean = false;
 
   let stripOpts = {
     onlyStripTags: ["script", "style", "xml", "sandbox"],
     stripTogetherWithTheirContents: ["script", "style", "xml", "sandbox"],
   };
-  let linkifyOpts = {
-    target: "_blank",
-  };
+
   let possibleBodies = [entry.content, entry.description, entry.summary];
-  let bodyHTML: string = possibleBodies.reduce(
+  let longestBody: string = possibleBodies.reduce(
     (savedText, text) => (text.length > savedText.length ? text : savedText),
     ""
   );
-  bodyHTML = bodyHTML.replace(/\n/g, "<br>");
-  bodyHTML = stripHtml(bodyHTML, stripOpts).result;
-  bodyHTML = linkifyHtml(bodyHTML, linkifyOpts);
-
-  onMount(async () => {});
-
-  onDestroy(() => {});
+  longestBody = longestBody.replace(/\n/g, "<br>").replace("<br />", "<br>");
+  longestBody = stripHtml(longestBody, stripOpts).result;
+  longestBody = linkifyHtml(longestBody, { target: "_blank" });
+  let first_br = longestBody.indexOf("<br>");
 </script>
 
 <div>
   <br />
-  {@html bodyHTML}
+  {#if entry.media.length > 0}
+    <GenericMediaComponent {entry} />
+  {/if}
+  <br />
+  <ExpandableTile tileExpandedLabel="Show less" tileCollapsedLabel="Show more">
+    <div slot="above">
+      {@html longestBody.slice(0, first_br)}
+    </div>
+    <div slot="below">
+      {@html longestBody.slice(first_br, longestBody.length)}
+    </div>
+  </ExpandableTile>
 </div>

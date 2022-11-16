@@ -29,7 +29,7 @@
   "devDependencies": {
     "@ltd/j-toml": "^1.35.2",
     "@splidejs/svelte-splide": "^0.2.9",
-    "@sveltejs/vite-plugin-svelte": "^1.1.1",
+    "@sveltejs/vite-plugin-svelte": "^1.2.0",
     "@tauri-apps/cli": "^1.2.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/node": "^18.11.9",
@@ -56,8 +56,8 @@
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#release",
     "timeago.js": "^4.0.2",
     "tslib": "^2.4.1",
-    "typescript": "^4.8.4",
+    "typescript": "^4.9.3",
     "uint8arrays": "^4.0.2",
-    "vite": "^3.2.3"
+    "vite": "^3.2.4"
   }
 }

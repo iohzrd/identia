@@ -32,6 +32,3 @@
     {@html description}
   </div>
 </ExpandableTile>
-
-<style>
-</style>
