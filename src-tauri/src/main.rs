@@ -6,6 +6,9 @@
   windows_subsystem = "windows"
 )]
 
+mod ipfs;
+mod webfeed;
+use ipfs::{post, repost_webfeed};
 use ipfs_api_backend_hyper::{IpfsApi, IpfsClient};
 use std::env;
 use std::{fs, path::PathBuf};
@@ -16,12 +19,7 @@ use tauri::api::process::Command;
 use tauri::Icon;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
-
-mod ipfs;
-use ipfs::post;
-
-mod webfeed;
-use webfeed::fetch_external;
+use webfeed::fetch_webfeed;
 
 fn identia_app_data_path() -> PathBuf {
   config_dir()
@@ -157,7 +155,11 @@ fn main() {
       },
       _ => {}
     })
-    .invoke_handler(tauri::generate_handler![post, fetch_external])
+    .invoke_handler(tauri::generate_handler![
+      fetch_webfeed,
+      post,
+      repost_webfeed
+    ])
     .setup(|_app| {
       initialize_ipfs();
       tauri::async_runtime::spawn(async move {

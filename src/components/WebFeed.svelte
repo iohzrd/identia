@@ -38,7 +38,7 @@
     ];
 
     test_urls.forEach(async (url) => {
-      const ret: WebFeed = await invoke("fetch_external", {
+      const ret: WebFeed = await invoke("fetch_webfeed", {
         url: url,
       });
       console.log(ret);

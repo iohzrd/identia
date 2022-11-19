@@ -6,6 +6,7 @@
   windows_subsystem = "windows"
 )]
 
+use crate::webfeed::FilteredEntry;
 use ipfs_api_backend_hyper::{request::Add, Form, IpfsApi, IpfsClient};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -100,4 +101,10 @@ pub async fn post(request: PostRequest) -> PostResponse {
     cid: cid,
     files: res_file_names,
   }
+}
+
+#[tauri::command]
+pub async fn repost_webfeed(entry: FilteredEntry) {
+  println!("repost_webfeed");
+  println!("{:?}", entry);
 }

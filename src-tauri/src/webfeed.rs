@@ -332,8 +332,8 @@ impl From<Person> for FilteredPerson {
 }
 
 #[tauri::command]
-pub async fn fetch_external(url: String) -> WebFeed {
-  println!("fetch_external");
+pub async fn fetch_webfeed(url: String) -> WebFeed {
+  println!("fetch_webfeed");
   let client = ClientBuilder::new().build().unwrap();
   let response = client
     .send(

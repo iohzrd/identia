@@ -10,6 +10,7 @@
   import OdyseeEntryComponent from "./WebFeedEntries/OdyseeEntry.svelte";
   import YoutubeEntryComponent from "./WebFeedEntries/YoutubeEntry.svelte";
   import type { WebFeedEntry } from "../types";
+  import { invoke } from "@tauri-apps/api/tauri";
   import { onMount, onDestroy } from "svelte";
 
   export let entry: WebFeedEntry;
@@ -17,8 +18,10 @@
 
   let deleting: boolean = false;
 
-  function repost(entry: any) {
-    console.log("WebFeed repost not yet implemented");
+  async function repost(entry: WebFeedEntry) {
+    await invoke("repost_webfeed", {
+      entry: entry,
+    });
   }
 
   onMount(async () => {});
