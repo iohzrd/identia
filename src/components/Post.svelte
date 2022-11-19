@@ -11,13 +11,13 @@
   } from "carbon-components-svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import TimeagoComponent from "./Timeago.svelte";
   import all from "it-all";
   import ext2mime from "ext2mime";
   import linkifyHtml from "linkify-html";
   import type { Media, Post } from "../types";
   import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "../core";
-  import { format as formatTime } from "timeago.js";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
   import { save } from "@tauri-apps/api/dialog";
@@ -36,10 +36,6 @@
   export let post: Post;
 
   let deleting: boolean = false;
-  let timeout;
-  let timeout_time = 1000;
-  let timeago: string = formatTime(post.timestamp);
-  let datetime: string = new Date(post.timestamp).toLocaleString();
   let media = [];
 
   let stripOpts = {
@@ -162,25 +158,7 @@
     media = media;
   }
 
-  function newTimeout() {
-    timeago = formatTime(post.timestamp);
-    let delta = new Date().getTime() - post.timestamp;
-    if (delta < 60 * 1000) {
-      // less than a minue, update once a second
-      timeout_time = 1000;
-    } else if (delta < 60 * 60 * 1000) {
-      // less than an hour, update once a minute
-      timeout_time = 60 * 1000;
-    } else {
-      // update once an hour
-      timeout_time = 60 * 60 * 1000;
-    }
-    timeout = setTimeout(newTimeout, timeout_time);
-  }
-
   onMount(async () => {
-    timeout = setTimeout(newTimeout, timeout_time);
-
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
       console.log("isVideo");
@@ -195,7 +173,6 @@
   });
 
   onDestroy(() => {
-    clearTimeout(timeout);
     // // this is required to avoid a memory leak,
     // // from posts which contain blob media...
     // media.forEach((mediaObj) => {
@@ -212,32 +189,33 @@
 {#if post}
   <Tile style="outline: 2px solid black">
     <div>
-      <OverflowMenu flipped style="float:right;">
-        {#if post.publisher === ipfs_id}
-          <OverflowMenuItem
-            text="Delete post"
-            on:click={() => {
-              removePostFromDbAndFeed(post.cid);
-            }}
-          />
-        {:else}
-          <OverflowMenuItem
-            text="Unfollow publisher"
-            on:click={() => {
-              unfollowPublisher(post.publisher);
-            }}
-          />
-        {/if}
-      </OverflowMenu>
-
       {#if deleting}
         <ProgressBar helperText="Deleting..." />
       {:else}
-        <Link size="lg" href="#/identity/{post.publisher}">
-          {post.display_name || post.publisher}
-        </Link>
-        - {timeago} ({datetime})
+        <OverflowMenu flipped style="float:right;">
+          {#if post.publisher === ipfs_id}
+            <OverflowMenuItem
+              text="Delete post"
+              on:click={() => {
+                removePostFromDbAndFeed(post.cid);
+              }}
+            />
+          {:else}
+            <OverflowMenuItem
+              text="Unfollow publisher"
+              on:click={() => {
+                unfollowPublisher(post.publisher);
+              }}
+            />
+          {/if}
+        </OverflowMenu>
       {/if}
+
+      <Link size="lg" href="#/identity/{post.publisher}">
+        {post.display_name || post.publisher}
+      </Link>
+      -
+      <TimeagoComponent timestamp={post.timestamp} />
     </div>
     <br />
     {#if post.body || post.files}

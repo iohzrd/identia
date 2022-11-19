@@ -65,9 +65,9 @@ export interface WebFeed {
 export interface WebFeedEntry {
   // custom
   cid: string;
-  description: string;
+  display_name: string;
   publisher: string;
-  publisher_url: string;
+  publisher_links: string[];
   timestamp: number;
   // from feed-rs
   authors: WebFeedPerson[];

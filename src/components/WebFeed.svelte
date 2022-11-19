@@ -8,6 +8,9 @@
   import { ipfs, select, updateFeed } from "../core";
   import { onMount, onDestroy } from "svelte";
 
+  export let params: object;
+  console.log(params);
+
   let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;
@@ -29,6 +32,7 @@
   async function getWebFeedPage() {
     // yt browse_id
     let test_urls = [
+      "https://odysee.com/$/rss/@ComputingForever:9",
       "https://www.youtube.com/feeds/videos.xml?channel_id=UC4w1YQAJMWOz4qtxinq55LQ",
       "https://www.youtube.com/feeds/videos.xml?channel_id=UCfV0_wbjG8KJADuZT2ct4SA",
     ];
@@ -80,14 +84,8 @@
 
 <!-- keyed each block required for reactivity... -->
 {#each feed as entry (entry.cid)}
-  <WebFeedEntriesComponent
-    {removePostFromFeed}
-    {ipfs_id}
-    {entry}
-    bind:media_modal_idx
-    bind:media_modal_media
-    bind:media_modal_open
-  />
+  <!-- <WebFeedEntriesComponent {removePostFromFeed} {entry} /> -->
+  <WebFeedEntriesComponent {entry} />
 {/each}
 
 <!-- {#if feed.length >= limit}

@@ -17,7 +17,8 @@
   import { getIdentity, ipfs, select, updateIdentity } from "../core";
   import { onMount, onDestroy } from "svelte";
 
-  export let params = {};
+  export let params: object;
+  console.log(params);
 
   let ipfs_info: IDResult;
   let ipfs_id: string;

@@ -8,6 +8,9 @@
   import { ipfs, select, updateFeed } from "../core";
   import { onMount, onDestroy } from "svelte";
 
+  export let params: object;
+  console.log(params);
+
   let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;

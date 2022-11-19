@@ -9,15 +9,17 @@
   export let entry: WebFeedEntry;
 
   let stripOpts = {
-    onlyStripTags: ["script", "style", "xml", "sandbox"],
-    stripTogetherWithTheirContents: ["script", "style", "xml", "sandbox"],
+    onlyStripTags: ["p"],
+    stripTogetherWithTheirContents: ["p"],
   };
 
   let possibleBodies = [entry.content, entry.summary];
+  // use the longer string as the body...
   let body: string = possibleBodies.reduce(
     (savedText, text) => (text.length > savedText.length ? text : savedText),
     ""
   );
+  // this strips the thumbnail from the body
   body = stripHtml(body, stripOpts).result;
   body = linkifyHtml(body, { target: "_blank" });
   body = body.replace(/\r\n?/g, "\n");
@@ -30,7 +32,7 @@
   {entry.display_name}
 </Link> - <TimeagoComponent timestamp={entry.timestamp} />
 <br />
-<Link size="lg" target="_blank" href={entry.publisher}>
+<Link size="lg" target="_blank" href={entry.id}>
   {entry.title}
 </Link>
 <br />
