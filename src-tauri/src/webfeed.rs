@@ -18,13 +18,13 @@ use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WebFeed {
   // custom
-  url: String,
+  pub url: String,
   // provided
-  id: String,
-  title: Option<String>,
-  description: Option<String>,
-  links: Vec<String>,
-  entries: Vec<FilteredEntry>,
+  pub id: String,
+  pub title: Option<String>,
+  pub description: Option<String>,
+  pub links: Vec<String>,
+  pub entries: Vec<FilteredEntry>,
 }
 
 impl From<Feed> for WebFeed {
@@ -60,25 +60,25 @@ impl From<Feed> for WebFeed {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FilteredEntry {
   // custom
-  cid: String,
-  display_name: String,
-  publisher: String,
-  publisher_links: Vec<String>,
-  timestamp: i64,
+  pub cid: String,
+  pub display_name: String,
+  pub publisher: String,
+  pub publisher_links: Vec<String>,
+  pub timestamp: i64,
   // provided
-  authors: Vec<FilteredPerson>,
-  categories: Vec<String>,
-  content: String,
-  contributors: Vec<FilteredPerson>,
-  id: String,
-  links: Vec<String>,
-  media: Vec<FilteredMediaObject>,
-  published: Option<String>,
-  rights: Option<String>,
-  source: Option<String>,
-  summary: String,
-  title: Option<String>,
-  updated: Option<String>,
+  pub authors: Vec<FilteredPerson>,
+  pub categories: Vec<String>,
+  pub content: String,
+  pub contributors: Vec<FilteredPerson>,
+  pub id: String,
+  pub links: Vec<String>,
+  pub media: Vec<FilteredMediaObject>,
+  pub published: Option<String>,
+  pub rights: Option<String>,
+  pub source: Option<String>,
+  pub summary: String,
+  pub title: Option<String>,
+  pub updated: Option<String>,
 }
 
 impl From<Entry> for FilteredEntry {

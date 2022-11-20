@@ -8,7 +8,7 @@
 
 mod ipfs;
 mod webfeed;
-use ipfs::{post, repost_webfeed};
+use ipfs::{post, repost_webfeed_entry};
 use ipfs_api_backend_hyper::{IpfsApi, IpfsClient};
 use std::env;
 use std::{fs, path::PathBuf};
@@ -158,7 +158,7 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       fetch_webfeed,
       post,
-      repost_webfeed
+      repost_webfeed_entry
     ])
     .setup(|_app| {
       initialize_ipfs();

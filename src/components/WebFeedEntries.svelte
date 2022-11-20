@@ -19,7 +19,7 @@
   let deleting: boolean = false;
 
   async function repost(entry: WebFeedEntry) {
-    await invoke("repost_webfeed", {
+    await invoke("repost_webfeed_entry", {
       entry: entry,
     });
   }

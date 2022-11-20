@@ -42,7 +42,7 @@ pub struct PostResponse {
 #[tauri::command]
 pub async fn post(request: PostRequest) -> PostResponse {
   println!("post");
-  println!("{:?}", request);
+  println!("{:#?}", request);
   let ipfs_client = IpfsClient::default();
   let ipfs_id = match ipfs_client.id(None).await {
     Ok(id) => id.id,
@@ -74,7 +74,7 @@ pub async fn post(request: PostRequest) -> PostResponse {
     publisher: ipfs_id,
     timestamp: request.timestamp,
   };
-  println!("{:?}", post);
+  println!("{:#?}", post);
   let json = serde_json::to_vec(&post).unwrap();
   form.add_reader_file("path", Cursor::new(json), "post.json");
 
@@ -104,7 +104,14 @@ pub async fn post(request: PostRequest) -> PostResponse {
 }
 
 #[tauri::command]
-pub async fn repost_webfeed(entry: FilteredEntry) {
-  println!("repost_webfeed");
-  println!("{:?}", entry);
+pub async fn repost_webfeed_entry(entry: FilteredEntry) {
+  println!("repost_webfeed_entry");
+  println!("{:#?}", entry);
+  let file_urls: Vec<String> = entry
+    .media
+    .iter()
+    .filter_map(|m| m.content.iter().find_map(|c| c.url.clone()))
+    .collect();
+  println!("{:#?}", file_urls);
+  // println!("{:#?}", file_paths);
 }
