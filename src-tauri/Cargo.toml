@@ -16,7 +16,7 @@ strip = true
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-chrono = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 feed-rs = "1"
 ipfs-api-backend-hyper = { version = "0.4", features = ["with-send-sync"] }
 serde = { version = "1", features = ["derive"] }

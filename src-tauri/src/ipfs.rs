@@ -6,7 +6,8 @@
   windows_subsystem = "windows"
 )]
 
-use crate::webfeed::FilteredEntry;
+use crate::webfeed::Entry;
+// use chrono::{DateTime, Utc};
 use ipfs_api_backend_hyper::{request::Add, Form, IpfsApi, IpfsClient};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -24,6 +25,26 @@ struct Post {
   publisher: String,
   timestamp: i64,
 }
+
+// impl From<Entry> for Post {
+//   fn from(e: Entry) -> Self {
+//     Self {
+//       body: e.uri,
+//       files: e
+//         .media
+//         .iter()
+//         .filter_map(|m| m.content.iter().find_map(|c| c.url.clone()))
+//         .collect(),
+//       meta: e.link.map(|link| Link::from(link)),
+//       publisher: e.width.map(|width| width),
+//       timestamp: match e {
+//         ref e if e.published.is_some() => e.published.clone().unwrap().timestamp_millis(),
+//         ref e if e.updated.is_some() => e.updated.clone().unwrap().timestamp_millis(),
+//         _ => DateTime::timestamp_millis(&Utc::now()),
+//       },
+//     }
+//   }
+// }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostRequest {
@@ -104,7 +125,7 @@ pub async fn post(request: PostRequest) -> PostResponse {
 }
 
 #[tauri::command]
-pub async fn repost_webfeed_entry(entry: FilteredEntry) {
+pub async fn repost_webfeed_entry(entry: Entry) {
   println!("repost_webfeed_entry");
   println!("{:#?}", entry);
   let file_urls: Vec<String> = entry

@@ -24,6 +24,7 @@
   body = linkifyHtml(body, { target: "_blank" });
   body = body.replace(/\r\n?/g, "\n");
   body = body.replace(/\n+/g, "<br>");
+  body = body.replaceAll("<br/>", "<br>");
   body = body.replaceAll("<br />", "<br>");
   let first_br = body.indexOf("<br>");
 </script>

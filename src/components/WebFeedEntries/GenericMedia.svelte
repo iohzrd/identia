@@ -21,11 +21,11 @@
     let mediaObj = {
       url: media.url,
       element: null,
-      thumbnailFor: null,
+      thumbnail_for: null,
       content_type: media.content_type,
     };
     if (isThumbnail) {
-      mediaObj.thumbnailFor = media.url;
+      mediaObj.thumbnail_for = media.url;
     }
     return mediaObj;
   }
@@ -51,13 +51,17 @@
 </script>
 
 {#each media as mediaObj, idx (mediaObj.url)}
-  {#if mediaObj.thumbnailFor}
+  {#if mediaObj.thumbnail_for}
     <div
       bind:this={mediaObj.element}
       on:click={() => loadMedia(mediaObj, idx)}
       on:keypress
     >
-      <PlayFilled size={32} />
+      {#if typeof mediaObj.thumbnail_url === "string"}
+        <img src={mediaObj.thumbnail_url} alt="" />
+      {:else}
+        <PlayFilled size={32} />
+      {/if}
     </div>
   {:else if mediaObj.content_type.includes("audio/")}
     <audio bind:this={mediaObj.element} controls src={mediaObj.url} />

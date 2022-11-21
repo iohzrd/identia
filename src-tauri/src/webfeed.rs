@@ -6,59 +6,80 @@
   windows_subsystem = "windows"
 )]
 
-// use chrono::{offset::Utc, DateTime};
-use feed_rs::model::{
-  Entry, Feed, Image, Link, MediaCommunity, MediaContent, MediaCredit, MediaObject, MediaText,
-  MediaThumbnail, Person,
-};
-use feed_rs::parser;
+use chrono::{DateTime, Utc};
+use feed_rs;
 use serde::{Deserialize, Serialize};
 use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct WebFeed {
+pub struct Feed {
   // custom
   pub url: String,
   // provided
   pub id: String,
   pub title: Option<String>,
+  pub updated: Option<DateTime<Utc>>,
+  // pub authors: Vec<Person>,
   pub description: Option<String>,
   pub links: Vec<String>,
-  pub entries: Vec<FilteredEntry>,
+  // pub categories: Vec<String>,
+  // pub contributors: Vec<Person>,
+  // pub generator: Option<Generator>,
+  // pub icon: Option<Image>,
+  // pub language: Option<String>,
+  pub logo: Option<Image>,
+  pub published: Option<DateTime<Utc>>,
+  // pub rating: Option<MediaRating>,
+  // pub rights: Option<String>,
+  // pub ttl: Option<u32>,
+  pub entries: Vec<Entry>,
 }
 
-impl From<Feed> for WebFeed {
-  fn from(f: Feed) -> Self {
+impl From<feed_rs::model::Feed> for Feed {
+  fn from(f: feed_rs::model::Feed) -> Self {
     Self {
       // custom
-      url: String::from(""),
+      url: "".into(),
       // provided
       id: f.id,
       title: f.title.clone().map(|text| text.content),
+      updated: f.updated.map(|updated| updated),
+      // authors: f
+      //   .authors
+      //   .into_iter()
+      //   .map(|person| Person::from(person))
+      //   .collect(),
       description: f.description.map(|text| text.content),
-      links: f.links.into_iter().map(|link| link.href).collect(),
+      links: f.links.clone().into_iter().map(|link| link.href).collect(),
+      // categories: f
+      //   .categories
+      //   .into_iter()
+      //   .map(|categories| categories.term)
+      //   .collect(),
+      // contributors: f
+      //   .contributors
+      //   .into_iter()
+      //   .map(|person| Person::from(person))
+      //   .collect(),
+      // generator: f.generator.map(|g| Generator::from(g)),
+      // icon: f.icon.map(|i| Image::from(i)),
+      // language: f.language.map(|l| l),
+      logo: f.logo.map(|l| Image::from(l)),
+      published: f.published.map(|published| published),
+      // rating: f.rating.map(|r| MediaRating::from(r)),
+      // rights: f.rights.map(|r| r.content),
+      // ttl: f.ttl.map(|ttl| ttl),
       entries: f
         .entries
         .into_iter()
-        .map(|entry| {
-          let mut e = FilteredEntry::from(entry);
-          e.display_name = f
-            .title
-            .clone()
-            .map_or(String::from(""), |title| title.content);
-          e.publisher = f
-            .title
-            .clone()
-            .map_or(String::from(""), |title| title.content);
-          e
-        })
+        .map(|entry| Entry::from(entry))
         .collect(),
     }
   }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredEntry {
+pub struct Entry {
   // custom
   pub cid: String,
   pub display_name: String,
@@ -66,88 +87,101 @@ pub struct FilteredEntry {
   pub publisher_links: Vec<String>,
   pub timestamp: i64,
   // provided
-  pub authors: Vec<FilteredPerson>,
-  pub categories: Vec<String>,
-  pub content: String,
-  pub contributors: Vec<FilteredPerson>,
   pub id: String,
-  pub links: Vec<String>,
-  pub media: Vec<FilteredMediaObject>,
-  pub published: Option<String>,
-  pub rights: Option<String>,
-  pub source: Option<String>,
-  pub summary: String,
   pub title: Option<String>,
-  pub updated: Option<String>,
+  pub updated: Option<DateTime<Utc>>,
+  // pub authors: Vec<Person>,
+  pub content: String,
+  pub links: Vec<String>,
+  pub summary: String,
+  // pub categories: Vec<String>,
+  // pub contributors: Vec<Person>,
+  pub published: Option<DateTime<Utc>>,
+  // pub source: Option<String>,
+  // pub rights: Option<String>,
+  pub media: Vec<MediaObject>,
 }
 
-impl From<Entry> for FilteredEntry {
-  fn from(e: Entry) -> Self {
+impl From<feed_rs::model::Entry> for Entry {
+  fn from(e: feed_rs::model::Entry) -> Self {
     Self {
       // custom
       cid: e.id.clone(),
-      display_name: String::from(""),
-      publisher: String::from(""),
+      display_name: "".into(),
+      publisher: "".into(),
       publisher_links: vec![],
       timestamp: match e {
         ref e if e.published.is_some() => e.published.clone().unwrap().timestamp_millis(),
         ref e if e.updated.is_some() => e.updated.clone().unwrap().timestamp_millis(),
-        _ => 0,
+        _ => DateTime::timestamp_millis(&Utc::now()),
       },
       // provided
-      authors: e
-        .authors
-        .into_iter()
-        .map(|person| FilteredPerson::from(person))
-        .collect(),
-      categories: e
-        .categories
-        .into_iter()
-        .map(|category| category.term)
-        .collect(),
       id: e.id,
-      content: e
-        .content
-        .map_or(String::from(""), |content| content.body.unwrap()),
-      contributors: e
-        .contributors
-        .into_iter()
-        .map(|person| FilteredPerson::from(person))
-        .collect(),
+      title: e.title.map(|text| text.content),
+      updated: e.updated.map(|updated| updated),
+      // authors: e
+      //   .authors
+      //   .into_iter()
+      //   .map(|person| Person::from(person))
+      //   .collect(),
+      content: e.content.map_or("".into(), |content| content.body.unwrap()),
       links: e.links.into_iter().map(|link| link.href).collect(),
+      summary: e.summary.map_or("".into(), |summary| summary.content),
+      // categories: e
+      //   .categories
+      //   .into_iter()
+      //   .map(|category| category.term)
+      //   .collect(),
+      // contributors: e
+      //   .contributors
+      //   .into_iter()
+      //   .map(|person| Person::from(person))
+      //   .collect(),
+      published: e.published.map(|published| published),
+      // source: e.source.map(|source| source.to_string()),
+      // rights: e.rights.map(|rights| rights.content),
       media: e
         .media
         .into_iter()
-        .map(|media| FilteredMediaObject::from(media))
+        .map(|media| MediaObject::from(media))
         .collect(),
-      published: e.published.map(|published| published.to_string()),
-      rights: e.rights.map(|rights| rights.content),
-      source: e.source.map(|source| source.to_string()),
-      summary: e
-        .summary
-        .map_or(String::from(""), |summary| summary.content),
-      title: e.title.map(|text| text.content),
-      updated: e.updated.map(|updated| updated.to_string()),
     }
   }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredImage {
+pub struct Generator {
+  pub content: String,
+  pub uri: Option<String>,
+  pub version: Option<String>,
+}
+
+impl From<feed_rs::model::Generator> for Generator {
+  fn from(g: feed_rs::model::Generator) -> Self {
+    Self {
+      content: g.content,
+      uri: g.uri.map(|uri| uri),
+      version: g.version.map(|version| version),
+    }
+  }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Image {
   pub uri: String,
   pub title: Option<String>,
-  pub link: Option<FilteredLink>,
+  pub link: Option<Link>,
   pub width: Option<u32>,
   pub height: Option<u32>,
   pub description: Option<String>,
 }
 
-impl From<Image> for FilteredImage {
-  fn from(i: Image) -> Self {
+impl From<feed_rs::model::Image> for Image {
+  fn from(i: feed_rs::model::Image) -> Self {
     Self {
       uri: i.uri,
       title: i.title.map(|title| title),
-      link: i.link.map(|link| FilteredLink::from(link)),
+      link: i.link.map(|link| Link::from(link)),
       width: i.width.map(|width| width),
       height: i.height.map(|height| height),
       description: i.description.map(|description| description),
@@ -156,7 +190,7 @@ impl From<Image> for FilteredImage {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredLink {
+pub struct Link {
   pub href: String,
   pub rel: Option<String>,
   pub media_type: Option<String>,
@@ -165,8 +199,8 @@ pub struct FilteredLink {
   pub length: Option<u64>,
 }
 
-impl From<Link> for FilteredLink {
-  fn from(l: Link) -> Self {
+impl From<feed_rs::model::Link> for Link {
+  fn from(l: feed_rs::model::Link) -> Self {
     Self {
       href: l.href,
       rel: l.rel.map(|href| href),
@@ -179,7 +213,7 @@ impl From<Link> for FilteredLink {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredMediaCommunity {
+pub struct MediaCommunity {
   pub stars_avg: Option<f64>,
   pub stars_count: Option<u64>,
   pub stars_max: Option<u64>,
@@ -188,8 +222,8 @@ pub struct FilteredMediaCommunity {
   pub stats_views: Option<u64>,
 }
 
-impl From<MediaCommunity> for FilteredMediaCommunity {
-  fn from(m: MediaCommunity) -> Self {
+impl From<feed_rs::model::MediaCommunity> for MediaCommunity {
+  fn from(m: feed_rs::model::MediaCommunity) -> Self {
     Self {
       stars_avg: m.stars_avg.map(|stars_avg| stars_avg),
       stars_count: m.stars_count.map(|stars_count| stars_count),
@@ -202,7 +236,7 @@ impl From<MediaCommunity> for FilteredMediaCommunity {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredMediaContent {
+pub struct MediaContent {
   pub url: Option<String>,
   pub content_type: Option<String>,
   pub height: Option<u32>,
@@ -212,8 +246,8 @@ pub struct FilteredMediaContent {
   pub rating: Option<String>,
 }
 
-impl From<MediaContent> for FilteredMediaContent {
-  fn from(m: MediaContent) -> Self {
+impl From<feed_rs::model::MediaContent> for MediaContent {
+  fn from(m: feed_rs::model::MediaContent) -> Self {
     Self {
       url: m.url.map(|url| url.to_string()),
       content_type: m.content_type.map(|content_type| content_type.to_string()),
@@ -227,102 +261,115 @@ impl From<MediaContent> for FilteredMediaContent {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredMediaCredit {
+pub struct MediaCredit {
   pub entity: String,
 }
 
-impl From<MediaCredit> for FilteredMediaCredit {
-  fn from(m: MediaCredit) -> Self {
+impl From<feed_rs::model::MediaCredit> for MediaCredit {
+  fn from(m: feed_rs::model::MediaCredit) -> Self {
     Self { entity: m.entity }
   }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredMediaObject {
+pub struct MediaObject {
   pub title: Option<String>,
-  pub content: Vec<FilteredMediaContent>,
+  pub content: Vec<MediaContent>,
   pub duration: Option<u64>,
-  pub thumbnails: Vec<FilteredMediaThumbnail>,
-  pub texts: Vec<FilteredMediaText>,
+  pub thumbnails: Vec<MediaThumbnail>,
+  pub texts: Vec<MediaText>,
   pub description: Option<String>,
-  pub community: Option<FilteredMediaCommunity>,
-  pub credits: Vec<FilteredMediaCredit>,
+  pub community: Option<MediaCommunity>,
+  pub credits: Vec<MediaCredit>,
 }
 
-impl From<MediaObject> for FilteredMediaObject {
-  fn from(m: MediaObject) -> Self {
+impl From<feed_rs::model::MediaObject> for MediaObject {
+  fn from(m: feed_rs::model::MediaObject) -> Self {
     Self {
       title: m.title.map(|title| title.content),
       content: m
         .content
         .into_iter()
-        .map(|content| FilteredMediaContent::from(content))
+        .map(|content| MediaContent::from(content))
         .collect(),
       duration: m.duration.map(|duration| duration.as_secs()),
       thumbnails: m
         .thumbnails
         .into_iter()
-        .map(|thumbnails| FilteredMediaThumbnail::from(thumbnails))
+        .map(|thumbnails| MediaThumbnail::from(thumbnails))
         .collect(),
       texts: m
         .texts
         .into_iter()
-        .map(|texts| FilteredMediaText::from(texts))
+        .map(|texts| MediaText::from(texts))
         .collect(),
       description: m.description.map(|description| description.content),
-      community: m
-        .community
-        .map(|community| FilteredMediaCommunity::from(community)),
+      community: m.community.map(|community| MediaCommunity::from(community)),
       credits: m
         .credits
         .into_iter()
-        .map(|credits| FilteredMediaCredit::from(credits))
+        .map(|credits| MediaCredit::from(credits))
         .collect(),
     }
   }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredMediaText {
+pub struct MediaRating {
+  pub urn: String,
+  pub value: String,
+}
+
+impl From<feed_rs::model::MediaRating> for MediaRating {
+  fn from(m: feed_rs::model::MediaRating) -> Self {
+    Self {
+      urn: m.urn,
+      value: m.value,
+    }
+  }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct MediaText {
   pub text: String,
   pub start_time: Option<u64>,
   pub end_time: Option<u64>,
 }
 
-impl From<MediaText> for FilteredMediaText {
-  fn from(i: MediaText) -> Self {
+impl From<feed_rs::model::MediaText> for MediaText {
+  fn from(m: feed_rs::model::MediaText) -> Self {
     Self {
-      text: i.text.content,
-      start_time: i.start_time.map(|start_time| start_time.as_secs()),
-      end_time: i.end_time.map(|end_time| end_time.as_secs()),
+      text: m.text.content,
+      start_time: m.start_time.map(|start_time| start_time.as_secs()),
+      end_time: m.end_time.map(|end_time| end_time.as_secs()),
     }
   }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredMediaThumbnail {
-  // pub image: FilteredLink,
+pub struct MediaThumbnail {
+  pub image: Image,
   pub time: Option<u64>,
 }
 
-impl From<MediaThumbnail> for FilteredMediaThumbnail {
-  fn from(m: MediaThumbnail) -> Self {
+impl From<feed_rs::model::MediaThumbnail> for MediaThumbnail {
+  fn from(m: feed_rs::model::MediaThumbnail) -> Self {
     Self {
-      // image: m.image.map(|image| FilteredImage::from(image)),
+      image: Image::from(m.image),
       time: m.time.map(|time| time.as_secs()),
     }
   }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FilteredPerson {
+pub struct Person {
   pub name: String,
   pub uri: Option<String>,
   pub email: Option<String>,
 }
 
-impl From<Person> for FilteredPerson {
-  fn from(p: Person) -> Self {
+impl From<feed_rs::model::Person> for Person {
+  fn from(p: feed_rs::model::Person) -> Self {
     Self {
       name: p.name,
       uri: p.uri.map(|uri| uri),
@@ -332,7 +379,7 @@ impl From<Person> for FilteredPerson {
 }
 
 #[tauri::command]
-pub async fn fetch_webfeed(url: String) -> WebFeed {
+pub async fn fetch_webfeed(url: String) -> Feed {
   println!("fetch_webfeed");
   let client = ClientBuilder::new().build().unwrap();
   let response = client
@@ -344,42 +391,55 @@ pub async fn fetch_webfeed(url: String) -> WebFeed {
     .await
     .unwrap();
   let data: &[u8] = &response.bytes().await.unwrap().data;
-  let feed = parser::parse(data).unwrap();
-  println!("{:#?}", feed);
+  let f = feed_rs::parser::parse(data).unwrap();
+  println!("{:#?}", f);
 
-  WebFeed {
+  Feed {
+    // custom
     url: url.clone(),
-    id: feed.id,
-    title: feed.title.clone().map(|text| text.content),
-    description: feed.description.map(|text| text.content),
-    links: feed
-      .links
-      .clone()
-      .into_iter()
-      .map(|link| link.href)
-      .collect(),
-    entries: feed
+    // provided
+    id: f.id,
+    title: f.title.clone().map(|text| text.content),
+    updated: f.updated.map(|updated| updated),
+    // authors: f
+    //   .authors
+    //   .into_iter()
+    //   .map(|person| Person::from(person))
+    //   .collect(),
+    description: f.description.map(|text| text.content),
+    links: f.links.clone().into_iter().map(|link| link.href).collect(),
+    // categories: f
+    //   .categories
+    //   .into_iter()
+    //   .map(|categories| categories.term)
+    //   .collect(),
+    // contributors: f
+    //   .contributors
+    //   .into_iter()
+    //   .map(|person| Person::from(person))
+    //   .collect(),
+    // generator: f.generator.map(|g| Generator::from(g)),
+    // icon: f.icon.map(|i| Image::from(i)),
+    // language: f.language.map(|l| l),
+    logo: f.logo.map(|l| Image::from(l)),
+    published: f.published.map(|published| published),
+    // rating: f.rating.map(|r| MediaRating::from(r)),
+    // rights: f.rights.map(|r| r.content),
+    // ttl: f.ttl.map(|ttl| ttl),
+    entries: f
       .entries
       .into_iter()
       .map(|entry| {
-        let mut e = FilteredEntry::from(entry);
-        e.display_name = feed
-          .title
-          .clone()
-          .map_or(String::from(""), |title| title.content);
-        e.publisher_links = feed
-          .links
-          .clone()
-          .into_iter()
-          .map(|link| link.href)
-          .collect();
+        let mut e = Entry::from(entry);
+        e.display_name = f.title.clone().map_or("".into(), |title| title.content);
+        e.publisher_links = f.links.clone().into_iter().map(|link| link.href).collect();
         e.publisher = url.clone();
         e
       })
       .collect(),
   }
 
-  // let mut wf = WebFeed::from(feed);
+  // let mut wf = Feed::from(feed);
   // wf.url = url;
   // wf
 }
