@@ -12,7 +12,7 @@
   let video_link: string = entry.links.length > 0 ? entry.links[0] : "";
   let video_id_obj = getVideoId(video_link);
   let description: string =
-    entry.media.length > 0 && entry.media[0].description != null
+    entry.media.length > 0 && typeof entry.media[0].description == "string"
       ? entry.media[0].description
       : "";
   description = stripHtml(description).result;

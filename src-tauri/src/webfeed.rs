@@ -14,7 +14,7 @@ use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Feed {
   // custom
-  pub url: String,
+  pub publisher: String,
   // provided
   pub id: String,
   pub title: Option<String>,
@@ -39,7 +39,7 @@ impl From<feed_rs::model::Feed> for Feed {
   fn from(f: feed_rs::model::Feed) -> Self {
     Self {
       // custom
-      url: "".into(),
+      publisher: "".into(),
       // provided
       id: f.id,
       title: f.title.clone().map(|text| text.content),
@@ -82,7 +82,7 @@ impl From<feed_rs::model::Feed> for Feed {
 pub struct Entry {
   // custom
   pub cid: String,
-  pub display_name: String,
+  pub display_name: Option<String>,
   pub publisher: String,
   pub publisher_links: Vec<String>,
   pub timestamp: i64,
@@ -91,9 +91,9 @@ pub struct Entry {
   pub title: Option<String>,
   pub updated: Option<DateTime<Utc>>,
   // pub authors: Vec<Person>,
-  pub content: String,
+  pub content: Option<String>,
   pub links: Vec<String>,
-  pub summary: String,
+  pub summary: Option<String>,
   // pub categories: Vec<String>,
   // pub contributors: Vec<Person>,
   pub published: Option<DateTime<Utc>>,
@@ -107,7 +107,7 @@ impl From<feed_rs::model::Entry> for Entry {
     Self {
       // custom
       cid: e.id.clone(),
-      display_name: "".into(),
+      display_name: None,
       publisher: "".into(),
       publisher_links: vec![],
       timestamp: match e {
@@ -124,9 +124,9 @@ impl From<feed_rs::model::Entry> for Entry {
       //   .into_iter()
       //   .map(|person| Person::from(person))
       //   .collect(),
-      content: e.content.map_or("".into(), |content| content.body.unwrap()),
+      content: e.content.map(|content| content.body.unwrap()),
       links: e.links.into_iter().map(|link| link.href).collect(),
-      summary: e.summary.map_or("".into(), |summary| summary.content),
+      summary: e.summary.map(|summary| summary.content),
       // categories: e
       //   .categories
       //   .into_iter()
@@ -275,12 +275,12 @@ impl From<feed_rs::model::MediaCredit> for MediaCredit {
 pub struct MediaObject {
   pub title: Option<String>,
   pub content: Vec<MediaContent>,
-  pub duration: Option<u64>,
+  // pub duration: Option<u64>,
   pub thumbnails: Vec<MediaThumbnail>,
-  pub texts: Vec<MediaText>,
+  // pub texts: Vec<MediaText>,
   pub description: Option<String>,
-  pub community: Option<MediaCommunity>,
-  pub credits: Vec<MediaCredit>,
+  // pub community: Option<MediaCommunity>,
+  // pub credits: Vec<MediaCredit>,
 }
 
 impl From<feed_rs::model::MediaObject> for MediaObject {
@@ -292,24 +292,24 @@ impl From<feed_rs::model::MediaObject> for MediaObject {
         .into_iter()
         .map(|content| MediaContent::from(content))
         .collect(),
-      duration: m.duration.map(|duration| duration.as_secs()),
+      // duration: m.duration.map(|duration| duration.as_secs()),
       thumbnails: m
         .thumbnails
         .into_iter()
         .map(|thumbnails| MediaThumbnail::from(thumbnails))
         .collect(),
-      texts: m
-        .texts
-        .into_iter()
-        .map(|texts| MediaText::from(texts))
-        .collect(),
+      // texts: m
+      //   .texts
+      //   .into_iter()
+      //   .map(|texts| MediaText::from(texts))
+      //   .collect(),
       description: m.description.map(|description| description.content),
-      community: m.community.map(|community| MediaCommunity::from(community)),
-      credits: m
-        .credits
-        .into_iter()
-        .map(|credits| MediaCredit::from(credits))
-        .collect(),
+      // community: m.community.map(|community| MediaCommunity::from(community)),
+      // credits: m
+      //   .credits
+      //   .into_iter()
+      //   .map(|credits| MediaCredit::from(credits))
+      //   .collect(),
     }
   }
 }
@@ -396,7 +396,7 @@ pub async fn fetch_webfeed(url: String) -> Feed {
 
   Feed {
     // custom
-    url: url.clone(),
+    publisher: url.clone(),
     // provided
     id: f.id,
     title: f.title.clone().map(|text| text.content),
@@ -431,7 +431,7 @@ pub async fn fetch_webfeed(url: String) -> Feed {
       .into_iter()
       .map(|entry| {
         let mut e = Entry::from(entry);
-        e.display_name = f.title.clone().map_or("".into(), |title| title.content);
+        e.display_name = f.title.clone().map(|title| title.content);
         e.publisher_links = f.links.clone().into_iter().map(|link| link.href).collect();
         e.publisher = url.clone();
         e

@@ -4,6 +4,7 @@
   import linkifyHtml from "linkify-html";
   import type { WebFeedEntry } from "../../types";
   import { ExpandableTile, Link } from "carbon-components-svelte";
+  import { getLongestString } from "../../utils";
   import { stripHtml } from "string-strip-html";
 
   export let entry: WebFeedEntry;
@@ -13,11 +14,7 @@
     stripTogetherWithTheirContents: ["script", "style", "xml", "sandbox"],
   };
 
-  let possibleBodies = [entry.content, entry.summary];
-  let body: string = possibleBodies.reduce(
-    (savedText, text) => (text.length > savedText.length ? text : savedText),
-    ""
-  );
+  let body: string = getLongestString([entry.content, entry.summary]);
   body = stripHtml(body, stripOpts).result;
   body = linkifyHtml(body, { target: "_blank" });
   body = body.replace(/\r\n?/g, "\n");
