@@ -27,9 +27,10 @@
     "@tauri-apps/api": "^1.2.0"
   },
   "devDependencies": {
+    "@libp2p/peer-id": "^1.1.16",
     "@ltd/j-toml": "^1.35.2",
     "@splidejs/svelte-splide": "^0.2.9",
-    "@sveltejs/vite-plugin-svelte": "^1.2.0",
+    "@sveltejs/vite-plugin-svelte": "^1.3.0",
     "@tauri-apps/cli": "^1.2.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/node": "^18.11.9",
@@ -39,7 +40,7 @@
     "execa": "^6.1.0",
     "ext2mime": "^2.0.0",
     "get-video-id": "^3.6.5",
-    "go-ipfs": "^0.16.0",
+    "go-ipfs": "^0.17.0",
     "ipfs-http-client": "^59.0.0",
     "is-ipfs": "^7.0.3",
     "it-all": "^2.0.0",

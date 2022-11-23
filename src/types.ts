@@ -27,8 +27,8 @@ export interface Identity {
 export interface Media {
   element: Element;
   filename: string;
-  mime: string;
-  thumbnailFor: string;
+  content_type: string;
+  thumbnail_for: string;
   url: string;
 }
 

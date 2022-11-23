@@ -28,9 +28,9 @@
     >
       {#each media_modal_media as mediaObj (mediaObj.filename)}
         <SplideSlide>
-          {#if mediaObj.mime && mediaObj.mime.includes("image")}
+          {#if mediaObj.content_type && mediaObj.content_type.includes("image")}
             <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />
-          {:else if mediaObj.mime && mediaObj.mime.includes("pdf")}
+          {:else if mediaObj.content_type && mediaObj.content_type.includes("pdf")}
             <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
           {/if}
         </SplideSlide>

@@ -105,13 +105,13 @@
     let mediaObj: Media = {
       url: path,
       element: null,
-      thumbnailFor: null,
+      thumbnail_for: null,
       filename: filename,
-      mime: fileType.mime,
+      content_type: fileType.mime,
     };
     if (isThumbnail) {
-      mediaObj.thumbnailFor = filename;
-      mediaObj.mime = "image";
+      mediaObj.thumbnail_for = filename;
+      mediaObj.content_type = "image";
     }
     return mediaObj;
   }
@@ -242,9 +242,9 @@
         <Row>
           {#each media as mediaObj, idx (mediaObj.filename)}
             <Column sm={8} md={8} lg={4}>
-              {#if mediaObj.mime}
-                {#if mediaObj.mime.includes("image")}
-                  {#if mediaObj.thumbnailFor}
+              {#if mediaObj.content_type}
+                {#if mediaObj.content_type.includes("image")}
+                  {#if mediaObj.thumbnail_for}
                     <div
                       bind:this={mediaObj.element}
                       on:click={() => loadVideo(mediaObj.filename, idx)}
@@ -268,13 +268,13 @@
                       src={mediaObj.url}
                     />
                   {/if}
-                {:else if mediaObj.mime.includes("audio")}
+                {:else if mediaObj.content_type.includes("audio")}
                   <audio
                     bind:this={mediaObj.element}
                     controls
                     src={mediaObj.url}
                   />
-                {:else if mediaObj.mime.includes("video")}
+                {:else if mediaObj.content_type.includes("video")}
                   <video
                     bind:this={mediaObj.element}
                     controls
@@ -282,7 +282,7 @@
                   >
                     <track kind="captions" />
                   </video>
-                {:else if mediaObj.mime.includes("pdf")}
+                {:else if mediaObj.content_type.includes("pdf")}
                   <Button
                     download={mediaObj.filename}
                     href={mediaObj.url}

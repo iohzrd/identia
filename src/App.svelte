@@ -19,16 +19,18 @@
     TextInput,
   } from "carbon-components-svelte";
   import Add from "carbon-icons-svelte/lib/Add.svelte";
-  import WebFeedComponent from "./components/WebFeed.svelte";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
+  import WebFeedComponent from "./components/WebFeed.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
+  import type { Message } from "ipfs-http-client/pubsub/subscribe";
   import { followPublisher, getIdentity, ipfs } from "./core";
+  import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
-  import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
+  import { peerIdFromBytes } from "@libp2p/peer-id";
 
   let isSideNavOpen = false;
 
@@ -77,6 +79,19 @@
     follow_modal_open = false;
   }
 
+  function on_pubsub_message(m) {
+    console.log(`on_pubsub_message`, m);
+    let d = m.data;
+    // 123 == "{" 125 == "}"
+    if (d.length > 0 && d[0] == 123 && d[d.length - 1] == 125) {
+      let decoded = new TextDecoder().decode(d);
+      let parsed = JSON.parse(decoded);
+      console.log(`on_pubsub_message`, parsed);
+    }
+    const id = peerIdFromBytes(m.from.multihash.bytes);
+    console.log(id.toString());
+  }
+
   onMount(async () => {
     app_version = await getVersion();
     tauri_version = await getTauriVersion();
@@ -85,6 +100,12 @@
     console.log(ipfs_info);
     await getIdentity(ipfs_info.id.toString());
     ipfs_id = ipfs_info.id.toString();
+    console.log(await ipfs.pubsub.ls());
+    await ipfs.pubsub.subscribe(ipfs_id, on_pubsub_message);
+    await ipfs.pubsub.publish(
+      ipfs_id,
+      new TextEncoder().encode(JSON.stringify({ blah: "blah" }))
+    );
   });
 
   onDestroy(() => {});

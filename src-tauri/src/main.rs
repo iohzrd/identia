@@ -175,6 +175,7 @@ fn main() {
             "--repo-dir",
             identia_app_data_path().into_os_string().to_str().unwrap(),
             "--migrate=true",
+            "--enable-pubsub-experiment",
           ])
           .spawn()
           .expect("Failed to spawn ipfs");
