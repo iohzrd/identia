@@ -30,7 +30,7 @@
   import { location } from "svelte-spa-router";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
-  import { peerIdFromBytes } from "@libp2p/peer-id";
+  import { peerIdFromPeerId } from "@libp2p/peer-id";
 
   let isSideNavOpen = false;
 
@@ -88,8 +88,8 @@
       let parsed = JSON.parse(decoded);
       console.log(`on_pubsub_message`, parsed);
     }
-    const id = peerIdFromBytes(m.from.multihash.bytes);
-    console.log(id.toString());
+    const id = peerIdFromPeerId(m.from);
+    console.log(id);
   }
 
   onMount(async () => {
