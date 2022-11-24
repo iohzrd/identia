@@ -1,27 +1,33 @@
 <script lang="ts">
-  import { Form, FormGroup, Link } from "carbon-components-svelte";
   import WebFeedEntriesComponent from "./WebFeedEntries.svelte";
   import type { WebFeed, WebFeedEntry } from "../types";
+  import { Form, FormGroup, Link } from "carbon-components-svelte";
   import { invoke } from "@tauri-apps/api";
   import { onMount, onDestroy } from "svelte";
 
   export let params: object;
+  let publisher = atob(params["b64_publisher"]);
 
-  let feed: WebFeed;
   let entries: WebFeedEntry[] = [];
+  let feed: WebFeed;
   let links: string[] = [];
+  let logo: object | null;
   let published_or_updated: string | null = null;
+  let title: string = "";
 
   onMount(async () => {
     console.log("WebFeedIdentity.onMount");
-    let publisher = atob(params["b64_publisher"]);
     feed = await invoke("fetch_webfeed", {
       url: publisher,
     });
     console.log(feed);
     entries = feed.entries;
-    links = feed.links;
+    links = feed.links
+      .map((link) => link.replace("http://", "https://"))
+      .filter((link) => link != publisher);
+    logo = feed.logo;
     published_or_updated = feed.published || feed.updated;
+    title = feed.title;
   });
 
   onDestroy(() => {});
@@ -29,19 +35,17 @@
 
 {#if feed}
   <Form>
-    <!-- <FormGroup legendText="avatar">
-          <UserProfile20>
-            <title>Avitar</title>
-          </UserProfile20>
-          {feed["avatar"]}
-        </FormGroup> -->
-
     {#if feed.title}
-      <h1>
-        <FormGroup>
-          {feed.title}
-        </FormGroup>
-      </h1>
+      <FormGroup>
+        <div class="title">
+          {#if logo && logo["uri"]}
+            <img class="thumbnail" src={logo["uri"]} alt="" />
+          {/if}
+          <h1>
+            {feed.title}
+          </h1>
+        </div>
+      </FormGroup>
     {/if}
 
     {#if published_or_updated}
@@ -80,3 +84,16 @@
     {/if}
   </Form>
 {/if}
+
+<style>
+  .thumbnail {
+    border-radius: 50%;
+    width: 100px;
+  }
+
+  .title {
+    display: flex;
+    vertical-align: middle;
+    align-items: center;
+  }
+</style>
