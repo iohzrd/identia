@@ -54,13 +54,35 @@ export interface PostResponse {
   files: string[];
 }
 
+export interface WebFeedLink {
+  href: string;
+  rel: string | null;
+  media_type: string | null;
+  href_lang: string | null;
+  title: string | null;
+  length: number | null;
+}
+
+export interface WebFeedImage {
+  uri: string;
+  title: string | null;
+  link: WebFeedLink | null;
+  width: number | null;
+  height: number | null;
+  description: string | null;
+}
+
 export interface WebFeed {
-  body: string;
-  entries: WebFeedEntry[];
   id: string;
-  title: string;
-  url: string;
+  title: string | null;
+  updated: string | null;
+  description: string | null;
+  links: string[];
+  publisher: string;
+  published: string | null;
+  logo: WebFeedImage | null;
   timestamp: number;
+  entries: WebFeedEntry[];
 }
 export interface WebFeedEntry {
   // custom

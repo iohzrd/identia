@@ -23,6 +23,7 @@
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
   import WebFeedComponent from "./components/WebFeed.svelte";
+  import WebPublisherComponent from "./components/WebPublisher.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Message } from "ipfs-http-client/pubsub/subscribe";
   import { followPublisher, getIdentity, ipfs } from "./core";
@@ -64,6 +65,7 @@
     "/:publisher?": FeedComponent,
     "/identity/:publisher?": IdentityComponent,
     "/webfeed/:publisher?": WebFeedComponent,
+    "/webpublisher/:b64_publisher?": WebPublisherComponent,
     // "*": NotFound,
   };
 

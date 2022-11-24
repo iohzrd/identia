@@ -25,9 +25,11 @@
   let first_br = body.indexOf("<br>");
 </script>
 
-<Link size="lg" target="_blank" href={entry.publisher}>
+<!-- <Link size="lg" target="_blank" href={entry.publisher}>
   {entry.display_name}
-</Link> - <TimeagoComponent timestamp={entry.timestamp} />
+</Link> -->
+-
+<TimeagoComponent timestamp={entry.timestamp} />
 <br />
 <Link size="lg" target="_blank" href={entry.id}>
   {entry.title}
