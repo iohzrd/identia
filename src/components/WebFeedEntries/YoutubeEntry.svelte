@@ -23,10 +23,6 @@
   let first_br = description.indexOf("<br />");
 </script>
 
-<!-- <Link size="lg" target="_blank" href={entry.publisher}>
-  {entry.display_name}
-</Link> -->
--
 <TimeagoComponent timestamp={entry.timestamp} />
 <br />
 <Link size="lg" target="_blank" href={video_link}>

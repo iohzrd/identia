@@ -45,7 +45,7 @@
   <Link size="lg" href="#/webpublisher/{btoa(entry.publisher)}">
     {entry.display_name}
   </Link>
-  <!-- - -->
+  -
   {#if entry.cid.startsWith("yt:video:")}
     <YoutubeEntryComponent {entry} />
   {:else if entry.cid.includes("odysee.com/")}

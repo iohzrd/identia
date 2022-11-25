@@ -21,15 +21,12 @@
   body = body.replace(/\n+/g, "<br>");
   body = body.replaceAll("<br />", "<br>");
   let first_br = body.indexOf("<br>");
+  let link = entry.links.length > 0 ? entry.links[0] : entry.publisher;
 </script>
 
-<!-- <Link size="lg" target="_blank" href={entry.publisher}>
-  {entry.display_name}
-</Link> -->
--
 <TimeagoComponent timestamp={entry.timestamp} />
 <br />
-<Link size="lg" target="_blank" href={entry.publisher}>
+<Link size="lg" target="_blank" href={link}>
   {entry.title}
 </Link>
 <br />

@@ -49,21 +49,21 @@
     {/if}
 
     {#if published_or_updated}
-      <FormGroup legendText="Last published">
+      <FormGroup legendText="Updated">
         {published_or_updated}
       </FormGroup>
     {/if}
 
     {#if feed.description}
       <h4>
-        <FormGroup legendText="description">
+        <FormGroup legendText="Description">
           {@html feed.description}
         </FormGroup>
       </h4>
     {/if}
 
     {#if links}
-      <FormGroup legendText="links">
+      <FormGroup legendText="Links">
         {#each links as link (link)}
           <Link size="lg" target="_blank" href={link}>
             {link}
@@ -74,7 +74,7 @@
     {/if}
 
     {#if entries}
-      <FormGroup legendText="entries">
+      <FormGroup legendText="Entries">
         {#each entries as entry (entry.cid)}
           <div>
             <WebFeedEntriesComponent {entry} />
@@ -92,8 +92,7 @@
   }
 
   .title {
-    display: flex;
-    vertical-align: middle;
     align-items: center;
+    display: flex;
   }
 </style>
