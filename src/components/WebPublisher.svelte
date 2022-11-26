@@ -55,11 +55,11 @@
     {/if}
 
     {#if feed.description}
-      <h4>
-        <FormGroup legendText="Description">
+      <FormGroup legendText="Description">
+        <h4>
           {@html feed.description}
-        </FormGroup>
-      </h4>
+        </h4>
+      </FormGroup>
     {/if}
 
     {#if links}
