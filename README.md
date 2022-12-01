@@ -119,9 +119,6 @@ https://discord.gg/aErhA6TBPS
 ```
 BTC:
 bc1qtss3kxqcfl7glaskys7tevs98e6v62rhpx8lzj
-
-XMR:
-45TMU8YyJD7XCZXRGFUL3bGrgqnA2BrqWXbt9GTWGzCZ43e2fKBVowFintAzn5CsQA4S3MiHagCk22FP1L3meQJQF94PWE3
 ```
 
 or
