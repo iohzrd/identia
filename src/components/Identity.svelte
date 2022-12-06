@@ -126,7 +126,11 @@
         {#each following as identity}
           <div>
             <Link href="#/identity/{identity.publisher}">
-              {identity.display_name || identity.publisher}
+              {#if identity.display_name}
+                {identity.display_name} ({identity.publisher})
+              {:else}
+                {identity.publisher}
+              {/if}
             </Link>
           </div>
         {/each}
