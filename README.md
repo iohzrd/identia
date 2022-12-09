@@ -11,7 +11,7 @@ Successor to [follow](https://github.com/iohzrd/follow)
 
 Follow [this guide](https://tauri.studio/v1/guides/getting-started/prerequisites) to setup dev dependencies...
 
-For video playback on linux, you may need to manually install gstreamer/gst-plugins...
+For video playback on linux, you may need to manually install gstreamer/gst-plugins(gst-libva gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly)
 
 ```
 npm install
