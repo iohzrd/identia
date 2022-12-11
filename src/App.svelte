@@ -2,12 +2,10 @@
   import {
     Button,
     Content,
+    Grid,
     Header,
     HeaderGlobalAction,
-    HeaderNav,
-    HeaderNavItem,
     HeaderUtilities,
-    Link,
     Loading,
     Modal,
     ProgressBar,
@@ -18,7 +16,6 @@
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
-  import Add from "carbon-icons-svelte/lib/Add.svelte";
   import FeedComponent from "./components/Feed.svelte";
   import IdentityComponent from "./components/Identity.svelte";
   import Router from "svelte-spa-router";
@@ -26,6 +23,7 @@
   import WebPublisherComponent from "./components/WebPublisher.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Message } from "ipfs-http-client/pubsub/subscribe";
+  import { Add, UserAvatarFilled } from "carbon-icons-svelte";
   import { followPublisher, getIdentity, ipfs } from "./core";
   import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
   import { location } from "svelte-spa-router";
@@ -123,53 +121,45 @@
       <SkipToContent />
     </svelte:fragment>
 
-    <HeaderNav>
+    <HeaderUtilities>
+      <HeaderGlobalAction aria-label="Settings" icon={UserAvatarFilled} />
+
+      <HeaderGlobalAction
+        aria-label="Follow new identity"
+        icon={Add}
+        on:click={() => (follow_modal_open = !follow_modal_open)}
+      />
+    </HeaderUtilities>
+  </Header>
+
+  <SideNav bind:isOpen={isSideNavOpen}>
+    <SideNavItems>
       {#each views as view}
-        <HeaderNavItem
+        <SideNavLink
           href="#{view.path}{ipfs_id}"
           text={view.label}
           isSelected={$location === view.path + ipfs_id}
         >
           {view.label}
-        </HeaderNavItem>
+        </SideNavLink>
       {/each}
-    </HeaderNav>
-
-    <HeaderUtilities>
-      <HeaderGlobalAction
-        aria-label="Follow new identity"
-        icon={Add}
-        on:click={() => (follow_modal_open = true)}
-      />
-    </HeaderUtilities>
-
-    <SideNav bind:isOpen={isSideNavOpen}>
-      <SideNavItems>
-        {#each views as view}
-          <SideNavLink
-            href="#{view.path}{ipfs_id}"
-            text={view.label}
-            isSelected={$location === view.path + ipfs_id}
-          >
-            {view.label}
-          </SideNavLink>
-        {/each}
-        <SideNavDivider />
-        <SideNavLink href="https://github.com/iohzrd/identia" target="_blank">
-          identia: v{app_version}
-        </SideNavLink>
-        <SideNavLink href="https://github.com/ipfs/go-ipfs" target="_blank">
-          ipfs: v{ipfs_version}
-        </SideNavLink>
-        <SideNavLink href="https://github.com/tauri-apps/tauri" target="_blank">
-          tauri: v{tauri_version}
-        </SideNavLink>
-      </SideNavItems>
-    </SideNav>
-  </Header>
+      <SideNavDivider />
+      <SideNavLink href="https://github.com/iohzrd/identia" target="_blank">
+        identia: v{app_version}
+      </SideNavLink>
+      <SideNavLink href="https://github.com/ipfs/go-ipfs" target="_blank">
+        ipfs: v{ipfs_version}
+      </SideNavLink>
+      <SideNavLink href="https://github.com/tauri-apps/tauri" target="_blank">
+        tauri: v{tauri_version}
+      </SideNavLink>
+    </SideNavItems>
+  </SideNav>
 
   <Content>
-    <Router {routes} />
+    <Grid>
+      <Router {routes} />
+    </Grid>
   </Content>
 
   <Modal

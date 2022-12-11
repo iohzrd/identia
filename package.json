@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.24",
+  "version": "0.4.25",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -33,7 +33,7 @@
     "@sveltejs/vite-plugin-svelte": "^2.0.0",
     "@tauri-apps/cli": "^1.2.2",
     "@tsconfig/svelte": "^3.0.0",
-    "@types/node": "^18.11.12",
+    "@types/node": "^18.11.13",
     "carbon-components-svelte": "^0.70.13",
     "carbon-icons-svelte": "^11.4.0",
     "execa": "^6.1.0",
