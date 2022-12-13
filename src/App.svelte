@@ -4,7 +4,9 @@
     Content,
     Grid,
     Header,
+    HeaderActionLink,
     HeaderGlobalAction,
+    HeaderSearch,
     HeaderUtilities,
     Loading,
     Modal,
@@ -67,6 +69,24 @@
     // "*": NotFound,
   };
 
+  const data = [];
+  let ref = null;
+  let active = false;
+  let value = "";
+  let selectedResultIndex = 0;
+  let events = [];
+
+  $: lowerCaseValue = value.toLowerCase();
+  $: results =
+    value.length > 0
+      ? data.filter((item) => {
+          return (
+            item.text.toLowerCase().includes(lowerCaseValue) ||
+            item.description.includes(lowerCaseValue)
+          );
+        })
+      : [];
+
   function clearFollowModal() {
     follow_waiting = false;
     publisher_to_follow = "";
@@ -122,8 +142,27 @@
     </svelte:fragment>
 
     <HeaderUtilities>
-      <HeaderGlobalAction aria-label="Settings" icon={UserAvatarFilled} />
-
+      <HeaderSearch
+        bind:ref
+        bind:active
+        bind:value
+        bind:selectedResultIndex
+        placeholder="Search services"
+        {results}
+        on:active={() => {
+          events = [...events, { type: "active" }];
+        }}
+        on:inactive={() => {
+          events = [...events, { type: "inactive" }];
+        }}
+        on:clear={() => {
+          events = [...events, { type: "clear" }];
+        }}
+        on:select={(e) => {
+          events = [...events, { type: "select", ...e.detail }];
+        }}
+      />
+      <HeaderActionLink href="#/identity/{ipfs_id}" icon={UserAvatarFilled} />
       <HeaderGlobalAction
         aria-label="Follow new identity"
         icon={Add}
