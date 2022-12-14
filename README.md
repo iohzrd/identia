@@ -24,6 +24,44 @@ npm install
 npm start
 ```
 
+## Architecture
+
+### The identity object:
+
+```
+{
+    "avatar": "", // base64 encoded image or ipfs CID for "avatar"
+    "description": "", // user-defined description / bio
+    "display_name": "", // user-defined display name
+    "following": [""], // a list of ID's the user follows
+    "meta": {}, // graph time!
+    "posts": [""], // a list of CIDs that represent post objects
+    "publisher": "", // users IPNS ID
+    "timestamp": 1608271880058, // UTC adjusted UNIX timestamp of the identities last alteration
+}
+```
+
+### The post object:
+
+```
+{
+    "body": "", // the text body of the post
+    "files": [], // a list of file paths, relative to the post root
+    "meta": {}, // graph time!
+    "publisher": "", // original publisher, will be used for "re-post" functionality
+    "timestamp": 1608271880058 // UTC adjusted UNIX timestamp of the post
+}
+```
+
+### The meta object:
+
+```
+{"TODO": "so many things to do..."}
+```
+
+The meta object is a store for arbitrary data that can be used to describe complex relationships between various types of data.
+These relationships can be stored in a post object to add context to a specific post or in the identity object to provide an identity-wide context scope.
+
 ## TODO
 
 - [x] prototype logic
