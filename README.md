@@ -1,71 +1,28 @@
 # identia
 
-Decentralized, censorship resistant social media on IPFS.
+Decentralized, censorship resistant social media on IPFS. Plus experimental RSS reader.
 
 Successor to [follow](https://github.com/iohzrd/follow)
 
 ![](screenshot1.png)
 ![](screenshot2.png)
+![](screenshot3.png)
 
-## Run
+## Development / Running from source
 
 Follow [this guide](https://tauri.studio/v1/guides/getting-started/prerequisites) to setup dev dependencies...
 
-For video playback on linux, you may need to manually install gstreamer/gst-plugins(gst-libva gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly)
+### Linux
+
+For video playback on linux, you may need to manually install gstreamer/gst-plugins:
+`gstreamer gst-libva gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly`
+
+For hardware video acceleration install: `gstreamer-vaapi`
 
 ```
 npm install
 npm start
 ```
-
-## Architecture
-
-The core of identia is it's conception of an identity.
-
-An identity object is the fundamental unit that we'll use to bootstrap a distributed multi-media social graph.
-
-First, we connect to IPFS and retrieve our IPFS ID.
-
-On first boot, we instantiate a new "Identity" object, which is ultimately stored and updated to disk via SQLite.
-
-Most of the identity logic is contained in:
-`src-tauri/identity.rs`
-
-### The identity object:
-
-```
-{
-    "avatar": "", // base64 encoded image or ipfs CID for "avatar"
-    "description": "", // user-defined description / bio
-    "display_name": "", // user-defined display name
-    "following": [""], // a list of ID's the user follows
-    "meta": {}, // graph time!
-    "posts": [""], // a list of CIDs that represent post objects
-    "publisher": "", // users IPNS ID
-    "timestamp": 1608271880058, // UTC adjusted UNIX timestamp of the identities last alteration
-}
-```
-
-### The post object:
-
-```
-{
-    "body": "", // the text body of the post
-    "files": [], // a list of file paths, relative to the post root
-    "meta": {}, // graph time!
-    "publisher": "", // original publisher, will be used for "re-post" functionality
-    "timestamp": 1608271880058 // UTC adjusted UNIX timestamp of the post
-}
-```
-
-### The meta object:
-
-```
-{"TODO": "so many things to do..."}
-```
-
-The meta object is a store for arbitrary data that can be used to describe complex relationships between various types of data.
-These relationships can be stored in a post object to add context to a specific post or in the identity object to provide an identity-wide context scope.
 
 ## TODO
 
@@ -83,7 +40,7 @@ These relationships can be stored in a post object to add context to a specific 
 - [x] Paginate feed
 - [x] enable(fix) audio/video playback
 - [ ] "re-post" / mirror a post
-- [ ] implement comment system via pubsub
+- [ ] re-implement comment system via pubsub
 - [ ] include crypto signature of body in post
 - [ ] implement private messaging with libsignal or [DiscoCrypto](https://discocrypto.com/#/)
 - [ ] mechanism for exporting / importing, identity / posts
