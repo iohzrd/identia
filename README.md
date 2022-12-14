@@ -7,6 +7,7 @@ Successor to [follow](https://github.com/iohzrd/follow)
 ![](screenshot1.png)
 ![](screenshot2.png)
 ![](screenshot3.png)
+![](screenshot4.png)
 
 ## Development / Running from source
 
