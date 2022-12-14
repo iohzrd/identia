@@ -93,16 +93,6 @@ These relationships can be stored in a post object to add context to a specific 
 - [ ] re-imlpement tor hidden service
 - [ ] serve web-frendly html with identity + TOR
 
-## Community:
-
-```
-Matrix:
-#general:identia.io
-
-Discord:
-https://discord.gg/aErhA6TBPS
-```
-
 ## Follow me
 
 ```
