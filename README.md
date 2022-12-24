@@ -18,7 +18,7 @@ Follow [this guide](https://tauri.studio/v1/guides/getting-started/prerequisites
 For video playback on linux, you may need to manually install gstreamer/gst-plugins:
 `gstreamer gst-libva gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly`
 
-For hardware video acceleration install: `gstreamer-vaapi`
+For hardware video acceleration install: `gstreamer-vaapi`. Optional but recommended.
 
 ```
 npm install
@@ -80,6 +80,7 @@ These relationships can be stored in a post object to add context to a specific 
 - [x] enable(fix) audio/video playback
 - [ ] "re-post" / mirror a post
 - [ ] re-implement comment system via pubsub
+- [ ] integrate nostr?
 - [ ] include crypto signature of body in post
 - [ ] implement private messaging with libsignal or [DiscoCrypto](https://discocrypto.com/#/)
 - [ ] mechanism for exporting / importing, identity / posts
