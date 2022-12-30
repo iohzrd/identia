@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.25",
+  "version": "0.4.30",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -11,6 +11,7 @@
     "build": "vite build",
     "bump": "node scripts/bump-versions.js && npm run update",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "compile": "cd src/flatbuffers; flatc --ts messages.fbs",
     "dev": "vite",
     "info": "tauri info",
     "postinstall": "npm run renameIpfsBinary",

@@ -80,6 +80,7 @@ These relationships can be stored in a post object to add context to a specific 
 - [x] enable(fix) audio/video playback
 - [ ] "re-post" / mirror a post
 - [ ] re-implement comment system via pubsub
+- [ ] implement image(media) board system via pubsub
 - [ ] integrate nostr?
 - [ ] include crypto signature of body in post
 - [ ] implement private messaging with libsignal or [DiscoCrypto](https://discocrypto.com/#/)
@@ -91,6 +92,7 @@ These relationships can be stored in a post object to add context to a specific 
 - [ ] meta view
 - [ ] settings view
 - [ ] keybase-like functionality...
+- [ ] integrate embedded IPFS to replace kubo(go-ipfs)...
 - [ ] mobile app...
 - [ ] re-imlpement tor hidden service
 - [ ] serve web-frendly html with identity + TOR

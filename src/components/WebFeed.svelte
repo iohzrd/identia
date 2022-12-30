@@ -5,7 +5,8 @@
   import type { WebFeedEntry, WebFeed, Media } from "../types";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api";
-  import { ipfs, select, updateFeed } from "../core";
+  import { ipfs, updateFeed } from "../core";
+  import { select } from "../db";
   import { onMount, onDestroy } from "svelte";
 
   export let params: object;
