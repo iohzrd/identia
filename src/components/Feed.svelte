@@ -5,8 +5,9 @@
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Post } from "../types";
   import { inview } from "svelte-inview/dist/";
-  import { ipfs, select, updateFeed } from "../core";
+  import { ipfs, updateFeed } from "../core";
   import { onMount, onDestroy } from "svelte";
+  import { select } from "../db";
 
   export let params: object;
   console.log(params);

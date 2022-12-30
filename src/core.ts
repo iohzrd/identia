@@ -1,4 +1,3 @@
-import Database from "tauri-plugin-sql-api";
 import all from "it-all";
 import type { AddResult } from "ipfs-core-types/src/root";
 import type { IPFSHTTPClient } from "ipfs-http-client";
@@ -7,28 +6,11 @@ import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
 import { concat, toString } from "uint8arrays";
 import { create } from "ipfs-http-client";
-
-let db = null;
-const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {
-  db = instance;
-  return db;
-});
+import { execute, select } from "./db";
 
 export const ipfs: IPFSHTTPClient = create({
   url: "/ip4/127.0.0.1/tcp/5001",
 });
-
-export async function execute(query: string, bindValues?: unknown[]) {
-  console.log("execute");
-  await loadDB;
-  return await db.execute(query, bindValues ?? []);
-}
-
-export async function select(query: string, bindValues?: unknown[]) {
-  console.log("select");
-  await loadDB;
-  return await db.select(query, bindValues ?? []);
-}
 
 export async function deleteIdentityFromDB(
   publisher: string
