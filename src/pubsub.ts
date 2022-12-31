@@ -1,3 +1,4 @@
+import type { QueryResult } from "tauri-plugin-sql-api";
 import { flatbuffers } from "flatbuffers/js/flatbuffers";
 import { ipfs } from "./core";
 import { peerIdFromPeerId } from "@libp2p/peer-id";
@@ -50,4 +51,20 @@ export function parsePubsubMessage(message) {
     }
   }
   return parsed;
+}
+
+export async function getTopicsFromDB() {
+  console.log("getTopicsFromDB");
+  const rows: object[] = await select("SELECT * FROM topics");
+  return rows.map((e) => e["topic"]);
+}
+
+export async function insertTopicIntoDB(topic: string): Promise<QueryResult> {
+  console.log("insertTopicIntoDB: ", topic);
+  return await execute("INSERT INTO topics (topic) VALUES ($1)", [topic]);
+}
+
+export async function deleteTopicFromDB(topic: string): Promise<QueryResult> {
+  console.log("deleteTopicFromDB: ", topic);
+  return await execute("DELETE FROM topics WHERE topic = ?", [topic]);
 }

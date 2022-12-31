@@ -207,12 +207,20 @@ fn main() {
     .plugin({
       TauriSql::default().add_migrations(
         "sqlite:sqlite.db",
-        vec![Migration {
-          version: 1,
-          description: "create tables",
-          sql: include_str!("../migrations/1.sql"),
-          kind: MigrationKind::Up,
-        }],
+        vec![
+          Migration {
+            version: 1,
+            description: "create tables",
+            sql: include_str!("../migrations/1.sql"),
+            kind: MigrationKind::Up,
+          },
+          Migration {
+            version: 2,
+            description: "create topics table",
+            sql: include_str!("../migrations/2.sql"),
+            kind: MigrationKind::Up,
+          },
+        ],
       )
     })
     .run(tauri::generate_context!())
