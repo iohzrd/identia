@@ -7,14 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Build and runtime artifacts
-*.db
-*.local
+node_modules
 dist
 dist-ssr
-node_modules
-public/build
-src-tauri/WixTools
+*.local
 
 # Editor directories and files
 .vscode/*
@@ -26,3 +22,10 @@ src-tauri/WixTools
 *.njsproj
 *.sln
 *.sw?
+
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example

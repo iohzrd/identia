@@ -4,11 +4,6 @@ Decentralized, censorship resistant social media on IPFS. Plus experimental RSS 
 
 Successor to [follow](https://github.com/iohzrd/follow)
 
-![](screenshot1.png)
-![](screenshot2.png)
-![](screenshot3.png)
-![](screenshot4.png)
-
 ## Development / Running from source
 
 Follow [this guide](https://tauri.studio/v1/guides/getting-started/prerequisites) to setup dev dependencies...
