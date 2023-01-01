@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import type {} from "ipfs-core-types/src/pubsub";
   import type { Message } from "ipfs-http-client/pubsub/subscribe";
   import FileDrop from "svelte-tauri-filedrop";
   import { createTopicPost, parsePubsubMessage } from "$lib/pubsub";

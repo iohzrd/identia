@@ -25,7 +25,12 @@
   import { Add, UserAvatarFilled } from "carbon-icons-svelte";
   import { followPublisher, getIdentity, ipfs } from "$lib/core";
   import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
-  import { globalPubsubHandler } from "$lib/pubsub";
+  import {
+    deleteTopicFromDB,
+    getTopicsFromDB,
+    globalPubsubHandler,
+    insertTopicIntoDB,
+  } from "$lib/pubsub";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
   import { page } from "$app/stores";
@@ -38,11 +43,13 @@
   let ipfs_version: string;
   let tauri_version: string;
 
-  let follow_modal_open = false;
-  let follow_waiting = false;
+  let follow_modal_open: boolean = false;
+  let follow_waiting: boolean = false;
   let publisher_to_follow: string = "";
   $: publisher_invalid = !multihash(publisher_to_follow);
 
+  let topic_modal_open = false;
+  let topic_to_follow: string = "";
   let subs: string[] = [];
 
   function clearFollowModal() {
@@ -57,6 +64,19 @@
     follow_modal_open = false;
   }
 
+  async function followTopic() {
+    console.log(followTopic);
+    await insertTopicIntoDB(topic_to_follow);
+    subs = await getTopicsFromDB();
+    console.log(subs);
+    topic_modal_open = false;
+  }
+
+  async function unfollowTopic(topic: string) {
+    await deleteTopicFromDB(topic);
+    subs = await getTopicsFromDB();
+  }
+
   onMount(async () => {
     app_version = await getVersion();
     tauri_version = await getTauriVersion();
@@ -65,10 +85,10 @@
     console.log(ipfs_info);
     await getIdentity(ipfs_info.id.toString());
     ipfs_id = ipfs_info.id.toString();
-    for await (const topic of ["pol", ipfs_id]) {
+    subs = await getTopicsFromDB();
+    for await (const topic of [ipfs_id, ...subs]) {
       await ipfs.pubsub.subscribe(topic, globalPubsubHandler);
     }
-    subs = await ipfs.pubsub.ls();
   });
 
   onDestroy(() => {});
@@ -119,7 +139,10 @@
             isSelected={$page.url.pathname === "/topicfeed/" + topic}
           />
         {/each}
-        <SideNavMenuItem text="Add new Topic" />
+        <SideNavMenuItem
+          text="Add new Topic"
+          on:click={() => (topic_modal_open = !topic_modal_open)}
+        />
       </SideNavMenu>
 
       <div style="bottom: 0; position: absolute; width: 100%;">
@@ -164,6 +187,27 @@
     {:else}
       <Button disabled={publisher_invalid} on:click={follow}>Follow</Button>
     {/if}
+  </Modal>
+
+  <Modal
+    bind:open={topic_modal_open}
+    modalHeading="Add topic"
+    on:close={() => (topic_to_follow = "")}
+    on:open
+    passiveModal
+    size="lg"
+  >
+    <TextInput
+      invalid={false}
+      invalidText=""
+      labelText="topic to follow"
+      placeholder="pol"
+      disabled={false}
+      bind:value={topic_to_follow}
+    />
+    <Button disabled={subs.includes(topic_to_follow)} on:click={followTopic}
+      >Follow Topic</Button
+    >
   </Modal>
 {:else}
   <Loading />
