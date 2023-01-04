@@ -10,8 +10,8 @@
     Link,
   } from "carbon-components-svelte";
   import MediaModalComponent from "$lib/MediaModal.svelte";
-  import MetaComponent from "../../meta/+page.svelte";
-  import PostComponent from "../../feed/Post.svelte";
+  import MetaComponent from "$lib/Meta.svelte";
+  import PostComponent from "$lib/Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Identity, Post } from "$lib/types";
   import { format as formatTime } from "timeago.js";

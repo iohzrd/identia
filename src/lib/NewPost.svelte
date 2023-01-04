@@ -28,7 +28,7 @@
     return path.split("/").pop();
   }
 
-  function arrayUnique(array) {
+  function arrayUnique(array: string[]) {
     let a = array.concat();
     for (let i = 0; i < a.length; ++i) {
       for (let j = i + 1; j < a.length; ++j) {
@@ -46,7 +46,7 @@
     }
   }
 
-  function removeFile(i) {
+  function removeFile(i: number) {
     files = files.slice(0, i).concat(files.slice(i + 1));
   }
 

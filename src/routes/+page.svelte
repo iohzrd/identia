@@ -1,7 +1,6 @@
 <script lang="ts">
-  import MediaModalComponent from "$lib/MediaModal.svelte";
-  import NewPostComponent from "./feed/NewPost.svelte";
-  import PostComponent from "./feed/Post.svelte";
+  import NewPostComponent from "$lib/NewPost.svelte";
+  import PostComponent from "$lib/Post.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Post } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
@@ -22,6 +21,8 @@
   let media_modal_idx = 0;
   let media_modal_media = [];
   let media_modal_open = false;
+
+  let show_comments: boolean = false;
 
   function ts() {
     return new Date().getTime();
@@ -74,14 +75,7 @@
 
 <!-- keyed each block required for reactivity... -->
 {#each feed as post (post.cid)}
-  <PostComponent
-    {removePostFromFeed}
-    {ipfs_id}
-    {post}
-    bind:media_modal_idx
-    bind:media_modal_media
-    bind:media_modal_open
-  />
+  <PostComponent {removePostFromFeed} {ipfs_id} {post} {show_comments} />
 {/each}
 
 {#if feed.length >= limit}
@@ -94,9 +88,3 @@
     }}
   />
 {/if}
-
-<MediaModalComponent
-  bind:media_modal_idx
-  bind:media_modal_media
-  bind:media_modal_open
-/>

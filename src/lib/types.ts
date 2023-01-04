@@ -1,11 +1,29 @@
+// import type { Message } from "ipfs-http-client/pubsub/subscribe";
+// import type {Message} from '@libp2p/interface-pubsub'
+// import type { PeerId } from "@libp2p/interface-peer-id";
+
+// export interface SignedMessage {
+//   type: "signed";
+//   from: PeerId;
+//   topic: string;
+//   data: Uint8Array;
+//   sequenceNumber: bigint;
+//   signature: Uint8Array;
+//   key: Uint8Array;
+// }
+
+// export interface UnsignedMessage {
+//   type: "unsigned";
+//   topic: string;
+//   data: Uint8Array;
+// }
+
+// export type Message = SignedMessage | UnsignedMessage;
+
 export interface Comment {
-  cid: string;
   body: string;
-  from: string;
-  in_response_to: string;
-  kind: string;
+  inReplyTo: string; // cid or seq
   timestamp: number;
-  topic: string;
 }
 
 export interface Feed {

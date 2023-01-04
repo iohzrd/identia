@@ -5,7 +5,7 @@ table TopicPost {
 table Comment {
   body: string;
   cid: string;
-  in_response_to: string;
+  inReplyTo: string; // cid or seq
 }
 
 union Message { TopicPost, Comment }

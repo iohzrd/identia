@@ -1,8 +1,10 @@
 <script lang="ts">
+  import "@splidejs/splide/dist/css/splide.min.css";
   // import "carbon-components-svelte/css/all.css";
   import "carbon-components-svelte/css/g100.css";
   import {
     Button,
+    ButtonSet,
     Content,
     Grid,
     Header,
@@ -21,6 +23,7 @@
     SkipToContent,
     TextInput,
   } from "carbon-components-svelte";
+  import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import { Add, UserAvatarFilled } from "carbon-icons-svelte";
   import { followPublisher, getIdentity, ipfs } from "$lib/core";
@@ -31,6 +34,7 @@
     globalPubsubHandler,
     insertTopicIntoDB,
   } from "$lib/pubsub";
+  import { goto } from "$app/navigation";
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
   import { page } from "$app/stores";
@@ -70,6 +74,7 @@
     subs = await getTopicsFromDB();
     console.log(subs);
     topic_modal_open = false;
+    goto(`/topicfeed/${topic_to_follow}`);
   }
 
   async function unfollowTopic(topic: string) {
@@ -133,12 +138,28 @@
       />
       <SideNavMenu text="Topic Feeds" expanded>
         {#each subs as topic}
-          <SideNavLink
-            href="/topicfeed/{topic}"
-            text="/{topic}/"
-            isSelected={$page.url.pathname === "/topicfeed/" + topic}
-          />
+          <ButtonSet>
+            <SideNavLink
+              href="/topicfeed/{topic}"
+              isSelected={$page.url.pathname === "/topicfeed/" + topic}
+              style="width: 20em; overflow: hidden"
+              text="/{topic}/"
+            />
+            {#if $page.url.pathname === "/topicfeed/" + topic}
+              <Button
+                icon={TrashCan}
+                kind="danger-tertiary"
+                size="small"
+                style="position: absolute; right: 0; width: 12.5%;"
+                tooltipPosition="right"
+                on:click={() => unfollowTopic(topic)}
+              />
+            {/if}
+          </ButtonSet>
         {/each}
+        {#if topic_modal_open}
+          <SideNavMenuItem text="/{topic_to_follow}/" />
+        {/if}
         <SideNavMenuItem
           text="Add new Topic"
           on:click={() => (topic_modal_open = !topic_modal_open)}
@@ -205,8 +226,9 @@
       disabled={false}
       bind:value={topic_to_follow}
     />
-    <Button disabled={subs.includes(topic_to_follow)} on:click={followTopic}
-      >Follow Topic</Button
+    <Button
+      disabled={!topic_to_follow || subs.includes(topic_to_follow)}
+      on:click={followTopic}>Follow Topic</Button
     >
   </Modal>
 {:else}

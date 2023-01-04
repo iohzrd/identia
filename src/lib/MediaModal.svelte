@@ -3,30 +3,41 @@
   import type { Media } from "$lib/types";
   import { Modal } from "carbon-components-svelte";
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
+  import { onMount, onDestroy } from "svelte";
 
-  export let media_modal_idx: number;
-  export let media_modal_media: Media[];
-  export let media_modal_open: boolean;
+  export let start: number;
+  export let media: Media[];
+  export let open: boolean;
   $: filename =
-    typeof Array.isArray(media_modal_media) && media_modal_media.length > 0
-      ? media_modal_media[media_modal_idx].filename
+    typeof Array.isArray(media) && media.length > 0
+      ? media[start].filename
       : "";
+
+  onMount(async () => {
+    console.log("MediaModal.onMount");
+    media = media.filter((m) => m.filename != "post.json");
+    console.log(media);
+  });
+
+  onDestroy(() => {
+    console.log("MediaModal.onDestroy");
+  });
 </script>
 
 <Modal
-  bind:open={media_modal_open}
+  bind:open
   modalHeading={filename}
   on:close
   on:open
   passiveModal
   size="lg"
 >
-  {#if media_modal_open}
+  {#if open}
     <Splide
-      options={{ start: media_modal_idx }}
-      on:move={(e) => (media_modal_idx = e.detail.index)}
+      options={{ start: start }}
+      on:move={(e) => (start = e.detail.index)}
     >
-      {#each media_modal_media as mediaObj (mediaObj.filename)}
+      {#each media as mediaObj (mediaObj.filename)}
         <SplideSlide>
           {#if mediaObj.content_type && mediaObj.content_type.includes("image")}
             <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />

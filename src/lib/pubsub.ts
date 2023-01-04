@@ -69,3 +69,11 @@ export async function deleteTopicFromDB(topic: string): Promise<QueryResult> {
   console.log("deleteTopicFromDB: ", topic);
   return await execute("DELETE FROM topics WHERE topic = ?", [topic]);
 }
+
+export async function publish(
+  topic: string,
+  data: Uint8Array,
+  options = undefined
+) {
+  return ipfs.pubsub.publish(topic, data, options);
+}

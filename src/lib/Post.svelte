@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     Button,
+    ButtonSet,
     Column,
     Link,
     OverflowMenu,
@@ -9,8 +10,11 @@
     Row,
     Tile,
   } from "carbon-components-svelte";
+  import CommentComponent from "$lib/Comment.svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
+  import MediaModalComponent from "$lib/MediaModal.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import Share from "carbon-icons-svelte/lib/Share.svelte";
   import TimeagoComponent from "$lib/Timeago.svelte";
   import all from "it-all";
   import ext2mime from "ext2mime";
@@ -21,22 +25,27 @@
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
   import { save } from "@tauri-apps/api/dialog";
+  import { select } from "./db";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
 
   // import getVideoId from "get-video-id";
   // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
 
-  export let media_modal_idx: number;
-  export let media_modal_media: Media[];
-  export let media_modal_open: boolean;
-
-  export let removePostFromFeed: Function;
-  export let ipfs_id: string;
+  export let removePostFromFeed: Function = () => {};
+  export let ipfs_id: string = "";
   export let post: Post;
+  export let show_comments: boolean = false;
+
+  // media modal props...
+  let media_modal_idx = 0;
+  let media_modal_media: Media[] = [];
+  let media_modal_open = false;
 
   let deleting: boolean = false;
-  let media = [];
+  let media: Media[] = [];
+
+  let comments: string[] = [];
 
   let stripOpts = {
     onlyStripTags: ["script", "style", "xml", "sandbox"],
@@ -77,21 +86,21 @@
   //   });
   // }
 
-  function openMediaModal(idx) {
+  function openMediaModal(idx: number) {
     console.log("openMediaModal");
     console.log(idx);
-    media_modal_idx = idx;
-    media_modal_media = media;
     media_modal_open = true;
+    media_modal_idx = idx;
+    media_modal_media = media.filter((m) => m.filename != "post.json");
   }
 
-  async function removePostFromDbAndFeed(cid) {
+  async function removePostFromDbAndFeed(cid: string) {
     deleting = true;
     await deletePost(cid);
     removePostFromFeed(cid);
   }
 
-  async function getMedia(filename, isThumbnail = false) {
+  async function getMedia(filename: string, isThumbnail = false) {
     console.log("getMedia");
     let cid = post.cid;
     if (!post.cid.includes("ipfs/")) {
@@ -116,13 +125,13 @@
     return mediaObj;
   }
 
-  async function getMediaBinary(filename) {
+  async function getMediaBinary(filename: string) {
     console.log("getMediaBinary");
     let path: string = post.cid + "/" + filename;
     return concat(await all(ipfs.cat(path)));
   }
 
-  async function getMediaBlob(filename) {
+  async function getMediaBlob(filename: string) {
     console.log("getMediaBlob");
     const fileType = {
       ext: filename.split(".").pop(),
@@ -132,14 +141,14 @@
     return new Blob([buf], { type: fileType.mime });
   }
 
-  async function getMediaBlobUrl(filename) {
+  async function getMediaBlobUrl(filename: string) {
     console.log("getMediaBlobUrl");
     const blob = await getMediaBlob(filename);
     const urlCreator = window.URL || window.webkitURL;
     return urlCreator.createObjectURL(blob);
   }
 
-  async function saveMedia(filename) {
+  async function saveMedia(filename: string) {
     console.log("saveMedia");
     const home = await homeDir();
     const path = await join(home, filename);
@@ -152,7 +161,7 @@
     });
   }
 
-  async function loadVideo(filename, idx: number) {
+  async function loadVideo(filename: string, idx: number) {
     console.log("loadVideo: ", idx);
     media[idx] = await getMedia(filename);
     media = media;
@@ -170,6 +179,15 @@
         media = [...media, await getMedia(filename)];
       }
     }
+
+    try {
+      comments = await select(
+        "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
+        [post.cid]
+      );
+    } catch (error) {
+      comments = [{ comment: "Comment..." }, { comment: "Comment2..." }];
+    }
   });
 
   onDestroy(() => {
@@ -186,13 +204,22 @@
   });
 </script>
 
+{#if media_modal_open}
+  <MediaModalComponent
+    bind:start={media_modal_idx}
+    bind:media={media_modal_media}
+    bind:open={media_modal_open}
+  />
+{/if}
+
 {#if post}
-  <Tile style="outline: 2px solid black">
+  <Tile style="outline: 1px solid black">
     <div>
       {#if deleting}
         <ProgressBar helperText="Deleting..." />
       {:else}
         <OverflowMenu flipped style="float:right;">
+          <OverflowMenuItem text="Comments" href="/post/{post.cid}" />
           {#if post.publisher === ipfs_id}
             <OverflowMenuItem
               text="Delete post"
@@ -299,6 +326,12 @@
           {/each}
         </Row>
       </div>
+    {/if}
+
+    {#if show_comments}
+      {#each comments as comment}
+        <CommentComponent topic={post.publisher} inReplyTo={post.cid} />
+      {/each}
     {/if}
   </Tile>
 {/if}
