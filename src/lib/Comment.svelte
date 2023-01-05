@@ -10,27 +10,18 @@
   import { Button, TextArea, Tile } from "carbon-components-svelte";
   import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
+  import { publish, pubsubHandler } from "$lib/pubsub";
   import { onMount, onDestroy } from "svelte";
 
   export let comment: MessageType;
 
-  let sub_comments: MessageType[] = [];
+  let sub_comments: Any[] = [];
   let replying = false;
   let reply: string = "";
 
-  export async function insertCommentDB(): Promise<QueryResult> {
-    console.log("insertCommentDB");
-    await execute("INSERT INTO comments (inReplyTo) VALUES ($1)", [
-      "QmY2rrjTX8SeiFDyDzjrbn1yGUw2A4XS6QHhhSPob8So4Q",
-    ]);
-    return await execute("INSERT INTO comments (inReplyTo) VALUES ($1)", [
-      1672812339301452340,
-    ]);
-  }
-
   async function postReply() {
-    console.log("postReply");
-    console.log(reply);
+    console.log("Comment.postReply");
+    console.log(comment);
     let r = {
       body: reply,
       inReplyTo: String(comment.sequenceNumber),
@@ -50,23 +41,15 @@
     replying = false;
   }
 
-  export async function messageHandler(message: Any) {
+  // const messageHandler = async (message: MessageType) => {
+  async function messageHandler(message: MessageType) {
     console.log("Comment.messageHandler", message);
     let parsed = JSON.parse(new TextDecoder().decode(message.data));
-    console.log(parsed);
-    message.inReplyTo = parsed["inReplyTo"];
-    let timestamp = Number(String(message.sequenceNumber).slice(0, -6));
-    console.log(timestamp);
-    message.timestamp = timestamp;
-    console.log(message);
-    console.log("HERE!!!!");
-    console.log(message);
-    console.log(comment);
-
-    if (message.inReplyTo === String(comment.sequenceNumber)) {
-      sub_comments = [...sub_comments, message];
+    let inReplyTo = parsed["inReplyTo"];
+    let sequenceNumber = String(comment.sequenceNumber);
+    if (inReplyTo == sequenceNumber) {
+      sub_comments = [message, ...sub_comments];
     }
-    // sub_comments = [...sub_comments, message];
 
     // await execute(
     //   "INSERT INTO comments (data,from,inReplyTo,key,sequenceNumber,signature,timestamp,topic,type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
@@ -83,46 +66,35 @@
     //   ]
     // );
   }
+  const unsubscribe = pubsubHandler.subscribe((message: MessageType) =>
+    messageHandler(message)
+  );
 
   onMount(async () => {
-    console.log("Comment.onMount: ", comment.topic, comment.inReplyTo);
-    ipfs.pubsub.subscribe(comment.topic, messageHandler);
-    console.log("SELECTING");
-    console.log(
-      await select("SELECT * FROM comments WHERE inReplyTo = ?", [
-        comment.inReplyTo,
-      ])
-    );
+    // await ipfs.pubsub.subscribe(comment.topic, messageHandler);
     // sub_comments = await select("SELECT * FROM comments WHERE inReplyTo = ?", [
     //   inReplyTo,
     // ]);
   });
 
-  onDestroy(() => {
-    console.log("Comment.onDestroy");
-    ipfs.pubsub.unsubscribe(comment.topic, messageHandler);
+  onDestroy(async () => {
+    unsubscribe;
+    // await ipfs.pubsub.unsubscribe(comment.topic, messageHandler);
   });
 </script>
 
 <Tile style="outline: 1px solid black">
   {comment.from}
   <br />
-  <!-- {message.data} -->
+  <br />
   {JSON.parse(new TextDecoder().decode(comment.data))["body"]}
   <br />
   <br />
 
   {#if true}
-    <Button
-      disabled
-      icon={ThumbsUp}
-      iconDescription="Like"
-      kind="ghost"
-      size="small"
-    />
+    <Button icon={ThumbsUp} iconDescription="Like" kind="ghost" size="small" />
   {:else}
     <Button
-      disabled
       icon={ThumbsUpFilled}
       iconDescription="Like"
       kind="ghost"
@@ -132,7 +104,6 @@
 
   {#if true}
     <Button
-      disabled
       icon={ThumbsDown}
       iconDescription="Dislike"
       kind="ghost"
@@ -140,7 +111,6 @@
     />
   {:else}
     <Button
-      disabled
       icon={ThumbsDownFilledfrom}
       iconDescription="Dislike"
       kind="ghost"

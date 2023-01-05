@@ -29,6 +29,7 @@
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
+  import { pubsubHandler } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
@@ -41,6 +42,10 @@
   export let ipfs_id: string = "";
   export let post: Post;
   export let show_comments: boolean = false;
+
+  const unsubscribe = pubsubHandler.subscribe((message: MessageType) =>
+    messageHandler(message)
+  );
 
   // media modal props...
   let media_modal_idx = 0;
@@ -196,21 +201,16 @@
     replying = false;
   }
 
-  export async function messageHandler(message: Any) {
+  async function messageHandler(message: MessageType) {
     console.log("Post.messageHandler", message);
     let parsed = JSON.parse(new TextDecoder().decode(message.data));
-    console.log(parsed);
-    message.inReplyTo = parsed["inReplyTo"];
-    let timestamp = Number(String(message.sequenceNumber).slice(0, -6));
-    console.log(timestamp);
-    message.timestamp = timestamp;
-    console.log(message);
-    console.log("HERE");
-    console.log(message.inReplyTo);
-    console.log(post.cid);
-
-    if (message.inReplyTo === post.cid) {
-      comments = [...comments, message];
+    let inReplyTo = parsed["inReplyTo"];
+    // message.sequenceNumber = String(message.sequenceNumber);
+    // message.inReplyTo = parsed["inReplyTo"];
+    // message.timestamp =  Number(String(message.sequenceNumber).slice(0, -6));;
+    // message.timestamp = new Date().getTime();
+    if (inReplyTo === post.cid) {
+      comments = [message, ...comments];
     }
     // await execute(
     //   "INSERT INTO comments (data,from,inReplyTo,key,sequenceNumber,signature,timestamp,topic,type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
@@ -230,6 +230,12 @@
 
   onMount(async () => {
     console.log("PostComponent.onMount");
+    // await ipfs.pubsub.subscribe(post.publisher, messageHandler);
+    // comments = await select(
+    //   "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
+    //   [post.cid]
+    // );
+
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
       console.log("isVideo");
@@ -241,29 +247,25 @@
         media = [...media, await getMedia(filename)];
       }
     }
-    console.log("PostComponent.subscribe", post.publisher);
-    await ipfs.pubsub.subscribe(post.publisher, messageHandler);
-    // await ipfs.pubsub.publish(
-    //   post.cid,
-    //   new TextEncoder().encode(
-    //     JSON.stringify({
-    //       inReplyTo: post.cid,
-    //     })
-    //   )
-    // );
 
-    let comments = await select(
-      "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
-      [post.cid]
-    );
-    console.log("commants");
-    console.log(comments);
+    for (let index = 0; index < 10; index++) {
+      await ipfs.pubsub.publish(
+        post.publisher,
+        new TextEncoder().encode(
+          JSON.stringify({
+            body: String(index),
+            inReplyTo: post.cid,
+            timestamp: new Date().getTime(),
+          })
+        )
+      );
+    }
   });
 
   onDestroy(async () => {
     console.log("PostComponent.onDestroy");
-    console.log("PostComponent.unsubscribe", post.publisher);
-    await ipfs.pubsub.unsubscribe(post.publisher, messageHandler);
+    // await ipfs.pubsub.unsubscribe(post.publisher, messageHandler);
+    unsubscribe;
     // // this is required to avoid a memory leak,
     // // from posts which contain blob media...
     // media.forEach((mediaObj) => {

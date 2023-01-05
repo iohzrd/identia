@@ -4,14 +4,18 @@ import { flatbuffers } from "flatbuffers/js/flatbuffers";
 import { ipfs } from "./core";
 import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
+import { writable } from "svelte/store";
 import {
   Message as MessageType,
   PubsubMessage,
   TopicPost,
 } from "./flatbuffers/messages_generated";
 
+export const pubsubHandler = writable({});
+
 export async function globalPubsubHandler(message: Message) {
   console.log("globalPubsubHandler", message);
+  pubsubHandler.set(message);
   // 1672809820178706035n
   // 1672809820178
 }
