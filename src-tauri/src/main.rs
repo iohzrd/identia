@@ -216,7 +216,7 @@ fn main() {
           },
           Migration {
             version: 2,
-            description: "create topics table",
+            description: "create comments table",
             sql: include_str!("../migrations/2.sql"),
             kind: MigrationKind::Up,
           },

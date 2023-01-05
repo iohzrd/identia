@@ -1,29 +1,36 @@
 <script lang="ts">
   import {
     Button,
-    ButtonSet,
     Column,
     Link,
     OverflowMenu,
     OverflowMenuItem,
     ProgressBar,
     Row,
+    TextArea,
     Tile,
   } from "carbon-components-svelte";
   import CommentComponent from "$lib/Comment.svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import MediaModalComponent from "$lib/MediaModal.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import Reply from "carbon-icons-svelte/lib/Reply.svelte";
   import Share from "carbon-icons-svelte/lib/Share.svelte";
+  import ThumbsDown from "carbon-icons-svelte/lib/ThumbsDown.svelte";
+  import ThumbsDownFilledfrom from "carbon-icons-svelte/lib/ThumbsDownFilled.svelte";
+  import ThumbsUp from "carbon-icons-svelte/lib/ThumbsUp.svelte";
+  import ThumbsUpFilled from "carbon-icons-svelte/lib/ThumbsUpFilled.svelte";
   import TimeagoComponent from "$lib/Timeago.svelte";
   import all from "it-all";
   import ext2mime from "ext2mime";
   import linkifyHtml from "linkify-html";
+  import type { CommentType } from "$lib/types";
   import type { Media, Post } from "$lib/types";
   import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
+  import { publish } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
@@ -46,6 +53,8 @@
   let media: Media[] = [];
 
   let comments: string[] = [];
+  let replying = false;
+  let reply: string = "";
 
   let stripOpts = {
     onlyStripTags: ["script", "style", "xml", "sandbox"],
@@ -167,6 +176,27 @@
     media = media;
   }
 
+  async function postReply() {
+    console.log("postReply");
+    console.log(reply);
+    let message: CommentType = {
+      body: reply,
+      inReplyTo: String(post.cid),
+      timestamp: new Date().getTime(),
+    };
+    await publish(
+      post.publisher,
+      new TextEncoder().encode(JSON.stringify(message))
+    );
+    reply = "";
+    replying = false;
+  }
+
+  function cancelReply() {
+    reply = "";
+    replying = false;
+  }
+
   onMount(async () => {
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
@@ -180,14 +210,15 @@
       }
     }
 
-    try {
-      comments = await select(
-        "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
-        [post.cid]
-      );
-    } catch (error) {
-      comments = [{ comment: "Comment..." }, { comment: "Comment2..." }];
-    }
+    // try {
+    //   comments = await select(
+    //     "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
+    //     [post.cid]
+    //   );
+    // } catch (error) {
+    //   comments = [{ comment: "Comment..." }, { comment: "Comment2..." }];
+    // }
+    comments = [{ comment: "Comment..." }, { comment: "Comment2..." }];
   });
 
   onDestroy(() => {
@@ -327,6 +358,76 @@
         </Row>
       </div>
     {/if}
+
+    <br />
+
+    {#if true}
+      <Button
+        disabled
+        icon={ThumbsUp}
+        iconDescription="Like"
+        kind="ghost"
+        size="small"
+      />
+    {:else}
+      <Button
+        disabled
+        icon={ThumbsUpFilled}
+        iconDescription="Like"
+        kind="ghost"
+        size="small"
+      />
+    {/if}
+
+    {#if true}
+      <Button
+        disabled
+        icon={ThumbsDown}
+        iconDescription="Dislike"
+        kind="ghost"
+        size="small"
+      />
+    {:else}
+      <Button
+        disabled
+        icon={ThumbsDownFilledfrom}
+        iconDescription="Dislike"
+        kind="ghost"
+        size="small"
+      />
+    {/if}
+
+    <Button
+      icon={Reply}
+      iconDescription="Reply"
+      kind="ghost"
+      size="small"
+      on:click={() => {
+        replying = !replying;
+      }}
+    />
+
+    {#if replying}
+      <div>
+        <TextArea bind:value={reply} placeholder="Add a reply..." rows={2} />
+        <Button
+          kind="ghost"
+          size="small"
+          style="float:right;"
+          on:click={postReply}>Reply</Button
+        >
+        <Button
+          kind="ghost"
+          size="small"
+          style="float:right;"
+          on:click={cancelReply}>Cancel</Button
+        >
+      </div>
+      <br />
+      <br />
+    {/if}
+
+    <br />
 
     {#if show_comments}
       {#each comments as comment}

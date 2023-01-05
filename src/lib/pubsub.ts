@@ -12,7 +12,8 @@ import {
 
 export async function globalPubsubHandler(message: Message) {
   console.log("globalPubsubHandler", message);
-  //
+  // 1672809820178706035n
+  // 1672809820178
 }
 
 export function createTopicPost(body: string): Uint8Array {

@@ -20,7 +20,7 @@
 
 // export type Message = SignedMessage | UnsignedMessage;
 
-export interface Comment {
+export interface CommentType {
   body: string;
   inReplyTo: string; // cid or seq
   timestamp: number;
