@@ -5,19 +5,16 @@
   import ThumbsDownFilledfrom from "carbon-icons-svelte/lib/ThumbsDownFilled.svelte";
   import ThumbsUp from "carbon-icons-svelte/lib/ThumbsUp.svelte";
   import ThumbsUpFilled from "carbon-icons-svelte/lib/ThumbsUpFilled.svelte";
-  import type { CommentType } from "$lib/types";
-  import type { Message } from "ipfs-http-client/pubsub/subscribe";
+  import type { MessageType } from "$lib/types";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
   import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-  import { publish } from "$lib/pubsub";
 
-  export let topic: string;
-  export let inReplyTo: string | bigint;
-  let comment = { comment: "Comment...", from: "someone" };
-  let sub_comments = [];
+  export let comment: MessageType;
+
+  let sub_comments: MessageType[] = [];
   let replying = false;
   let reply: string = "";
 
@@ -34,12 +31,16 @@
   async function postReply() {
     console.log("postReply");
     console.log(reply);
-    let message: CommentType = {
+    let r = {
       body: reply,
-      inReplyTo: String(inReplyTo),
+      inReplyTo: String(comment.sequenceNumber),
       timestamp: new Date().getTime(),
     };
-    await publish(topic, new TextEncoder().encode(JSON.stringify(message)));
+    console.log(r);
+    await ipfs.pubsub.publish(
+      comment.topic,
+      new TextEncoder().encode(JSON.stringify(r))
+    );
     reply = "";
     replying = false;
   }
@@ -49,19 +50,49 @@
     replying = false;
   }
 
-  export async function messageHandler(message: Message) {
-    console.log("messageHandler", message);
-    console.log(JSON.parse(new TextDecoder().decode(message.data)));
-    // 1672809820178706035n
-    // 1672809820178
+  export async function messageHandler(message: Any) {
+    console.log("Comment.messageHandler", message);
+    let parsed = JSON.parse(new TextDecoder().decode(message.data));
+    console.log(parsed);
+    message.inReplyTo = parsed["inReplyTo"];
+    let timestamp = Number(String(message.sequenceNumber).slice(0, -6));
+    console.log(timestamp);
+    message.timestamp = timestamp;
+    console.log(message);
+    console.log("HERE!!!!");
+    console.log(message);
+    console.log(comment);
+
+    if (message.inReplyTo === String(comment.sequenceNumber)) {
+      sub_comments = [...sub_comments, message];
+    }
+    // sub_comments = [...sub_comments, message];
+
+    // await execute(
+    //   "INSERT INTO comments (data,from,inReplyTo,key,sequenceNumber,signature,timestamp,topic,type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+    //   [
+    //     message.data,
+    //     message.from,
+    //     message.inReplyTo,
+    //     message.key,
+    //     String(message.sequenceNumber),
+    //     message.signature,
+    //     message.timestamp,
+    //     message.topic,
+    //     message.type,
+    //   ]
+    // );
   }
 
   onMount(async () => {
-    console.log("Comment.onMount: ", topic, inReplyTo);
-    ipfs.pubsub.subscribe(topic, messageHandler);
-    await insertCommentDB();
-    console.log(await select("SELECT * FROM comments"));
-    // comment = await select("SELECT * FROM comments", [inReplyTo]);
+    console.log("Comment.onMount: ", comment.topic, comment.inReplyTo);
+    ipfs.pubsub.subscribe(comment.topic, messageHandler);
+    console.log("SELECTING");
+    console.log(
+      await select("SELECT * FROM comments WHERE inReplyTo = ?", [
+        comment.inReplyTo,
+      ])
+    );
     // sub_comments = await select("SELECT * FROM comments WHERE inReplyTo = ?", [
     //   inReplyTo,
     // ]);
@@ -69,14 +100,15 @@
 
   onDestroy(() => {
     console.log("Comment.onDestroy");
-    ipfs.pubsub.unsubscribe(topic, messageHandler);
+    ipfs.pubsub.unsubscribe(comment.topic, messageHandler);
   });
 </script>
 
 <Tile style="outline: 1px solid black">
   {comment.from}
   <br />
-  {comment.comment}
+  <!-- {message.data} -->
+  {JSON.parse(new TextDecoder().decode(comment.data))["body"]}
   <br />
   <br />
 
@@ -146,7 +178,7 @@
     <br />
   {/if}
 
-  {#each sub_comments as comment}
-    <CommentComponent {topic} inReplyTo={comment.inReplyTo} />
+  {#each sub_comments as sub_comment}
+    <CommentComponent comment={sub_comment} />
   {/each}
 </Tile>

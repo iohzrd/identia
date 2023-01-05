@@ -15,7 +15,6 @@
   import MediaModalComponent from "$lib/MediaModal.svelte";
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import Reply from "carbon-icons-svelte/lib/Reply.svelte";
-  import Share from "carbon-icons-svelte/lib/Share.svelte";
   import ThumbsDown from "carbon-icons-svelte/lib/ThumbsDown.svelte";
   import ThumbsDownFilledfrom from "carbon-icons-svelte/lib/ThumbsDownFilled.svelte";
   import ThumbsUp from "carbon-icons-svelte/lib/ThumbsUp.svelte";
@@ -24,13 +23,12 @@
   import all from "it-all";
   import ext2mime from "ext2mime";
   import linkifyHtml from "linkify-html";
-  import type { CommentType } from "$lib/types";
   import type { Media, Post } from "$lib/types";
+  import type { MessageType } from "$lib/types";
   import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
-  import { publish } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
@@ -52,7 +50,7 @@
   let deleting: boolean = false;
   let media: Media[] = [];
 
-  let comments: string[] = [];
+  let comments: MessageType[] = [];
   let replying = false;
   let reply: string = "";
 
@@ -179,14 +177,15 @@
   async function postReply() {
     console.log("postReply");
     console.log(reply);
-    let message: CommentType = {
+    let r = {
       body: reply,
-      inReplyTo: String(post.cid),
+      inReplyTo: post.cid,
       timestamp: new Date().getTime(),
     };
-    await publish(
+    console.log(r);
+    await ipfs.pubsub.publish(
       post.publisher,
-      new TextEncoder().encode(JSON.stringify(message))
+      new TextEncoder().encode(JSON.stringify(r))
     );
     reply = "";
     replying = false;
@@ -197,7 +196,40 @@
     replying = false;
   }
 
+  export async function messageHandler(message: Any) {
+    console.log("Post.messageHandler", message);
+    let parsed = JSON.parse(new TextDecoder().decode(message.data));
+    console.log(parsed);
+    message.inReplyTo = parsed["inReplyTo"];
+    let timestamp = Number(String(message.sequenceNumber).slice(0, -6));
+    console.log(timestamp);
+    message.timestamp = timestamp;
+    console.log(message);
+    console.log("HERE");
+    console.log(message.inReplyTo);
+    console.log(post.cid);
+
+    if (message.inReplyTo === post.cid) {
+      comments = [...comments, message];
+    }
+    // await execute(
+    //   "INSERT INTO comments (data,from,inReplyTo,key,sequenceNumber,signature,timestamp,topic,type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+    //   [
+    //     message.data,
+    //     message.from,
+    //     message.inReplyTo,
+    //     message.key,
+    //     String(message.sequenceNumber),
+    //     message.signature,
+    //     message.timestamp,
+    //     message.topic,
+    //     message.type,
+    //   ]
+    // );
+  }
+
   onMount(async () => {
+    console.log("PostComponent.onMount");
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
       console.log("isVideo");
@@ -209,19 +241,29 @@
         media = [...media, await getMedia(filename)];
       }
     }
+    console.log("PostComponent.subscribe", post.publisher);
+    await ipfs.pubsub.subscribe(post.publisher, messageHandler);
+    // await ipfs.pubsub.publish(
+    //   post.cid,
+    //   new TextEncoder().encode(
+    //     JSON.stringify({
+    //       inReplyTo: post.cid,
+    //     })
+    //   )
+    // );
 
-    // try {
-    //   comments = await select(
-    //     "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
-    //     [post.cid]
-    //   );
-    // } catch (error) {
-    //   comments = [{ comment: "Comment..." }, { comment: "Comment2..." }];
-    // }
-    comments = [{ comment: "Comment..." }, { comment: "Comment2..." }];
+    let comments = await select(
+      "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
+      [post.cid]
+    );
+    console.log("commants");
+    console.log(comments);
   });
 
-  onDestroy(() => {
+  onDestroy(async () => {
+    console.log("PostComponent.onDestroy");
+    console.log("PostComponent.unsubscribe", post.publisher);
+    await ipfs.pubsub.unsubscribe(post.publisher, messageHandler);
     // // this is required to avoid a memory leak,
     // // from posts which contain blob media...
     // media.forEach((mediaObj) => {
@@ -431,7 +473,7 @@
 
     {#if show_comments}
       {#each comments as comment}
-        <CommentComponent topic={post.publisher} inReplyTo={post.cid} />
+        <CommentComponent {comment} />
       {/each}
     {/if}
   </Tile>
