@@ -228,7 +228,9 @@
 
   onMount(async () => {
     console.log("PostComponent.onMount");
-    await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
+    if (show_comments) {
+      await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
+    }
     // comments = await select(
     //   "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
     //   [post.cid]
