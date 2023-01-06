@@ -18,6 +18,7 @@
   let sub_comments: Any[] = [];
   let replying = false;
   let reply: string = "";
+  let body: string = "";
 
   async function postReply() {
     console.log("Comment.postReply");
@@ -47,7 +48,7 @@
     let parsed = JSON.parse(new TextDecoder().decode(message.data));
     let inReplyTo = parsed["inReplyTo"];
     let sequenceNumber = String(comment.sequenceNumber);
-    if (inReplyTo == sequenceNumber) {
+    if (inReplyTo === sequenceNumber) {
       sub_comments = [message, ...sub_comments];
     }
 
@@ -66,11 +67,15 @@
     //   ]
     // );
   }
-  const unsubscribe = pubsubHandler.subscribe((message: MessageType) =>
-    messageHandler(message)
-  );
+  const unsubscribe = pubsubHandler.subscribe((message: any) => {
+    if (Object.keys(message).length) {
+      messageHandler(message);
+    }
+  });
 
   onMount(async () => {
+    let parsed = JSON.parse(new TextDecoder().decode(comment.data));
+    body = parsed["body"];
     // await ipfs.pubsub.subscribe(comment.topic, messageHandler);
     // sub_comments = await select("SELECT * FROM comments WHERE inReplyTo = ?", [
     //   inReplyTo,
@@ -87,7 +92,7 @@
   {comment.from}
   <br />
   <br />
-  {JSON.parse(new TextDecoder().decode(comment.data))["body"]}
+  {body}
   <br />
   <br />
 
@@ -148,7 +153,7 @@
     <br />
   {/if}
 
-  {#each sub_comments as sub_comment}
+  {#each sub_comments as sub_comment (sub_comment.sequenceNumber)}
     <CommentComponent comment={sub_comment} />
   {/each}
 </Tile>

@@ -29,7 +29,7 @@
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler } from "$lib/pubsub";
+  import { pubsubHandler, globalPubsubHandler } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
@@ -42,10 +42,6 @@
   export let ipfs_id: string = "";
   export let post: Post;
   export let show_comments: boolean = false;
-
-  const unsubscribe = pubsubHandler.subscribe((message: MessageType) =>
-    messageHandler(message)
-  );
 
   // media modal props...
   let media_modal_idx = 0;
@@ -205,10 +201,6 @@
     console.log("Post.messageHandler", message);
     let parsed = JSON.parse(new TextDecoder().decode(message.data));
     let inReplyTo = parsed["inReplyTo"];
-    // message.sequenceNumber = String(message.sequenceNumber);
-    // message.inReplyTo = parsed["inReplyTo"];
-    // message.timestamp =  Number(String(message.sequenceNumber).slice(0, -6));;
-    // message.timestamp = new Date().getTime();
     if (inReplyTo === post.cid) {
       comments = [message, ...comments];
     }
@@ -228,9 +220,15 @@
     // );
   }
 
+  const unsubscribe = pubsubHandler.subscribe((message: any) => {
+    if (Object.keys(message).length) {
+      messageHandler(message);
+    }
+  });
+
   onMount(async () => {
     console.log("PostComponent.onMount");
-    // await ipfs.pubsub.subscribe(post.publisher, messageHandler);
+    await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
     // comments = await select(
     //   "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
     //   [post.cid]
@@ -247,24 +245,11 @@
         media = [...media, await getMedia(filename)];
       }
     }
-
-    for (let index = 0; index < 10; index++) {
-      await ipfs.pubsub.publish(
-        post.publisher,
-        new TextEncoder().encode(
-          JSON.stringify({
-            body: String(index),
-            inReplyTo: post.cid,
-            timestamp: new Date().getTime(),
-          })
-        )
-      );
-    }
   });
 
   onDestroy(async () => {
     console.log("PostComponent.onDestroy");
-    // await ipfs.pubsub.unsubscribe(post.publisher, messageHandler);
+    await ipfs.pubsub.unsubscribe(post.publisher, globalPubsubHandler);
     unsubscribe;
     // // this is required to avoid a memory leak,
     // // from posts which contain blob media...
@@ -474,7 +459,7 @@
     <br />
 
     {#if show_comments}
-      {#each comments as comment}
+      {#each comments as comment (comment.sequenceNumber)}
         <CommentComponent {comment} />
       {/each}
     {/if}
