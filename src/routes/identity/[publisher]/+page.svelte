@@ -157,9 +157,7 @@
     <FormGroup legendText="posts">
       {#if identity && identity.posts}
         {#each posts as post (post.cid)}
-          <div>
-            <PostComponent {ipfs_id} {post} />
-          </div>
+          <PostComponent {ipfs_id} {post} />
         {/each}
       {/if}
       <ClickableTile on:click={getPostsPage}>Load more posts</ClickableTile>
