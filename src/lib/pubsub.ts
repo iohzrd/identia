@@ -7,49 +7,42 @@ import { ipfs } from "./core";
 import { select, execute } from "./db";
 
 const subscriptions = new Map();
-function writable(value = {}) {
-  let _val = value;
-
+function subscriptionStore() {
   const subscribe = async (topic: string, inReplyTo: string, handler: any) => {
     // const activeSubs = await ipfs.pubsub.ls();
     // if (!activeSubs.includes(topic)) {
     //   await ipfs.pubsub.subscribe(topic, globalPubsubHandler);
     // }
-
     const topicSubs = subscriptions.get(topic) || new Map();
     topicSubs.set(inReplyTo, handler);
     subscriptions.set(topic, topicSubs);
-
     return () => {
       const topicSubs = subscriptions.get(topic) || new Map();
       topicSubs.delete(inReplyTo);
     };
   };
 
-  const set = (topic: string, inReplyTo: string, v: any) => {
-    _val = v;
+  const set = (topic: string, inReplyTo: string, message: any) => {
     const topicSubs = subscriptions.get(topic) || new Map();
     const fn = topicSubs.get(inReplyTo) || (() => {});
-    fn(_val);
+    fn(message);
   };
 
   return { subscribe, set };
 }
 
-export const pubsubHandler = writable();
+export const pubsubHandler = subscriptionStore();
 
 export async function globalPubsubHandler(message: Message) {
-  // console.log("globalPubsubHandler", message);
   let topic = message.topic;
-
   // let parsed = JSON.parse(new TextDecoder().decode(message.data));
   // let inReplyTo = String(parsed["inReplyTo"]);
-
   const buff = new flatbuffers.ByteBuffer(message.data);
   const comment = Comment.getRootAsComment(buff);
-  const inReplyTo: string = comment.inReplyTo() || "";
-
-  pubsubHandler.set(topic, inReplyTo, message);
+  const inReplyTo: string | null = comment.inReplyTo();
+  if (inReplyTo != null) {
+    pubsubHandler.set(topic, inReplyTo, message);
+  }
 }
 
 export async function getTopicsFromDB() {
