@@ -1,62 +1,67 @@
 import type { Message } from "ipfs-http-client/pubsub/subscribe";
 import type { QueryResult } from "tauri-plugin-sql-api";
+import { Comment } from "./flatbuffers/messages_generated";
 import { flatbuffers } from "flatbuffers/js/flatbuffers";
-import { ipfs } from "./core";
-import { peerIdFromPeerId } from "@libp2p/peer-id";
+// import { ipfs } from "./core";
+// import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
-import { writable } from "svelte/store";
-import {
-  Message as MessageType,
-  PubsubMessage,
-  TopicPost,
-} from "./flatbuffers/messages_generated";
+
+const subscriptions = new Map();
+const inReplyToSubs = new Map();
+function writable(value = {}) {
+  let _val = value;
+
+  const subscribe = async (topic: string, inReplyTo: string, handler: any) => {
+    // console.log("topic");
+    // console.log(topic);
+    // const activeSubs = await ipfs.pubsub.ls();
+    // console.log(activeSubs);
+    // if (!activeSubs.includes(topic)) {
+    //   console.log("SUBBINGS!!!!!!!!!!!!!!!!");
+    //   await ipfs.pubsub.subscribe(topic, globalPubsubHandler);
+    // }
+
+    const topicSubs = subscriptions.get(topic) || new Map();
+    const replySubs = topicSubs.get(inReplyTo) || [];
+    inReplyToSubs.set(inReplyTo, [handler].concat(replySubs));
+    subscriptions.set(topic, inReplyToSubs);
+
+    return () => {
+      const topicSubs = subscriptions.get(topic) || new Map();
+      const replySubs = topicSubs.get(inReplyTo) || [];
+      const index = replySubs.findIndex((fn: any) => fn === handler);
+      topicSubs.splice(index, 1);
+      subscriptions.set(topic, topicSubs);
+    };
+  };
+
+  const set = (topic: string, inReplyTo: string, v: any) => {
+    _val = v;
+    const topicSubs = subscriptions.get(topic) || new Map();
+    const replySubs = topicSubs.get(inReplyTo) || [];
+    replySubs.forEach((fn: any) => fn(_val));
+  };
+
+  const update = (topic: string, inReplyTo: string, fn: any) =>
+    set(topic, inReplyTo, fn(_val));
+
+  return { subscribe, set, update };
+}
 
 export const pubsubHandler = writable({});
 
 export async function globalPubsubHandler(message: Message) {
-  console.log("globalPubsubHandler", message);
-  pubsubHandler.set(message);
-  // 1672809820178706035n
-  // 1672809820178
-}
+  // console.log("globalPubsubHandler", message);
+  let topic = message.topic;
 
-export function createTopicPost(body: string): Uint8Array {
-  let builder = new flatbuffers.Builder();
-  let messageOffset = TopicPost.createTopicPost(
-    builder,
-    builder.createString(body)
-  );
-  builder.finish(messageOffset);
-  let pubsubOffset = PubsubMessage.createPubsubMessage(
-    builder,
-    MessageType.TopicPost,
-    messageOffset,
-    BigInt(new Date().getTime())
-  );
-  builder.finish(pubsubOffset);
-  return builder.asUint8Array();
-}
+  // let parsed = JSON.parse(new TextDecoder().decode(message.data));
+  // let inReplyTo = String(parsed["inReplyTo"]);
 
-export function parsePubsubMessage(message: Message) {
-  let parsed = undefined;
-  let buff = new flatbuffers.ByteBuffer(message.data);
-  let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
-  if (pubsubMessage.messageType() != undefined) {
-    // let timestamp = pubsubMessage.timestamp();
-    // let id = peerIdFromPeerId(message.from);
-    // console.log(id);
-    switch (pubsubMessage.messageType()) {
-      case MessageType.NONE:
-        break;
-      case MessageType.Comment:
-        break;
-      case MessageType.TopicPost:
-        let msg = pubsubMessage.message(TopicPost.getRootAsTopicPost(buff));
-        parsed = msg.body();
-        break;
-    }
-  }
-  return parsed;
+  const buff = new flatbuffers.ByteBuffer(message.data);
+  const comment = Comment.getRootAsComment(buff);
+  const inReplyTo: string = comment.inReplyTo() || "";
+
+  pubsubHandler.set(topic, inReplyTo, message);
 }
 
 export async function getTopicsFromDB() {
@@ -75,10 +80,22 @@ export async function deleteTopicFromDB(topic: string): Promise<QueryResult> {
   return await execute("DELETE FROM topics WHERE topic = ?", [topic]);
 }
 
-export async function publish(
-  topic: string,
-  data: Uint8Array,
-  options = undefined
-) {
-  return ipfs.pubsub.publish(topic, data, options);
+export function createComment(inReplyTo: string, body: string): Uint8Array {
+  let builder = new flatbuffers.Builder();
+  let messageOffset = Comment.createComment(
+    builder,
+    builder.createString(inReplyTo),
+    builder.createString(body)
+  );
+  builder.finish(messageOffset);
+  return builder.asUint8Array();
+}
+
+export function parseComment(data: Uint8Array) {
+  let buff = new flatbuffers.ByteBuffer(data);
+  let comment = Comment.getRootAsComment(buff);
+  return {
+    inReplyTo: comment.inReplyTo(),
+    body: comment.body(),
+  };
 }

@@ -20,19 +20,30 @@ static getSizePrefixedRootAsTopicPost(bb:flatbuffers.ByteBuffer, obj?:TopicPost)
   return (obj || new TopicPost()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-body():string|null
-body(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
-body(optionalEncoding?:any):string|Uint8Array|null {
+inReplyTo():string|null
+inReplyTo(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+inReplyTo(optionalEncoding?:any):string|Uint8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
 }
 
+body():string|null
+body(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+body(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
 static startTopicPost(builder:flatbuffers.Builder) {
-  builder.startObject(1);
+  builder.startObject(2);
+}
+
+static addInReplyTo(builder:flatbuffers.Builder, inReplyToOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, inReplyToOffset, 0);
 }
 
 static addBody(builder:flatbuffers.Builder, bodyOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, bodyOffset, 0);
+  builder.addFieldOffset(1, bodyOffset, 0);
 }
 
 static endTopicPost(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -40,8 +51,9 @@ static endTopicPost(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createTopicPost(builder:flatbuffers.Builder, bodyOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createTopicPost(builder:flatbuffers.Builder, inReplyToOffset:flatbuffers.Offset, bodyOffset:flatbuffers.Offset):flatbuffers.Offset {
   TopicPost.startTopicPost(builder);
+  TopicPost.addInReplyTo(builder, inReplyToOffset);
   TopicPost.addBody(builder, bodyOffset);
   return TopicPost.endTopicPost(builder);
 }

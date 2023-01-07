@@ -29,11 +29,18 @@
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler, globalPubsubHandler } from "$lib/pubsub";
+  import {
+    createComment,
+    pubsubHandler,
+    globalPubsubHandler,
+  } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
+
+  import { Comment } from "./flatbuffers/messages_generated";
+  import { flatbuffers } from "flatbuffers/js/flatbuffers";
 
   // import getVideoId from "get-video-id";
   // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
@@ -198,12 +205,8 @@
   }
 
   async function messageHandler(message: MessageType) {
-    console.log("Post.messageHandler", message);
-    let parsed = JSON.parse(new TextDecoder().decode(message.data));
-    let inReplyTo = parsed["inReplyTo"];
-    if (inReplyTo === post.cid) {
-      comments = [message, ...comments];
-    }
+    comments = [message, ...comments];
+
     // await execute(
     //   "INSERT INTO comments (data,from,inReplyTo,key,sequenceNumber,signature,timestamp,topic,type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
     //   [
@@ -220,17 +223,15 @@
     // );
   }
 
-  const unsubscribe = pubsubHandler.subscribe((message: any) => {
-    if (Object.keys(message).length) {
-      messageHandler(message);
-    }
-  });
-
   onMount(async () => {
     console.log("PostComponent.onMount");
-    if (show_comments) {
-      await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
-    }
+    // if (show_comments) {
+    //   try {
+    //     await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
     // comments = await select(
     //   "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
     //   [post.cid]
@@ -247,11 +248,30 @@
         media = [...media, await getMedia(filename)];
       }
     }
+
+    for (let index = 0; index < 500; index++) {
+      await ipfs.pubsub.publish(
+        post.publisher,
+        createComment(post.cid, String(index))
+        // new TextEncoder().encode(
+        //   JSON.stringify({
+        //     inReplyTo: post.cid,
+        //     body: String(index),
+        //   })
+        // )
+      );
+    }
   });
+
+  const unsubscribe = pubsubHandler.subscribe(
+    post.publisher,
+    post.cid,
+    messageHandler
+  );
 
   onDestroy(async () => {
     console.log("PostComponent.onDestroy");
-    await ipfs.pubsub.unsubscribe(post.publisher, globalPubsubHandler);
+    // await ipfs.pubsub.unsubscribe(post.publisher, globalPubsubHandler);
     unsubscribe;
     // // this is required to avoid a memory leak,
     // // from posts which contain blob media...

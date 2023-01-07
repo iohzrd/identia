@@ -12,8 +12,8 @@ export interface MessageType {
   topic: string;
   type: "signed";
   // custom
-  inReplyTo: string; // cid or seq
-  timestamp: number;
+  inReplyTo?: string; // cid or seq
+  body?: string;
 }
 
 export interface Feed {

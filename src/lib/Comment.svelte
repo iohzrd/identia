@@ -8,10 +8,12 @@
   import type { MessageType } from "$lib/types";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
+  import { Comment } from "./flatbuffers/messages_generated";
   import { execute, select } from "./db";
+  import { flatbuffers } from "flatbuffers/js/flatbuffers";
   import { ipfs } from "$lib/core";
-  import { publish, pubsubHandler } from "$lib/pubsub";
   import { onMount, onDestroy } from "svelte";
+  import { pubsubHandler } from "$lib/pubsub";
 
   export let comment: MessageType;
 
@@ -42,15 +44,8 @@
     replying = false;
   }
 
-  // const messageHandler = async (message: MessageType) => {
   async function messageHandler(message: MessageType) {
-    console.log("Comment.messageHandler", message);
-    let parsed = JSON.parse(new TextDecoder().decode(message.data));
-    let inReplyTo = parsed["inReplyTo"];
-    let sequenceNumber = String(comment.sequenceNumber);
-    if (inReplyTo === sequenceNumber) {
-      sub_comments = [message, ...sub_comments];
-    }
+    sub_comments = [message, ...sub_comments];
 
     // await execute(
     //   "INSERT INTO comments (data,from,inReplyTo,key,sequenceNumber,signature,timestamp,topic,type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
@@ -67,24 +62,31 @@
     //   ]
     // );
   }
-  const unsubscribe = pubsubHandler.subscribe((message: any) => {
-    if (Object.keys(message).length) {
-      messageHandler(message);
-    }
-  });
+
+  const unsubscribe = pubsubHandler.subscribe(
+    comment.topic,
+    String(comment.sequenceNumber),
+    messageHandler
+  );
 
   onMount(async () => {
-    let parsed = JSON.parse(new TextDecoder().decode(comment.data));
-    body = parsed["body"];
     // await ipfs.pubsub.subscribe(comment.topic, messageHandler);
+
+    // let parsed = JSON.parse(new TextDecoder().decode(comment.data));
+    // body = parsed["body"];
+
+    const buff = new flatbuffers.ByteBuffer(comment.data);
+    const c = Comment.getRootAsComment(buff);
+    body = c.body() || "";
+
     // sub_comments = await select("SELECT * FROM comments WHERE inReplyTo = ?", [
     //   inReplyTo,
     // ]);
   });
 
   onDestroy(async () => {
-    unsubscribe;
     // await ipfs.pubsub.unsubscribe(comment.topic, messageHandler);
+    unsubscribe;
   });
 </script>
 

@@ -1,11 +1,11 @@
 table TopicPost {
+  in_reply_to: string; // cid or seq
   body: string;
 }
 
 table Comment {
+  in_reply_to: string; // cid or seq
   body: string;
-  cid: string;
-  inReplyTo: string; // cid or seq
 }
 
 union Message { TopicPost, Comment }
