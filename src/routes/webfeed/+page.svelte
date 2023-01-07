@@ -101,7 +101,7 @@
 {/if} -->
 
 <MediaModalComponent
-  bind:media_modal_idx
-  bind:media_modal_media
-  bind:media_modal_open
+  bind:start={media_modal_idx}
+  bind:media={media_modal_media}
+  bind:open={media_modal_open}
 />
