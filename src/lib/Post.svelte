@@ -185,15 +185,16 @@
   async function postReply() {
     console.log("postReply");
     console.log(reply);
-    let r = {
-      body: reply,
-      inReplyTo: post.cid,
-      timestamp: new Date().getTime(),
-    };
-    console.log(r);
+    // let r = {
+    //   body: reply,
+    //   inReplyTo: post.cid,
+    //   timestamp: new Date().getTime(),
+    // };
+    // console.log(r);
     await ipfs.pubsub.publish(
       post.publisher,
-      new TextEncoder().encode(JSON.stringify(r))
+      createComment(post.cid, reply)
+      // new TextEncoder().encode(JSON.stringify(r))
     );
     reply = "";
     replying = false;
@@ -249,20 +250,20 @@
       }
     }
 
-    if (show_comments) {
-      for (let index = 0; index < 500; index++) {
-        await ipfs.pubsub.publish(
-          post.publisher,
-          createComment(post.cid, String(index))
-          // new TextEncoder().encode(
-          //   JSON.stringify({
-          //     inReplyTo: post.cid,
-          //     body: String(index),
-          //   })
-          // )
-        );
-      }
-    }
+    // if (show_comments) {
+    //   for (let index = 0; index < 500; index++) {
+    //     await ipfs.pubsub.publish(
+    //       post.publisher,
+    //       createComment(post.cid, String(index))
+    //       // new TextEncoder().encode(
+    //       //   JSON.stringify({
+    //       //     inReplyTo: post.cid,
+    //       //     body: String(index),
+    //       //   })
+    //       // )
+    //     );
+    //   }
+    // }
   });
 
   const unsubscribe = pubsubHandler.subscribe(

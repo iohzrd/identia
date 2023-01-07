@@ -9,11 +9,11 @@
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
   import { Comment } from "./flatbuffers/messages_generated";
+  import { createComment, pubsubHandler } from "$lib/pubsub";
   import { execute, select } from "./db";
   import { flatbuffers } from "flatbuffers/js/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler } from "$lib/pubsub";
 
   export let comment: MessageType;
 
@@ -25,15 +25,17 @@
   async function postReply() {
     console.log("Comment.postReply");
     console.log(comment);
-    let r = {
-      body: reply,
-      inReplyTo: String(comment.sequenceNumber),
-      timestamp: new Date().getTime(),
-    };
-    console.log(r);
+    // let r = {
+    //   body: reply,
+    //   inReplyTo: String(comment.sequenceNumber),
+    //   timestamp: new Date().getTime(),
+    // };
+    // console.log(r);
     await ipfs.pubsub.publish(
       comment.topic,
-      new TextEncoder().encode(JSON.stringify(r))
+      createComment(String(comment.sequenceNumber), reply)
+
+      // new TextEncoder().encode(JSON.stringify(r))
     );
     reply = "";
     replying = false;
