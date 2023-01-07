@@ -28,11 +28,11 @@
     "@tauri-apps/api": "^1.2.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^1.1.18",
+    "@libp2p/peer-id": "^2.0.0",
     "@ltd/j-toml": "^1.37.0",
     "@splidejs/svelte-splide": "^0.2.9",
-    "@sveltejs/adapter-static": "^1.0.0",
-    "@sveltejs/kit": "^1.0.5",
+    "@sveltejs/adapter-static": "^1.0.1",
+    "@sveltejs/kit": "^1.0.7",
     "@tauri-apps/cli": "^1.2.2",
     "carbon-components-svelte": "^0.71.0",
     "carbon-icons-svelte": "^11.4.0",
@@ -58,7 +58,7 @@
     "timeago.js": "^4.0.2",
     "tslib": "^2.4.1",
     "typescript": "^4.9.4",
-    "uint8arrays": "^4.0.2",
+    "uint8arrays": "^4.0.3",
     "vite": "^4.0.4"
   }
 }
