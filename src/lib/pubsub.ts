@@ -7,7 +7,6 @@ import { ipfs } from "./core";
 import { select, execute } from "./db";
 
 const subscriptions = new Map();
-const inReplyToSubs = new Map();
 function writable(value = {}) {
   let _val = value;
 
@@ -18,33 +17,20 @@ function writable(value = {}) {
     // }
 
     const topicSubs = subscriptions.get(topic) || new Map();
-    const replySubs = topicSubs.get(inReplyTo) || [];
-    inReplyToSubs.set(inReplyTo, [handler].concat(replySubs));
-    subscriptions.set(topic, inReplyToSubs);
-    console.log(subscriptions);
+    topicSubs.set(inReplyTo, handler);
+    subscriptions.set(topic, topicSubs);
 
     return () => {
       const topicSubs = subscriptions.get(topic) || new Map();
-      const replySubs = topicSubs.get(inReplyTo) || [];
-      const index = replySubs.findIndex((fn: any) => fn === handler);
-      replySubs.splice(index, 1);
-      if (replySubs.length == 0) {
-        console.log("inReplyToSubs.delete");
-        inReplyToSubs.delete(inReplyTo);
-      } else {
-        console.log("inReplyToSubs.set");
-        inReplyToSubs.set(inReplyTo, replySubs);
-      }
-      subscriptions.set(topic, inReplyToSubs);
-      console.log(subscriptions);
+      topicSubs.delete(inReplyTo);
     };
   };
 
   const set = (topic: string, inReplyTo: string, v: any) => {
     _val = v;
     const topicSubs = subscriptions.get(topic) || new Map();
-    const replySubs = topicSubs.get(inReplyTo) || [];
-    replySubs.forEach((fn: any) => fn(_val));
+    const fn = topicSubs.get(inReplyTo) || (() => {});
+    fn(_val);
   };
 
   return { subscribe, set };
