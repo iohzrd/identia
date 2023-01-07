@@ -249,17 +249,19 @@
       }
     }
 
-    for (let index = 0; index < 500; index++) {
-      await ipfs.pubsub.publish(
-        post.publisher,
-        createComment(post.cid, String(index))
-        // new TextEncoder().encode(
-        //   JSON.stringify({
-        //     inReplyTo: post.cid,
-        //     body: String(index),
-        //   })
-        // )
-      );
+    if (show_comments) {
+      for (let index = 0; index < 500; index++) {
+        await ipfs.pubsub.publish(
+          post.publisher,
+          createComment(post.cid, String(index))
+          // new TextEncoder().encode(
+          //   JSON.stringify({
+          //     inReplyTo: post.cid,
+          //     body: String(index),
+          //   })
+          // )
+        );
+      }
     }
   });
 
