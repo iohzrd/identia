@@ -50,6 +50,8 @@
   export let post: Post;
   export let show_comments: boolean = false;
 
+  let unsubscribe: any;
+
   // media modal props...
   let media_modal_idx = 0;
   let media_modal_media: Media[] = [];
@@ -226,13 +228,14 @@
 
   onMount(async () => {
     console.log("PostComponent.onMount");
-    // if (show_comments) {
-    //   try {
-    //     await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
+    if (show_comments) {
+      unsubscribe = await pubsubHandler.subscribe(
+        post.publisher,
+        post.cid,
+        messageHandler
+      );
+    }
+
     // comments = await select(
     //   "SELECT (SequenceNumber) FROM comments WHERE inReplyTo = ?",
     //   [post.cid]
@@ -250,32 +253,27 @@
       }
     }
 
-    // if (show_comments) {
-    //   for (let index = 0; index < 500; index++) {
-    //     await ipfs.pubsub.publish(
-    //       post.publisher,
-    //       createComment(post.cid, String(index))
-    //       // new TextEncoder().encode(
-    //       //   JSON.stringify({
-    //       //     inReplyTo: post.cid,
-    //       //     body: String(index),
-    //       //   })
-    //       // )
-    //     );
-    //   }
-    // }
+    if (show_comments) {
+      for (let index = 0; index < 10; index++) {
+        await ipfs.pubsub.publish(
+          post.publisher,
+          createComment(post.cid, String(index))
+          // new TextEncoder().encode(
+          //   JSON.stringify({
+          //     inReplyTo: post.cid,
+          //     body: String(index),
+          //   })
+          // )
+        );
+      }
+    }
   });
-
-  const unsubscribe = pubsubHandler.subscribe(
-    post.publisher,
-    post.cid,
-    messageHandler
-  );
 
   onDestroy(async () => {
     console.log("PostComponent.onDestroy");
-    // await ipfs.pubsub.unsubscribe(post.publisher, globalPubsubHandler);
-    unsubscribe;
+    if (unsubscribe != undefined) {
+      unsubscribe();
+    }
     // // this is required to avoid a memory leak,
     // // from posts which contain blob media...
     // media.forEach((mediaObj) => {

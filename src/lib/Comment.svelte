@@ -1,14 +1,14 @@
 <script lang="ts">
   import CommentComponent from "$lib/Comment.svelte";
   import Reply from "carbon-icons-svelte/lib/Reply.svelte";
-  import ThumbsDown from "carbon-icons-svelte/lib/ThumbsDown.svelte";
-  import ThumbsDownFilledfrom from "carbon-icons-svelte/lib/ThumbsDownFilled.svelte";
-  import ThumbsUp from "carbon-icons-svelte/lib/ThumbsUp.svelte";
-  import ThumbsUpFilled from "carbon-icons-svelte/lib/ThumbsUpFilled.svelte";
   import type { MessageType } from "$lib/types";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
   import { Comment } from "./flatbuffers/messages_generated";
+  import { ThumbsDown as TD } from "carbon-icons-svelte/lib/";
+  import { ThumbsDownFilled as TDF } from "carbon-icons-svelte/lib/";
+  import { ThumbsUp as TU } from "carbon-icons-svelte/lib/";
+  import { ThumbsUpFilled as TUF } from "carbon-icons-svelte/lib/";
   import { createComment, pubsubHandler } from "$lib/pubsub";
   import { execute, select } from "./db";
   import { flatbuffers } from "flatbuffers/js/flatbuffers";
@@ -17,7 +17,9 @@
 
   export let comment: MessageType;
 
-  let sub_comments: Any[] = [];
+  let unsubscribe: any;
+
+  let sub_comments: any[] = [];
   let replying = false;
   let reply: string = "";
   let body: string = "";
@@ -65,14 +67,12 @@
     // );
   }
 
-  const unsubscribe = pubsubHandler.subscribe(
-    comment.topic,
-    String(comment.sequenceNumber),
-    messageHandler
-  );
-
   onMount(async () => {
-    // await ipfs.pubsub.subscribe(comment.topic, messageHandler);
+    unsubscribe = await pubsubHandler.subscribe(
+      comment.topic,
+      String(comment.sequenceNumber),
+      messageHandler
+    );
 
     // let parsed = JSON.parse(new TextDecoder().decode(comment.data));
     // body = parsed["body"];
@@ -87,8 +87,7 @@
   });
 
   onDestroy(async () => {
-    // await ipfs.pubsub.unsubscribe(comment.topic, messageHandler);
-    unsubscribe;
+    unsubscribe();
   });
 </script>
 
@@ -101,30 +100,15 @@
   <br />
 
   {#if true}
-    <Button icon={ThumbsUp} iconDescription="Like" kind="ghost" size="small" />
+    <Button icon={TU} iconDescription="Like" kind="ghost" size="small" />
   {:else}
-    <Button
-      icon={ThumbsUpFilled}
-      iconDescription="Like"
-      kind="ghost"
-      size="small"
-    />
+    <Button icon={TUF} iconDescription="Like" kind="ghost" size="small" />
   {/if}
 
   {#if true}
-    <Button
-      icon={ThumbsDown}
-      iconDescription="Dislike"
-      kind="ghost"
-      size="small"
-    />
+    <Button icon={TD} iconDescription="Dislike" kind="ghost" size="small" />
   {:else}
-    <Button
-      icon={ThumbsDownFilledfrom}
-      iconDescription="Dislike"
-      kind="ghost"
-      size="small"
-    />
+    <Button icon={TDF} iconDescription="Dislike" kind="ghost" size="small" />
   {/if}
 
   <Button
