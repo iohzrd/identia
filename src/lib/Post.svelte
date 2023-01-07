@@ -229,7 +229,12 @@
   onMount(async () => {
     console.log("PostComponent.onMount");
     if (show_comments) {
-      unsubscribe = await pubsubHandler.subscribe(
+      const activeSubs = await ipfs.pubsub.ls();
+      if (!activeSubs.includes(post.publisher)) {
+        await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
+      }
+
+      unsubscribe = pubsubHandler.subscribe(
         post.publisher,
         post.cid,
         messageHandler

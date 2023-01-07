@@ -68,7 +68,7 @@
   }
 
   onMount(async () => {
-    unsubscribe = await pubsubHandler.subscribe(
+    unsubscribe = pubsubHandler.subscribe(
       comment.topic,
       String(comment.sequenceNumber),
       messageHandler

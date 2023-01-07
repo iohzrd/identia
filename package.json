@@ -43,7 +43,7 @@
     "get-video-id": "^3.6.5",
     "go-ipfs": "^0.17.0",
     "ipfs-http-client": "^59.0.0",
-    "is-ipfs": "^7.0.3",
+    "is-ipfs": "^8.0.1",
     "it-all": "^2.0.0",
     "linkify-html": "^4.1.0",
     "semver": "^7.3.8",

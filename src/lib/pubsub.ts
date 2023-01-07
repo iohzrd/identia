@@ -8,11 +8,7 @@ import { select, execute } from "./db";
 
 const subscriptions = new Map();
 function subscriptionStore() {
-  const subscribe = async (topic: string, inReplyTo: string, handler: any) => {
-    // const activeSubs = await ipfs.pubsub.ls();
-    // if (!activeSubs.includes(topic)) {
-    //   await ipfs.pubsub.subscribe(topic, globalPubsubHandler);
-    // }
+  const subscribe = (topic: string, inReplyTo: string, handler: any) => {
     const topicSubs = subscriptions.get(topic) || new Map();
     topicSubs.set(inReplyTo, handler);
     subscriptions.set(topic, topicSubs);
