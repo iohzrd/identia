@@ -7,27 +7,28 @@ import { ipfs } from "./core";
 import { select, execute } from "./db";
 
 const subscriptions = new Map();
+
 function subscriptionStore() {
-  const subscribe = (topic: string, inReplyTo: string, handler: any) => {
+  const subscribe = (topic: string, subTopic: string, handler: any) => {
     const topicSubs = subscriptions.get(topic) || new Map();
-    topicSubs.set(inReplyTo, handler);
+    topicSubs.set(subTopic, handler);
     subscriptions.set(topic, topicSubs);
     return () => {
       const topicSubs = subscriptions.get(topic) || new Map();
-      topicSubs.delete(inReplyTo);
+      topicSubs.delete(subTopic);
     };
   };
-
-  const set = (topic: string, inReplyTo: string, message: any) => {
+  const set = (topic: string, subTopic: string, message: any) => {
     const topicSubs = subscriptions.get(topic) || new Map();
-    const fn = topicSubs.get(inReplyTo) || (() => {});
-    fn(message);
+    if (topicSubs.has(subTopic)) {
+      const fn = topicSubs.get(subTopic);
+      fn(message);
+    }
   };
-
   return { subscribe, set };
 }
 
-export const pubsubHandler = subscriptionStore();
+export const store = subscriptionStore();
 
 export async function globalPubsubHandler(message: Message) {
   let topic = message.topic;
@@ -37,7 +38,7 @@ export async function globalPubsubHandler(message: Message) {
   const comment = Comment.getRootAsComment(buff);
   const inReplyTo: string | null = comment.inReplyTo();
   if (inReplyTo != null) {
-    pubsubHandler.set(topic, inReplyTo, message);
+    store.set(topic, inReplyTo, message);
   }
 }
 
