@@ -28,7 +28,7 @@ function subscriptionStore() {
   return { subscribe, set };
 }
 
-export const store = subscriptionStore();
+export const pubsubHandler = subscriptionStore();
 
 export async function globalPubsubHandler(message: Message) {
   let topic = message.topic;
@@ -38,7 +38,7 @@ export async function globalPubsubHandler(message: Message) {
   const comment = Comment.getRootAsComment(buff);
   const inReplyTo: string | null = comment.inReplyTo();
   if (inReplyTo != null) {
-    store.set(topic, inReplyTo, message);
+    pubsubHandler.set(topic, inReplyTo, message);
   }
 }
 
