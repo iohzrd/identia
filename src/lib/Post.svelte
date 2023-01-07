@@ -276,6 +276,13 @@
 
   onDestroy(async () => {
     console.log("PostComponent.onDestroy");
+    if (post.publisher != ipfs_id) {
+      const activeSubs = await ipfs.pubsub.ls();
+      if (activeSubs.includes(post.publisher)) {
+        await ipfs.pubsub.unsubscribe(post.publisher, globalPubsubHandler);
+      }
+    }
+
     if (unsubscribe != undefined) {
       unsubscribe();
     }
