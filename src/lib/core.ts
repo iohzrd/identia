@@ -51,7 +51,6 @@ export async function getIdentityFromIPFS(
   publisher: string
 ): Promise<Identity> {
   console.log("getIdentityFromIPFS: ", publisher);
-
   if (!publisher.includes("/ipns/")) {
     publisher = "/ipns/" + publisher;
   }
@@ -200,6 +199,10 @@ export async function identityInDB(publisher: string): Promise<boolean> {
 export async function publishIdentity(identity: Identity): Promise<Identity> {
   console.log("publishIdentity: ", identity);
   identity.timestamp = new Date().getTime();
+  if (!identity.cid?.includes("/ipfs/")) {
+    identity.cid = "/ipfs/" + identity.cid;
+  }
+  identity.provenance = identity.cid;
   delete identity.cid;
   const json = JSON.stringify(identity);
   console.log(json);
@@ -233,6 +236,7 @@ export function getNewIdentity(publisher: string): Identity {
     meta: {},
     posts: [],
     publisher: publisher,
+    provenance: "",
     timestamp: 0,
   };
 }

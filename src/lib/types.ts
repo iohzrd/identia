@@ -29,6 +29,7 @@ export interface Identity {
   meta: object;
   posts: string[];
   publisher: string;
+  provenance?: string;
   timestamp: number;
 }
 
