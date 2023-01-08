@@ -1,98 +1,49 @@
 <script lang="ts">
+  import TopicPostComponent from "$lib/TopicPost.svelte";
   import type { PageData } from "./$types";
-  import type { Message } from "ipfs-http-client/pubsub/subscribe";
-  import FileDrop from "svelte-tauri-filedrop";
-  import { createTopicPost, parsePubsubMessage } from "$lib/pubsub";
+  import { createComment, parseComment, pubsubHandler } from "$lib/pubsub";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-  import {
-    Button,
-    FileUploaderItem,
-    Form,
-    FormGroup,
-    ProgressBar,
-    TextArea,
-    Tile,
-  } from "carbon-components-svelte";
+  import { Button, TextArea } from "carbon-components-svelte";
+  import type { MessageType } from "$lib/types";
 
   export let data: PageData;
 
-  let posts: string[] = [];
-
+  let unsubscribe: any;
+  let posts: MessageType[] = [];
   let body: string = "";
-  let files: string[] = [];
-  let posting = false;
-
-  async function handleFiles() {
-    console.log("handleFiles");
-  }
-
-  async function removeFile(index: number) {
-    console.log("removeFile", index);
-  }
 
   async function post() {
     console.log("post");
-    ipfs.pubsub.publish(data.topic, createTopicPost(body));
+    ipfs.pubsub.publish(data.topic, createComment("root", body));
     body = "";
   }
 
-  async function openDialog() {
-    console.log("openDialog");
+  function messageHandler(message: MessageType) {
+    console.log("topic.messageHandler", message);
+    posts = [message, ...posts];
   }
 
-  function onTopicMessage(message: Message) {
-    console.log("onTopicMessage", message);
-    let post = parsePubsubMessage(message);
-    if (post != undefined) {
-      posts = [post, ...posts];
-    }
-  }
-
-  onMount(async () => {
+  onMount(() => {
     console.log("TopicFeed.onMount");
-    await ipfs.pubsub.subscribe(data.topic, onTopicMessage);
+    unsubscribe = pubsubHandler.subscribe(data.topic, "root", messageHandler);
   });
 
-  onDestroy(async () => {
+  onDestroy(() => {
     console.log("TopicFeed.onDestroy");
-    await ipfs.pubsub.unsubscribe(data.topic, onTopicMessage);
+    if (unsubscribe != undefined) {
+      unsubscribe();
+    }
   });
 </script>
 
-<Form>
-  <FormGroup>
-    <FileDrop {handleFiles}>
-      <TextArea
-        bind:value={body}
-        disabled={posting}
-        labelText="/{data.topic}/"
-        placeholder="What's happening?"
-      />
+<TextArea
+  bind:value={body}
+  labelText="/{data.topic}/"
+  placeholder="What's happening?"
+/>
+<Button on:click={post}>Post</Button>
 
-      {#each files as file, i}
-        <FileUploaderItem
-          status="edit"
-          name={file}
-          on:delete={() => removeFile(i)}
-        />
-      {/each}
-      <Button on:click={openDialog} disabled={posting}>Add files</Button>
-
-      {#if !posting}
-        <Button
-          on:click={post}
-          disabled={posting || (files.length < 1 && body.length < 1)}
-        >
-          Post
-        </Button>
-      {:else}
-        <ProgressBar helperText="Publishing..." />
-      {/if}
-    </FileDrop>
-  </FormGroup>
-</Form>
-
-{#each posts as post}
-  <Tile>{post}</Tile>
+{#each posts as post (post.sequenceNumber)}
+  <TopicPostComponent {post} />
 {/each}
