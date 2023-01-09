@@ -1,6 +1,5 @@
 CREATE TABLE "topics" (
-    "topic" TEXT NOT NULL UNIQUE,
-    PRIMARY KEY("topic")
+    "topic" TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE "topic_post" (
@@ -11,6 +10,5 @@ CREATE TABLE "topic_post" (
     "sequenceNumber"    INTEGER NOT NULL,
     "signature"         BLOB NOT NULL,
     "key"               BLOB NOT NULL,
-    "timestamp"         INTEGER NOT NULL,
-    PRIMARY KEY("sequenceNumber")
+    "timestamp"         INTEGER NOT NULL
 );

@@ -24,23 +24,17 @@
   import ext2mime from "ext2mime";
   import linkifyHtml from "linkify-html";
   import type { Media, Post } from "$lib/types";
-  import type { MessageType } from "$lib/types";
+  import type { MessageExtended } from "$lib/types";
   import { concat } from "uint8arrays/concat";
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
-  import {
-    createComment,
-    pubsubHandler,
-    globalPubsubHandler,
-  } from "$lib/pubsub";
+  import { pubsubHandler, globalPubsubHandler } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
-
-  import { Comment } from "./flatbuffers/messages_generated";
-  import { flatbuffers } from "flatbuffers/js/flatbuffers";
+  import { createJson, createTopical } from "$lib/flatbuffers";
 
   // import getVideoId from "get-video-id";
   // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
@@ -60,7 +54,7 @@
   let deleting: boolean = false;
   let media: Media[] = [];
 
-  let comments: MessageType[] = [];
+  let comments: MessageExtended[] = [];
   let replying = false;
   let reply: string = "";
 
@@ -186,17 +180,14 @@
 
   async function postReply() {
     console.log("postReply");
-    console.log(reply);
-    // let r = {
-    //   body: reply,
-    //   inReplyTo: post.cid,
-    //   timestamp: new Date().getTime(),
-    // };
-    // console.log(r);
+
     await ipfs.pubsub.publish(
       post.publisher,
-      createComment(post.cid, reply)
-      // new TextEncoder().encode(JSON.stringify(r))
+      // createTopical(post.cid, reply, [])
+      createJson({
+        body: reply,
+        inReplyTo: post.cid,
+      })
     );
     reply = "";
     replying = false;
@@ -207,7 +198,8 @@
     replying = false;
   }
 
-  async function messageHandler(message: MessageType) {
+  async function messageHandler(message: MessageExtended) {
+    console.log("Post.messageHandler");
     comments = [message, ...comments];
 
     // await execute(

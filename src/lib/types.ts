@@ -2,7 +2,7 @@
 // import type { Message } from '@libp2p/interface-pubsub'
 import type { PeerId } from "@libp2p/interface-peer-id";
 
-export interface MessageType {
+export interface MessageExtended {
   // pubsub
   data: Uint8Array;
   from: PeerId;
@@ -14,6 +14,7 @@ export interface MessageType {
   // custom
   inReplyTo?: string; // cid or seq
   body?: string;
+  files?: string[];
 }
 
 export interface Feed {

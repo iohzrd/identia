@@ -1,15 +1,14 @@
 <script lang="ts">
   import Reply from "carbon-icons-svelte/lib/Reply.svelte";
   import TopicPostComponent from "$lib/TopicPost.svelte";
-  import type { MessageType } from "$lib/types";
+  import type { MessageExtended } from "$lib/types";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
-  import { Comment } from "./flatbuffers/messages_generated";
-  import { createComment, pubsubHandler } from "$lib/pubsub";
-  import { flatbuffers } from "flatbuffers/js/flatbuffers";
+  import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
+  import { pubsubHandler } from "$lib/pubsub";
 
-  export let post: MessageType;
+  export let post: MessageExtended;
 
   let unsubscribe: any;
 
@@ -22,7 +21,7 @@
     console.log("TopicPost.postReply");
     await ipfs.pubsub.publish(
       post.topic,
-      createComment(String(post.sequenceNumber), reply_body)
+      createJson({ inReplyTo: String(post.sequenceNumber), body: reply_body })
     );
     reply_body = "";
     replying = false;
@@ -33,7 +32,7 @@
     replying = false;
   }
 
-  async function messageHandler(message: MessageType) {
+  async function messageHandler(message: MessageExtended) {
     sub_replies = [message, ...sub_replies];
   }
 
@@ -43,10 +42,6 @@
       String(post.sequenceNumber),
       messageHandler
     );
-
-    const buff = new flatbuffers.ByteBuffer(post.data);
-    const c = Comment.getRootAsComment(buff);
-    body = c.body() || "";
   });
 
   onDestroy(async () => {
@@ -58,7 +53,7 @@
   {post.from}
   <br />
   <br />
-  {body}
+  {post.body}
   <br />
   <br />
 

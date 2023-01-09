@@ -1,43 +1,33 @@
 <script lang="ts">
   import CommentComponent from "$lib/Comment.svelte";
   import Reply from "carbon-icons-svelte/lib/Reply.svelte";
-  import type { MessageType } from "$lib/types";
+  import type { MessageExtended } from "$lib/types";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
-  import { Comment } from "./flatbuffers/messages_generated";
   import { ThumbsDown as TD } from "carbon-icons-svelte/lib/";
   import { ThumbsDownFilled as TDF } from "carbon-icons-svelte/lib/";
   import { ThumbsUp as TU } from "carbon-icons-svelte/lib/";
   import { ThumbsUpFilled as TUF } from "carbon-icons-svelte/lib/";
-  import { createComment, pubsubHandler } from "$lib/pubsub";
+  import { createJson, createTopical } from "$lib/flatbuffers";
   import { execute, select } from "./db";
-  import { flatbuffers } from "flatbuffers/js/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
+  import { pubsubHandler } from "$lib/pubsub";
 
-  export let comment: MessageType;
+  export let comment: MessageExtended;
 
+  let reply: string = "";
+  let replying = false;
+  let sub_comments: any[] = [];
   let unsubscribe: any;
 
-  let sub_comments: any[] = [];
-  let replying = false;
-  let reply: string = "";
-  let body: string = "";
-
   async function postReply() {
-    console.log("Comment.postReply");
-    console.log(comment);
-    // let r = {
-    //   body: reply,
-    //   inReplyTo: String(comment.sequenceNumber),
-    //   timestamp: new Date().getTime(),
-    // };
-    // console.log(r);
     await ipfs.pubsub.publish(
       comment.topic,
-      createComment(String(comment.sequenceNumber), reply)
-
-      // new TextEncoder().encode(JSON.stringify(r))
+      createJson({
+        body: reply,
+        inReplyTo: String(comment.sequenceNumber),
+      })
     );
     reply = "";
     replying = false;
@@ -48,7 +38,7 @@
     replying = false;
   }
 
-  async function messageHandler(message: MessageType) {
+  async function messageHandler(message: MessageExtended) {
     sub_comments = [message, ...sub_comments];
 
     // await execute(
@@ -73,14 +63,6 @@
       String(comment.sequenceNumber),
       messageHandler
     );
-
-    // let parsed = JSON.parse(new TextDecoder().decode(comment.data));
-    // body = parsed["body"];
-
-    const buff = new flatbuffers.ByteBuffer(comment.data);
-    const c = Comment.getRootAsComment(buff);
-    body = c.body() || "";
-
     // sub_comments = await select("SELECT * FROM comments WHERE inReplyTo = ?", [
     //   inReplyTo,
     // ]);
@@ -95,7 +77,7 @@
   {comment.from}
   <br />
   <br />
-  {body}
+  {comment.body}
   <br />
   <br />
 

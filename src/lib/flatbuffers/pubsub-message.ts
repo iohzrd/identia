@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Message, unionToMessage, unionListToMessage } from './message.js';
+import { MessageType, unionToMessageType, unionListToMessageType } from './message-type.js';
 
 
 export class PubsubMessage {
@@ -23,9 +23,9 @@ static getSizePrefixedRootAsPubsubMessage(bb:flatbuffers.ByteBuffer, obj?:Pubsub
   return (obj || new PubsubMessage()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-messageType():Message {
+messageType():MessageType {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readUint8(this.bb_pos + offset) : Message.NONE;
+  return offset ? this.bb!.readUint8(this.bb_pos + offset) : MessageType.NONE;
 }
 
 message<T extends flatbuffers.Table>(obj:any):any|null {
@@ -42,8 +42,8 @@ static startPubsubMessage(builder:flatbuffers.Builder) {
   builder.startObject(3);
 }
 
-static addMessageType(builder:flatbuffers.Builder, messageType:Message) {
-  builder.addFieldInt8(0, messageType, Message.NONE);
+static addMessageType(builder:flatbuffers.Builder, messageType:MessageType) {
+  builder.addFieldInt8(0, messageType, MessageType.NONE);
 }
 
 static addMessage(builder:flatbuffers.Builder, messageOffset:flatbuffers.Offset) {
@@ -67,7 +67,7 @@ static finishSizePrefixedPubsubMessageBuffer(builder:flatbuffers.Builder, offset
   builder.finish(offset, undefined, true);
 }
 
-static createPubsubMessage(builder:flatbuffers.Builder, messageType:Message, messageOffset:flatbuffers.Offset, timestamp:bigint):flatbuffers.Offset {
+static createPubsubMessage(builder:flatbuffers.Builder, messageType:MessageType, messageOffset:flatbuffers.Offset, timestamp:bigint):flatbuffers.Offset {
   PubsubMessage.startPubsubMessage(builder);
   PubsubMessage.addMessageType(builder, messageType);
   PubsubMessage.addMessage(builder, messageOffset);

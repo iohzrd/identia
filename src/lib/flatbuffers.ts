@@ -1,21 +1,54 @@
 import type { Message } from "ipfs-http-client/pubsub/subscribe";
 import { flatbuffers } from "flatbuffers/js/flatbuffers";
 import {
-  Message as MessageType,
+  Json,
+  MessageType,
   PubsubMessage,
-  TopicPost,
+  Topical,
 } from "./flatbuffers/messages_generated";
 
-export function createTopicPost(body: string): Uint8Array {
+export function createJson(data: string | object): Uint8Array {
+  let str: string;
+  if (typeof data === "object") {
+    str = JSON.stringify(data);
+  } else {
+    str = data;
+  }
   let builder = new flatbuffers.Builder();
-  let messageOffset = TopicPost.createTopicPost(
+  let dataOffset = Json.createJson(builder, builder.createString(str));
+  builder.finish(dataOffset);
+  let pubsubOffset = PubsubMessage.createPubsubMessage(
     builder,
-    builder.createString(body)
+    MessageType.Json,
+    dataOffset,
+    BigInt(new Date().getTime())
+  );
+  builder.finish(pubsubOffset);
+  return builder.asUint8Array();
+}
+
+export function createTopical(
+  topic: string,
+  body: string,
+  files: string[]
+): Uint8Array {
+  let builder = new flatbuffers.Builder();
+  let topicOffset = builder.createString(topic);
+  let bodyOffset = builder.createString(body);
+  let filesOffset = Topical.createFilesVector(
+    builder,
+    builder.createObjectOffsetList(files)
+  );
+  let messageOffset = Topical.createTopical(
+    builder,
+    topicOffset,
+    bodyOffset,
+    filesOffset
   );
   builder.finish(messageOffset);
   let pubsubOffset = PubsubMessage.createPubsubMessage(
     builder,
-    MessageType.TopicPost,
+    MessageType.Topical,
     messageOffset,
     BigInt(new Date().getTime())
   );
@@ -24,23 +57,21 @@ export function createTopicPost(body: string): Uint8Array {
 }
 
 export function parsePubsubMessage(message: Message) {
-  let parsed = undefined;
+  console.log("flatbuffers.parsePubsubMessage");
   let buff = new flatbuffers.ByteBuffer(message.data);
   let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
   if (pubsubMessage.messageType() != undefined) {
-    // let timestamp = pubsubMessage.timestamp();
-    // let id = peerIdFromPeerId(message.from);
-    // console.log(id);
     switch (pubsubMessage.messageType()) {
-      case MessageType.NONE:
-        break;
-      case MessageType.Comment:
-        break;
-      case MessageType.TopicPost:
-        let msg = pubsubMessage.message(TopicPost.getRootAsTopicPost(buff));
-        parsed = msg.body();
-        break;
+      case MessageType.Json:
+        let j: Json = pubsubMessage.message(Json.getRootAsJson(buff));
+        return JSON.parse(j.data() || "");
+      case MessageType.Topical:
+        let t: Topical = pubsubMessage.message(Topical.getRootAsTopical(buff));
+        return {
+          inReplyTo: t.inReplyTo(),
+          body: t.body(),
+          files: t.files(t.filesLength()),
+        };
     }
   }
-  return parsed;
 }

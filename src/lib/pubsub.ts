@@ -1,11 +1,23 @@
 import type { Message } from "ipfs-http-client/pubsub/subscribe";
+import type { MessageExtended } from "$lib/types";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import { Comment } from "./flatbuffers/messages_generated";
+import {
+  createJson,
+  createTopical,
+  parsePubsubMessage,
+} from "$lib/flatbuffers";
+import {
+  Json,
+  MessageType,
+  PubsubMessage,
+  Topical,
+} from "./flatbuffers/messages_generated";
 import { flatbuffers } from "flatbuffers/js/flatbuffers";
 import { ipfs } from "./core";
-// import { peerIdFromPeerId } from "@libp2p/peer-id";
+import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
 
+const blacklist: string[] = [];
 const subscriptions = new Map();
 
 function subscriptionStore() {
@@ -30,15 +42,35 @@ function subscriptionStore() {
 
 export const pubsubHandler = subscriptionStore();
 
-export async function globalPubsubHandler(message: Message) {
-  let topic = message.topic;
-  // let parsed = JSON.parse(new TextDecoder().decode(message.data));
-  // let inReplyTo = String(parsed["inReplyTo"]);
-  const buff = new flatbuffers.ByteBuffer(message.data);
-  const comment = Comment.getRootAsComment(buff);
-  const inReplyTo: string | null = comment.inReplyTo();
-  if (inReplyTo != null) {
-    pubsubHandler.set(topic, inReplyTo, message);
+export async function globalPubsubHandler(message: MessageExtended) {
+  // console.log("globalPubsubHandler");
+  if (message.type === "signed" && !blacklist.includes(String(message.from))) {
+    let buff = new flatbuffers.ByteBuffer(message.data);
+    let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
+    let messageType = pubsubMessage.messageType();
+    // let timestamp = pubsubMessage.timestamp();
+    switch (messageType) {
+      case MessageType.Json:
+        // console.log("Json");
+        let j: Json = pubsubMessage.message(Json.getRootAsJson(buff));
+        let parsed = JSON.parse(j.data() || "");
+        message.inReplyTo = parsed["inReplyTo"] || "";
+        message.body = parsed["body"] || "";
+        message.files = parsed["files"] || [];
+        break;
+      case MessageType.Topical:
+        // console.log("Topical");
+        let t: Topical = pubsubMessage.message(Topical.getRootAsTopical(buff));
+        message.inReplyTo = t.inReplyTo() || "";
+        message.body = t.body() || "";
+        // message.files = t.files(t.filesLength()) || [];
+        break;
+    }
+    // console.log("inReplyTo");
+    // console.log(message.inReplyTo);
+    if (message.inReplyTo != null) {
+      pubsubHandler.set(message.topic, message.inReplyTo, message);
+    }
   }
 }
 
@@ -56,24 +88,4 @@ export async function insertTopicIntoDB(topic: string): Promise<QueryResult> {
 export async function deleteTopicFromDB(topic: string): Promise<QueryResult> {
   console.log("deleteTopicFromDB: ", topic);
   return await execute("DELETE FROM topics WHERE topic = ?", [topic]);
-}
-
-export function createComment(inReplyTo: string, body: string): Uint8Array {
-  let builder = new flatbuffers.Builder();
-  let messageOffset = Comment.createComment(
-    builder,
-    builder.createString(inReplyTo),
-    builder.createString(body)
-  );
-  builder.finish(messageOffset);
-  return builder.asUint8Array();
-}
-
-export function parseComment(data: Uint8Array) {
-  let buff = new flatbuffers.ByteBuffer(data);
-  let comment = Comment.getRootAsComment(buff);
-  return {
-    inReplyTo: comment.inReplyTo(),
-    body: comment.body(),
-  };
 }
