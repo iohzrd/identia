@@ -6,7 +6,7 @@
   import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler } from "$lib/pubsub";
+  import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
 
   export let data: PageData;
 
@@ -28,13 +28,21 @@
     posts = [message, ...posts];
   }
 
-  onMount(() => {
+  onMount(async () => {
     console.log("TopicFeed.onMount");
-    unsubscribe = pubsubHandler.subscribe(data.topic, "root", messageHandler);
+    const activeSubs = await ipfs.pubsub.ls();
+    if (!activeSubs.includes(data.topic)) {
+      await ipfs.pubsub.subscribe(data.topic, globalPubsubHandler);
+    }
+    unsubscribe = pubsubStore.subscribe(data.topic, "root", messageHandler);
   });
 
-  onDestroy(() => {
+  onDestroy(async () => {
     console.log("TopicFeed.onDestroy");
+    const activeSubs = await ipfs.pubsub.ls();
+    if (activeSubs.includes(data.topic)) {
+      await ipfs.pubsub.unsubscribe(data.topic, globalPubsubHandler);
+    }
     if (unsubscribe != undefined) {
       unsubscribe();
     }

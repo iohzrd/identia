@@ -6,7 +6,7 @@
   import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler } from "$lib/pubsub";
+  import { pubsubStore } from "$lib/pubsub";
 
   export let post: MessageExtended;
 
@@ -37,7 +37,7 @@
   }
 
   onMount(async () => {
-    unsubscribe = pubsubHandler.subscribe(
+    unsubscribe = pubsubStore.subscribe(
       post.topic,
       String(post.sequenceNumber),
       messageHandler

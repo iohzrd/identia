@@ -29,7 +29,7 @@
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler, globalPubsubHandler } from "$lib/pubsub";
+  import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
@@ -226,7 +226,7 @@
         await ipfs.pubsub.subscribe(post.publisher, globalPubsubHandler);
       }
 
-      unsubscribe = pubsubHandler.subscribe(
+      unsubscribe = pubsubStore.subscribe(
         post.publisher,
         post.cid,
         messageHandler

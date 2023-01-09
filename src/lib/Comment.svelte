@@ -12,7 +12,7 @@
   import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubHandler } from "$lib/pubsub";
+  import { pubsubStore } from "$lib/pubsub";
 
   export let comment: MessageExtended;
 
@@ -58,7 +58,7 @@
   }
 
   onMount(async () => {
-    unsubscribe = pubsubHandler.subscribe(
+    unsubscribe = pubsubStore.subscribe(
       comment.topic,
       String(comment.sequenceNumber),
       messageHandler

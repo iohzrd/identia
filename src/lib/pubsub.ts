@@ -1,11 +1,5 @@
-import type { Message } from "ipfs-http-client/pubsub/subscribe";
 import type { MessageExtended } from "$lib/types";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import {
-  createJson,
-  createTopical,
-  parsePubsubMessage,
-} from "$lib/flatbuffers";
 import {
   Json,
   MessageType,
@@ -40,7 +34,7 @@ function subscriptionStore() {
   return { subscribe, set };
 }
 
-export const pubsubHandler = subscriptionStore();
+export const pubsubStore = subscriptionStore();
 
 export async function globalPubsubHandler(message: MessageExtended) {
   // console.log("globalPubsubHandler");
@@ -69,7 +63,7 @@ export async function globalPubsubHandler(message: MessageExtended) {
     // console.log("inReplyTo");
     // console.log(message.inReplyTo);
     if (message.inReplyTo != null) {
-      pubsubHandler.set(message.topic, message.inReplyTo, message);
+      pubsubStore.set(message.topic, message.inReplyTo, message);
     }
   }
 }
