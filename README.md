@@ -73,12 +73,12 @@ These relationships can be stored in a post object to add context to a specific 
 - [x] migrate to SQLite...
 - [x] Paginate feed
 - [x] enable(fix) audio/video playback
-- [ ] implement custom IPFS in rust-libp2p
-- [ ] "re-post" / mirror a post
 - [ ] re-implement comment system via pubsub
 - [ ] implement image(media) board system via pubsub
+- [ ] implement custom IPFS in rust-libp2p
+- [ ] mobile...
+- [ ] "re-post" / mirror a post
 - [ ] include crypto signature of body in post
-- [ ] implement private messaging with libsignal or [DiscoCrypto](https://discocrypto.com/#/)
 - [ ] mechanism for exporting / importing, identity / posts
 - [ ] strip exif data from images
 - [ ] include index.html with posts to allow styling for browser consumption...
@@ -87,10 +87,6 @@ These relationships can be stored in a post object to add context to a specific 
 - [ ] meta view
 - [ ] settings view
 - [ ] keybase-like functionality...
-- [ ] integrate embedded IPFS to replace kubo(go-ipfs)...
-- [ ] mobile app...
-- [ ] re-imlpement tor hidden service
-- [ ] serve web-frendly html with identity + TOR
 
 ## Follow me
 
