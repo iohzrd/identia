@@ -26,7 +26,12 @@
   import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
   import type { IDResult } from "ipfs-core-types/src/root";
   import { Add, UserAvatarFilled } from "carbon-icons-svelte";
-  import { followPublisher, getIdentity, ipfs } from "$lib/core";
+  import {
+    followPublisher,
+    getIdentity,
+    ipfs,
+    publishIdentity,
+  } from "$lib/core";
   import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
   import {
     deleteTopicFromDB,
@@ -41,9 +46,11 @@
 
   let isSideNavOpen = false;
 
-  let app_version: string;
   let ipfs_id: string;
   let ipfs_info: IDResult;
+  let republish: any;
+
+  let app_version: string;
   let ipfs_version: string;
   let tauri_version: string;
 
@@ -88,15 +95,24 @@
     ipfs_info = await ipfs.id();
     ipfs_version = ipfs_info.agentVersion.split("/")[1];
     console.log(ipfs_info);
-    await getIdentity(ipfs_info.id.toString());
+    await getIdentity(ipfs_info.id.toString()); // init identity
     ipfs_id = ipfs_info.id.toString();
     subs = await getTopicsFromDB();
     for await (const topic of [ipfs_id, ...subs]) {
       await ipfs.pubsub.subscribe(topic, globalPubsubHandler);
     }
+
+    // periodically republish...
+    // should refactor to republish based on previous
+    await publishIdentity();
+    republish = setInterval(async () => {
+      await publishIdentity();
+    }, 1000 * 60 * 60);
   });
 
-  onDestroy(() => {});
+  onDestroy(() => {
+    clearInterval(republish);
+  });
 </script>
 
 {#if ipfs_id}

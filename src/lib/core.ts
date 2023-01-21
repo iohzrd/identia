@@ -196,7 +196,12 @@ export async function identityInDB(publisher: string): Promise<boolean> {
   return rows.length > 0;
 }
 
-export async function publishIdentity(identity: Identity): Promise<Identity> {
+export async function publishIdentity(
+  identity: Identity | undefined = undefined
+): Promise<Identity> {
+  if (identity == undefined) {
+    identity = await getIdentityFromDB();
+  }
   console.log("publishIdentity: ", identity);
   identity.timestamp = new Date().getTime();
   if (!identity.cid?.includes("/ipfs/")) {

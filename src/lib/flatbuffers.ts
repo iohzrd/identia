@@ -1,5 +1,5 @@
 import type { Message } from "ipfs-http-client/pubsub/subscribe";
-import { flatbuffers } from "flatbuffers/js/flatbuffers";
+import { Builder, ByteBuffer } from "flatbuffers";
 import {
   Json,
   MessageType,
@@ -14,7 +14,7 @@ export function createJson(data: string | object): Uint8Array {
   } else {
     str = data;
   }
-  let builder = new flatbuffers.Builder();
+  let builder = new Builder();
   let dataOffset = Json.createJson(builder, builder.createString(str));
   builder.finish(dataOffset);
   let pubsubOffset = PubsubMessage.createPubsubMessage(
@@ -32,7 +32,7 @@ export function createTopical(
   body: string,
   files: string[]
 ): Uint8Array {
-  let builder = new flatbuffers.Builder();
+  let builder = new Builder();
   let topicOffset = builder.createString(topic);
   let bodyOffset = builder.createString(body);
   let filesOffset = Topical.createFilesVector(
@@ -58,7 +58,7 @@ export function createTopical(
 
 export function parsePubsubMessage(message: Message) {
   console.log("flatbuffers.parsePubsubMessage");
-  let buff = new flatbuffers.ByteBuffer(message.data);
+  let buff = new ByteBuffer(message.data);
   let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
   if (pubsubMessage.messageType() != undefined) {
     switch (pubsubMessage.messageType()) {

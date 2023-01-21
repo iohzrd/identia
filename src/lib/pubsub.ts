@@ -6,7 +6,7 @@ import {
   PubsubMessage,
   Topical,
 } from "./flatbuffers/messages_generated";
-import { flatbuffers } from "flatbuffers/js/flatbuffers";
+import { ByteBuffer } from "flatbuffers";
 import { ipfs } from "./core";
 import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
@@ -39,7 +39,7 @@ export const pubsubStore = subscriptionStore();
 export async function globalPubsubHandler(message: MessageExtended) {
   // console.log("globalPubsubHandler");
   if (message.type === "signed" && !blacklist.includes(String(message.from))) {
-    let buff = new flatbuffers.ByteBuffer(message.data);
+    let buff = new ByteBuffer(message.data);
     let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
     let messageType = pubsubMessage.messageType();
     // let timestamp = pubsubMessage.timestamp();
