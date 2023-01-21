@@ -91,8 +91,8 @@
 
   async function republish() {
     let identity = await getIdentity(ipfs_id);
-    let expiry = new Date().getTime() - 1000 * 60 * 60 * 12;
-    if (identity.timestamp < expiry) {
+    let next = new Date().getTime() - 1000 * 60 * 60 * 12;
+    if (identity.timestamp < next) {
       console.log("republishing identity...");
       await publishIdentity();
     }
