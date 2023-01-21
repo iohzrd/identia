@@ -60,6 +60,7 @@
     ipfs_id = ipfs_info.id.toString();
     if (data.publisher) {
       identity = await getIdentity(data.publisher);
+      console.log(identity);
       following = await Promise.all(
         identity.following.map(async (publisher) => {
           return await getIdentity(publisher);
