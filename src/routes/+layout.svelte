@@ -30,8 +30,7 @@
     followPublisher,
     getIdentity,
     ipfs,
-    publishIdentity,
-    updateIdentityDB,
+    republishIdentity,
   } from "$lib/core";
   import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
   import {
@@ -90,15 +89,6 @@
     subs = await getTopicsFromDB();
   }
 
-  async function republish() {
-    const identity = await getIdentity(ipfs_id);
-    const interval = new Date().getTime() - 1000 * 60 * 60 * 12;
-    if (identity.timestamp < interval) {
-      const published = await publishIdentity();
-      await updateIdentityDB(published);
-    }
-  }
-
   onMount(async () => {
     app_version = await getVersion();
     tauri_version = await getTauriVersion();
@@ -114,8 +104,8 @@
 
     // periodically republish...
     // should refactor to republish based on previous
-    await republish();
-    republishInterval = setInterval(republish, 1000 * 60);
+    await republishIdentity();
+    republishInterval = setInterval(republishIdentity, 1000 * 60);
   });
 
   onDestroy(() => {

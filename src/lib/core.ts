@@ -230,6 +230,15 @@ export async function publishIdentity(
   };
 }
 
+export async function republishIdentity() {
+  const identity = await getIdentityFromDB();
+  const interval = new Date().getTime() - 1000 * 60 * 60 * 12;
+  if (identity.timestamp < interval) {
+    const published = await publishIdentity();
+    await updateIdentityDB(published);
+  }
+}
+
 export function getNewIdentity(publisher: string): Identity {
   console.log("getNewIdentity: ", publisher);
   return {
