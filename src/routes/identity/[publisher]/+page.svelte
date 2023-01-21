@@ -164,7 +164,7 @@
     </FormGroup>
 
     <FormGroup legendText="Last published">
-      {timeago} ({datetime})
+      {timeago} ({datetime}) - ({identity.timestamp})
     </FormGroup>
 
     <FormGroup legendText="last known cid">

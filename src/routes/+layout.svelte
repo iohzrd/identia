@@ -48,7 +48,7 @@
 
   let ipfs_id: string;
   let ipfs_info: IDResult;
-  let republish: any;
+  let republishInterval: any;
 
   let app_version: string;
   let ipfs_version: string;
@@ -89,14 +89,23 @@
     subs = await getTopicsFromDB();
   }
 
+  async function republish() {
+    let identity = await getIdentity(ipfs_id);
+    let expiry = new Date().getTime() - 1000 * 60 * 60 * 12;
+    if (identity.timestamp < expiry) {
+      console.log("republishing identity...");
+      await publishIdentity();
+    }
+  }
+
   onMount(async () => {
     app_version = await getVersion();
     tauri_version = await getTauriVersion();
     ipfs_info = await ipfs.id();
     ipfs_version = ipfs_info.agentVersion.split("/")[1];
     console.log(ipfs_info);
-    await getIdentity(ipfs_info.id.toString()); // init identity
     ipfs_id = ipfs_info.id.toString();
+    await getIdentity(ipfs_id); // init identity if necessary...
     subs = await getTopicsFromDB();
     for await (const topic of [ipfs_id, ...subs]) {
       await ipfs.pubsub.subscribe(topic, globalPubsubHandler);
@@ -104,14 +113,12 @@
 
     // periodically republish...
     // should refactor to republish based on previous
-    await publishIdentity();
-    republish = setInterval(async () => {
-      await publishIdentity();
-    }, 1000 * 60 * 60);
+    await republish();
+    republishInterval = setInterval(republish, 1000 * 60 * 15);
   });
 
   onDestroy(() => {
-    clearInterval(republish);
+    clearInterval(republishInterval);
   });
 </script>
 
