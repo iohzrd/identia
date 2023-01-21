@@ -49,7 +49,7 @@
   });
 </script>
 
-<Tile style="outline: 1px solid black">
+<Tile style="outline: 2px solid black">
   <TextArea
     bind:value={body}
     labelText="/{data.topic}/"

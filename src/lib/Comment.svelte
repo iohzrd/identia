@@ -73,7 +73,7 @@
   });
 </script>
 
-<Tile style="outline: 1px solid black">
+<Tile style="outline: 2px solid black">
   {comment.from}
   <br />
   <br />
