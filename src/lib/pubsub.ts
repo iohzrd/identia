@@ -5,7 +5,7 @@ import {
   MessageType,
   PubsubMessage,
   Topical,
-} from "./flatbuffers/messages_generated";
+} from "./flatbuffers/messages";
 import { ByteBuffer } from "flatbuffers";
 import { ipfs } from "./core";
 import { peerIdFromPeerId } from "@libp2p/peer-id";

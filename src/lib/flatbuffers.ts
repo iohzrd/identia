@@ -5,7 +5,7 @@ import {
   MessageType,
   PubsubMessage,
   Topical,
-} from "./flatbuffers/messages_generated";
+} from "./flatbuffers/messages";
 
 export function createJson(data: string | object): Uint8Array {
   let str: string;
