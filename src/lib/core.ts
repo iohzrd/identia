@@ -234,11 +234,9 @@ export async function republishIdentity() {
   const identity = await getIdentityFromDB();
   const interval = new Date().getTime() - 1000 * 60 * 60 * 12;
   if (identity.timestamp < interval) {
-    const publish_result: PublishResult = await ipfs.name.publish(
-      String(identity.cid)
-    );
-    console.log("publish complete");
-    console.log(publish_result);
+    identity.timestamp = new Date().getTime();
+    await ipfs.name.publish(String(identity.cid));
+    await updateIdentityDB(identity);
     // const published = await publishIdentity();
     // await updateIdentityDB(published);
   }
