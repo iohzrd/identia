@@ -132,6 +132,7 @@ fn main() {
           tauri::async_runtime::block_on(async move {
             shutdown_ipfs().await;
           });
+          tauri::AppHandle::exit(app, 0);
         }
         #[cfg(target_os = "linux")]
         "icon_1" => app
