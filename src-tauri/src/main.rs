@@ -48,7 +48,7 @@ fn initialize_ipfs() {
     ])
     .output()
     .unwrap();
-  format!("IPFS init: {:?}", output);
+  println!("IPFS init: {:?}", output);
   output =  Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
