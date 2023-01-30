@@ -22,7 +22,6 @@ ipfs-api-backend-hyper = { version = "0.4", features = ["with-send-sync"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "1", features = ["dialog-all", "fs-all", "http-all", "icon-png", "path-all", "shell-open", "shell-sidecar", "system-tray"] }
-tauri-plugin-window-state = "0.1"
 urlencoding = "2"
 
 [dependencies.tauri-plugin-sql]
