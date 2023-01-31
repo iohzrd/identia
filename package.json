@@ -25,15 +25,15 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.2.0"
+    "@tauri-apps/api": "^2.0.0-alpha.0"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^2.0.1",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^1.0.5",
-    "@sveltejs/kit": "^1.3.5",
-    "@tauri-apps/cli": "^1.2.3",
+    "@sveltejs/kit": "^1.3.6",
+    "@tauri-apps/cli": "^2.0.0-alpha.1",
     "carbon-components-svelte": "^0.72.1",
     "carbon-icons-svelte": "^11.4.0",
     "carbon-preprocess-svelte": "^0.9.1",
@@ -54,10 +54,10 @@
     "svelte-lite-youtube-embed": "^1.1.0",
     "svelte-preprocess": "^5.0.1",
     "svelte-tauri-filedrop": "^1.0.0",
-    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#release",
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql",
     "timeago.js": "^4.0.2",
     "tslib": "^2.5.0",
-    "typescript": "^4.9.4",
+    "typescript": "^4.9.5",
     "uint8arrays": "^4.0.3",
     "vite": "^4.0.4"
   }

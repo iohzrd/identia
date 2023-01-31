@@ -18,7 +18,7 @@ use tauri::api::path::config_dir;
 use tauri::api::process::Command;
 use tauri::Icon;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
-use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
+use tauri_plugin_sql::{Builder, Migration, MigrationKind};
 use webfeed::fetch_webfeed;
 
 fn identia_app_data_path() -> PathBuf {
@@ -205,23 +205,25 @@ fn main() {
       Ok(())
     })
     .plugin({
-      TauriSql::default().add_migrations(
-        "sqlite:sqlite.db",
-        vec![
-          Migration {
-            version: 1,
-            description: "create tables",
-            sql: include_str!("../migrations/1.sql"),
-            kind: MigrationKind::Up,
-          },
-          Migration {
-            version: 2,
-            description: "create comments table",
-            sql: include_str!("../migrations/2.sql"),
-            kind: MigrationKind::Up,
-          },
-        ],
-      )
+      Builder::default()
+        .add_migrations(
+          "sqlite:sqlite.db",
+          vec![
+            Migration {
+              version: 1,
+              description: "create tables",
+              sql: include_str!("../migrations/1.sql"),
+              kind: MigrationKind::Up,
+            },
+            Migration {
+              version: 2,
+              description: "create comments table",
+              sql: include_str!("../migrations/2.sql"),
+              kind: MigrationKind::Up,
+            },
+          ],
+        )
+        .build()
     })
     .run(tauri::generate_context!())
     .expect("error while running identia");

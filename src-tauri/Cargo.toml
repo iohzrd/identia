@@ -13,7 +13,7 @@ rust-version = "1.63"
 strip = true
 
 [build-dependencies]
-tauri-build = { version = "1", features = [] }
+tauri-build = { version = "2.0.0-alpha.0", features = [] }
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
@@ -21,11 +21,11 @@ feed-rs = "1"
 ipfs-api-backend-hyper = { version = "0.4", features = ["with-send-sync"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri = { version = "1", features = ["dialog-all", "fs-all", "http-all", "icon-png", "path-all", "shell-open", "shell-sidecar", "system-tray"] }
+tauri = { version = "2.0.0-alpha.2", features = ["dialog-all", "fs-all", "http-all", "icon-png", "path-all", "shell-open", "shell-sidecar", "system-tray"] }
 urlencoding = "2"
 
 [dependencies.tauri-plugin-sql]
-git = "https://github.com/iohzrd/tauri-plugin-sql"
+git = "https://github.com/iohzrd/plugins-workspace"
 features = ["sqlite"]
 branch = "dev"
 
