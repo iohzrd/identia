@@ -221,6 +221,12 @@ fn main() {
               sql: include_str!("../migrations/2.sql"),
               kind: MigrationKind::Up,
             },
+            Migration {
+              version: 3,
+              description: "create topics table",
+              sql: include_str!("../migrations/3.sql"),
+              kind: MigrationKind::Up,
+            },
           ],
         )
         .build()
