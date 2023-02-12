@@ -1,6 +1,6 @@
 # identia
 
-Decentralized, censorship resistant social media on IPFS. Plus experimental RSS reader.
+Peer-to-peer, censorship resistant social media on IPFS. Plus experimental RSS reader.
 
 Successor to [follow](https://github.com/iohzrd/follow)
 
