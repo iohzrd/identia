@@ -49,6 +49,7 @@ fn initialize_ipfs() {
     .output()
     .unwrap();
   println!("IPFS init: {:?}", output);
+
   output =  Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
@@ -60,6 +61,7 @@ fn initialize_ipfs() {
       r#"["http://localhost:1420","http://127.0.0.1:1430","http://127.0.0.1:5001","tauri://localhost","https://tauri.localhost"]"#,
     ]).output().unwrap();
   println!("configuring Access-Control-Allow-Origin: {:?}", output);
+
   output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
@@ -73,6 +75,7 @@ fn initialize_ipfs() {
     .output()
     .unwrap();
   println!("configuring Access-Control-Allow-Methods: {:?}", output);
+
   output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
@@ -86,6 +89,21 @@ fn initialize_ipfs() {
     .output()
     .unwrap();
   println!("configuring Addresses.Gateway: {:?}", output);
+
+  output = Command::new_sidecar("ipfs")
+    .unwrap()
+    .args(&[
+      "--repo-dir",
+      identia_app_data_path().into_os_string().to_str().unwrap(),
+      "config",
+      "--json",
+      "Ipns.UsePubsub",
+      "true",
+    ])
+    .output()
+    .unwrap();
+  println!("enable ipns over pubsub: {:?}", output);
+
   output = Command::new_sidecar("ipfs")
     .unwrap()
     .args(&[
