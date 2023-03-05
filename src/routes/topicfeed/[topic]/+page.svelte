@@ -4,7 +4,7 @@
   import type { PageData } from "./$types";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
   import { createJson, createTopical } from "$lib/flatbuffers";
-  import { ipfs } from "$lib/core";
+  import { ipfs, log } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
 
@@ -15,7 +15,6 @@
   let body: string = "";
 
   async function post() {
-    console.log("post");
     ipfs.pubsub.publish(
       data.topic,
       createJson({ inReplyTo: "root", body: body })
@@ -24,12 +23,10 @@
   }
 
   function messageHandler(message: MessageExtended) {
-    console.log("topic.messageHandler", message);
     posts = [message, ...posts];
   }
 
   onMount(async () => {
-    console.log("TopicFeed.onMount");
     const activeSubs = await ipfs.pubsub.ls();
     if (!activeSubs.includes(data.topic)) {
       await ipfs.pubsub.subscribe(data.topic, globalPubsubHandler);
@@ -38,7 +35,6 @@
   });
 
   onDestroy(async () => {
-    console.log("TopicFeed.onDestroy");
     const activeSubs = await ipfs.pubsub.ls();
     if (activeSubs.includes(data.topic)) {
       await ipfs.pubsub.unsubscribe(data.topic, globalPubsubHandler);

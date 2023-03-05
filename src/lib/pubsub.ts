@@ -7,7 +7,6 @@ import {
   Topical,
 } from "./flatbuffers/messages";
 import { ByteBuffer } from "flatbuffers";
-import { ipfs } from "./core";
 import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
 
@@ -37,7 +36,6 @@ function subscriptionStore() {
 export const pubsubStore = subscriptionStore();
 
 export async function globalPubsubHandler(message: MessageExtended) {
-  console.log("globalPubsubHandler", message);
   if (message.type === "signed" && !blacklist.includes(String(message.from))) {
     let buff = new ByteBuffer(message.data);
     let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
@@ -45,7 +43,6 @@ export async function globalPubsubHandler(message: MessageExtended) {
     // let timestamp = pubsubMessage.timestamp();
     switch (messageType) {
       case MessageType.Json:
-        // console.log("Json");
         let j: Json = pubsubMessage.message(Json.getRootAsJson(buff));
         let parsed = JSON.parse(j.data() || "");
         message.inReplyTo = parsed["inReplyTo"] || "";
@@ -53,15 +50,12 @@ export async function globalPubsubHandler(message: MessageExtended) {
         message.files = parsed["files"] || [];
         break;
       case MessageType.Topical:
-        // console.log("Topical");
         let t: Topical = pubsubMessage.message(Topical.getRootAsTopical(buff));
         message.inReplyTo = t.inReplyTo() || "";
         message.body = t.body() || "";
         // message.files = t.files(t.filesLength()) || [];
         break;
     }
-    // console.log("inReplyTo");
-    // console.log(message.inReplyTo);
     if (message.inReplyTo != null) {
       pubsubStore.set(message.topic, message.inReplyTo, message);
     }
@@ -69,17 +63,14 @@ export async function globalPubsubHandler(message: MessageExtended) {
 }
 
 export async function getTopicsFromDB() {
-  console.log("getTopicsFromDB");
   const rows: object[] = await select("SELECT * FROM topics");
   return rows.map((e) => e["topic"]);
 }
 
 export async function insertTopicIntoDB(topic: string): Promise<QueryResult> {
-  console.log("insertTopicIntoDB: ", topic);
   return await execute("INSERT INTO topics (topic) VALUES ($1)", [topic]);
 }
 
 export async function deleteTopicFromDB(topic: string): Promise<QueryResult> {
-  console.log("deleteTopicFromDB: ", topic);
   return await execute("DELETE FROM topics WHERE topic = ?", [topic]);
 }

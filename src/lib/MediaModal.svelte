@@ -14,14 +14,10 @@
       : "";
 
   onMount(async () => {
-    console.log("MediaModal.onMount");
     media = media.filter((m) => m.filename != "post.json");
-    console.log(media);
   });
 
-  onDestroy(() => {
-    console.log("MediaModal.onDestroy");
-  });
+  onDestroy(() => {});
 </script>
 
 <Modal

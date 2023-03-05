@@ -17,7 +17,6 @@
   );
 
   async function getMedia(media, isThumbnail = false) {
-    console.log("getMedia");
     let mediaObj = {
       url: media.url,
       element: null,
@@ -31,7 +30,6 @@
   }
 
   async function loadMedia(mc, idx: number) {
-    console.log("loadMedia: ", idx);
     media[idx] = await getMedia(mc);
     media = media;
   }

@@ -15,7 +15,7 @@
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Identity, Post } from "$lib/types";
   import { format as formatTime } from "timeago.js";
-  import { getIdentity, ipfs, updateIdentity } from "$lib/core";
+  import { getIdentity, ipfs, log, updateIdentity } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 
@@ -39,13 +39,11 @@
   let media_modal_open = false;
 
   async function getPostsPage() {
-    console.log("getFeedPage: ", data.publisher);
     if (identity && identity.posts) {
       if (posts.length > 0) {
         posts_oldest_ts = posts[posts.length - 1].timestamp;
       }
       let page: Post[] = await select(posts_query);
-      console.log("page:", page);
       if (page.length > 0) {
         posts = [...posts, ...page];
         posts_oldest_ts = posts[posts.length - 1].timestamp;
@@ -54,13 +52,10 @@
   }
 
   onMount(async () => {
-    console.log("onMount");
-    // console.log(params);
     ipfs_info = await ipfs.id();
     ipfs_id = ipfs_info.id.toString();
     if (data.publisher) {
       identity = await getIdentity(data.publisher);
-      console.log(identity);
       following = await Promise.all(
         identity.following.map(async (publisher) => {
           return await getIdentity(publisher);
@@ -72,7 +67,6 @@
 
   onDestroy(() => {
     ipfs_id = "";
-    // params = {};
   });
 </script>
 

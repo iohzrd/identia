@@ -4,7 +4,7 @@
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Post } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
-  import { ipfs, updateFeed } from "$lib/core";
+  import { ipfs, log, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 
@@ -29,7 +29,6 @@
   }
 
   async function getFeedPage() {
-    console.log("getFeedPage: ", feed_query);
     let page: Post[] = await select(feed_query);
     if (page.length > 0) {
       feed = [...feed, ...page];
@@ -37,17 +36,14 @@
   }
 
   function insertPostIntoFeed(post: Post) {
-    console.log("insertPostIntoFeed: ", post);
     feed = [post, ...feed];
   }
 
   function removePostFromFeed(cid: string) {
-    console.log("removePostFromFeed: ", cid);
     feed = feed.filter((post) => post.cid != cid);
   }
 
   async function getFeed() {
-    console.log("getFeed: ", new_posts_query);
     await updateFeed();
     let new_posts: Post[] = await select(new_posts_query);
     if (new_posts.length > 0) {

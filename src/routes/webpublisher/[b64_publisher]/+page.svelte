@@ -17,11 +17,9 @@
   let title: string = "";
 
   onMount(async () => {
-    console.log("WebFeedIdentity.onMount");
     feed = await invoke("fetch_webfeed", {
       url: publisher,
     });
-    console.log(feed);
     entries = feed.entries;
     links = feed.links
       .map((link) => link.replace("http://", "https://"))

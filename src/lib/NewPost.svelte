@@ -57,7 +57,6 @@
       multiple: true,
       directory: false,
     });
-    console.log("openDialog.then");
     if (Array.isArray(res)) {
       handleFiles(res);
     }
@@ -78,8 +77,6 @@
     let postResponse: PostResponse = await invoke("post", {
       request: postRequest,
     });
-    console.log("post_response");
-    console.log(postResponse);
     if (postResponse) {
       let post: Post = {
         ...postRequest,

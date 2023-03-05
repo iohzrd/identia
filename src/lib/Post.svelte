@@ -26,6 +26,7 @@
   import type { Media, Post } from "$lib/types";
   import type { MessageExtended } from "$lib/types";
   import { concat } from "uint8arrays/concat";
+  import { createJson, createTopical } from "$lib/flatbuffers";
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
@@ -34,7 +35,6 @@
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
   import { writeBinaryFile } from "@tauri-apps/api/fs";
-  import { createJson, createTopical } from "$lib/flatbuffers";
 
   // import getVideoId from "get-video-id";
   // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
@@ -98,8 +98,6 @@
   // }
 
   function openMediaModal(idx: number) {
-    console.log("openMediaModal");
-    console.log(idx);
     media_modal_open = true;
     media_modal_idx = idx;
     media_modal_media = media.filter((m) => m.filename != "post.json");
@@ -112,7 +110,6 @@
   }
 
   async function getMedia(filename: string, isThumbnail = false) {
-    console.log("getMedia");
     let cid = post.cid;
     if (!post.cid.includes("ipfs/")) {
       cid = "ipfs/" + post.cid;
@@ -137,13 +134,11 @@
   }
 
   async function getMediaBinary(filename: string) {
-    console.log("getMediaBinary");
     let path: string = post.cid + "/" + filename;
     return concat(await all(ipfs.cat(path)));
   }
 
   async function getMediaBlob(filename: string) {
-    console.log("getMediaBlob");
     const fileType = {
       ext: filename.split(".").pop(),
       mime: ext2mime(filename.split(".").pop()),
@@ -153,14 +148,12 @@
   }
 
   async function getMediaBlobUrl(filename: string) {
-    console.log("getMediaBlobUrl");
     const blob = await getMediaBlob(filename);
     const urlCreator = window.URL || window.webkitURL;
     return urlCreator.createObjectURL(blob);
   }
 
   async function saveMedia(filename: string) {
-    console.log("saveMedia");
     const home = await homeDir();
     const path = await join(home, filename);
     const user_path = await save({
@@ -173,14 +166,11 @@
   }
 
   async function loadVideo(filename: string, idx: number) {
-    console.log("loadVideo: ", idx);
     media[idx] = await getMedia(filename);
     media = media;
   }
 
   async function postReply() {
-    console.log("postReply");
-
     await ipfs.pubsub.publish(
       post.publisher,
       // createTopical(post.cid, reply, [])
@@ -199,7 +189,6 @@
   }
 
   async function messageHandler(message: MessageExtended) {
-    console.log("Post.messageHandler");
     comments = [message, ...comments];
 
     // await execute(
@@ -219,7 +208,6 @@
   }
 
   onMount(async () => {
-    console.log("PostComponent.onMount");
     if (show_comments) {
       const activeSubs = await ipfs.pubsub.ls();
       if (!activeSubs.includes(post.publisher)) {
@@ -238,10 +226,12 @@
     //   [post.cid]
     // );
 
+    // if (typeof post.files === "string") {
+    //   post.files = JSON.parse(post.files);
+    // }
+
     for await (const filename of post.files) {
       const is_video = ext2mime(filename.split(".").pop()).includes("video");
-      console.log("isVideo");
-      console.log(is_video);
       if (is_video) {
         // get thumbnail here...
         media = [...media, await getMedia(filename, true)];
@@ -267,7 +257,6 @@
   });
 
   onDestroy(async () => {
-    console.log("PostComponent.onDestroy");
     if (post.publisher != ipfs_id) {
       const activeSubs = await ipfs.pubsub.ls();
       if (activeSubs.includes(post.publisher)) {

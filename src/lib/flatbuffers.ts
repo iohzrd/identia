@@ -57,7 +57,6 @@ export function createTopical(
 }
 
 export function parsePubsubMessage(message: Message) {
-  console.log("flatbuffers.parsePubsubMessage");
   let buff = new ByteBuffer(message.data);
   let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
   if (pubsubMessage.messageType() != undefined) {

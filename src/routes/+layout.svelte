@@ -30,6 +30,7 @@
     followPublisher,
     getIdentity,
     ipfs,
+    log,
     republishIdentity,
   } from "$lib/core";
   import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
@@ -76,10 +77,8 @@
   }
 
   async function followTopic() {
-    console.log(followTopic);
     await insertTopicIntoDB(topic_to_follow);
     subs = await getTopicsFromDB();
-    console.log(subs);
     topic_modal_open = false;
     goto(`/topicfeed/${topic_to_follow}`);
   }
@@ -94,7 +93,6 @@
     tauri_version = await getTauriVersion();
     ipfs_info = await ipfs.id();
     ipfs_version = ipfs_info.agentVersion.split("/")[1];
-    console.log(ipfs_info);
     ipfs_id = ipfs_info.id.toString();
     await getIdentity(ipfs_id); // init identity if necessary...
     subs = await getTopicsFromDB();

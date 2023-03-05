@@ -12,7 +12,6 @@
   let show_comments: boolean = true;
 
   onMount(async () => {
-    console.log("Post.onMount", show_comments);
     if (!post) {
       post = await getPostFromDB(data.cid);
     }

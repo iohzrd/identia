@@ -11,33 +11,27 @@
   import { onMount, onDestroy } from "svelte";
 
   export let readonly: boolean;
-  export let meta = {};
-  export let depth = 0;
-  let new_meta_key = "";
-  let new_meta_index = 0;
-  let meta_types_custom = [
-    { id: "1", text: "string", value: "" },
-    { id: "2", text: "object", value: {} },
-    { id: "3", text: "array", value: [] },
-  ];
-
+  export let meta: { [k: string]: any } = {};
+  export let depth: number = 0;
+  let new_meta_key: string = "";
+  let new_meta_index: number = 0;
   let meta_types = [
-    { id: "1", text: "string", value: "" },
-    { id: "2", text: "object", value: {} },
-    { id: "3", text: "custom", value: [] },
+    { id: 0, text: "string", value: "" },
+    { id: 1, text: "object", value: {} },
+    { id: 2, text: "custom", value: [] },
   ];
 
   function addMeta() {
-    meta[new_meta_key] = meta_types_custom[new_meta_index].value;
+    meta[new_meta_key] = meta_types[new_meta_index].value;
   }
 
-  function removeMeta(k) {
+  function removeMeta(k: string) {
     let temp = meta;
     delete temp[k];
     meta = temp;
   }
 
-  function isObject(o) {
+  function isObject(o: any) {
     return o !== null && typeof o === "object" && Array.isArray(o) === false;
   }
 
@@ -46,7 +40,7 @@
   onDestroy(() => {});
 </script>
 
-<UnorderedList nested={depth != 0}>
+<UnorderedList nested={depth > 0}>
   {#each Object.keys(meta) as k}
     <ListItem>
       <ButtonSet>
@@ -90,8 +84,8 @@
     <Dropdown
       type="inline"
       size="sm"
-      titleText="entry type"
-      bind:selectedIndex={new_meta_index}
+      titleText="new entry type"
+      bind:selectedId={new_meta_index}
       items={meta_types}
     />
     <TextInput

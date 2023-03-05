@@ -5,12 +5,9 @@
   import type { WebFeedEntry, WebFeed, Media } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api";
-  import { ipfs, updateFeed } from "$lib/core";
-  import { select } from "$lib/db";
+  import { ipfs, log, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
-
-  export let params: object;
-  console.log(params);
+  import { select } from "$lib/db";
 
   let ipfs_info: IDResult;
   let ipfs_id: string;
@@ -42,24 +39,20 @@
       const ret: WebFeed = await invoke("fetch_webfeed", {
         url: url,
       });
-      console.log(ret);
       feed = [...feed, ...ret.entries];
       feed = feed.sort((a, b) => b.timestamp - a.timestamp);
     });
   }
 
   function insertPostIntoFeed(post: WebFeedEntry) {
-    console.log("insertPostIntoFeed: ", post);
     feed = [post, ...feed];
   }
 
   function removePostFromFeed(cid: string) {
-    console.log("removePostFromFeed: ", cid);
     feed = feed.filter((post) => post.cid != cid);
   }
 
   // async function getWebFeed() {
-  //   console.log("getWebFeed: ", new_posts_query);
   //   await updateFeed();
   //   let new_posts: WebFeedEntry[] = await select(new_posts_query);
   //   if (new_posts.length > 0) {

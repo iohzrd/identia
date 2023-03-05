@@ -18,7 +18,6 @@
   let body: string = "";
 
   async function postReply() {
-    console.log("TopicPost.postReply");
     await ipfs.pubsub.publish(
       post.topic,
       createJson({ inReplyTo: String(post.sequenceNumber), body: reply_body })
