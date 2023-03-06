@@ -98,14 +98,14 @@ These relationships can be stored in a post object to add context to a specific 
 
 ## Support me
 
+https://github.com/sponsors/iohzrd
+
+https://www.patreon.com/iohzrd
+
 ```
 BTC:
 bc1qtss3kxqcfl7glaskys7tevs98e6v62rhpx8lzj
 ```
-
-or
-
-https://www.patreon.com/iohzrd
 
 ## License
 

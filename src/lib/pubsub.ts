@@ -36,6 +36,7 @@ function subscriptionStore() {
 export const pubsubStore = subscriptionStore();
 
 export async function globalPubsubHandler(message: MessageExtended) {
+  console.log("globalPubsubHandler", message);
   if (message.type === "signed" && !blacklist.includes(String(message.from))) {
     let buff = new ByteBuffer(message.data);
     let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
