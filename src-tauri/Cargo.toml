@@ -7,13 +7,16 @@ license = "AGPL-3.0"
 repository = "https://github.com/iohzrd/tauri-svelte"
 default-run = "identia"
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.70"
 
 [profile.release]
 strip = true
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha", features = [] }
+tauri-build = { version = "2.0.0-alpha.0", features = [] }
+tauri-codegen = { version = "2.0.0-alpha.0", features = [] }
+tauri-macros = { version = "2.0.0-alpha.0", features = [] }
+tauri-utils = { version = "2.0.0-alpha.0", features = [] }
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
@@ -27,10 +30,6 @@ urlencoding = "2"
 [dependencies.rust-ipfs]
 git = "https://github.com/iohzrd/rust-ipfs"
 branch = "libp2p-next"
-
-[dependencies.tauri-plugin-single-instance]
-git = "https://github.com/iohzrd/plugins-workspace"
-branch = "dev"
 
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/iohzrd/plugins-workspace"
