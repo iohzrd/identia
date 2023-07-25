@@ -15,7 +15,7 @@
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Identity, Post } from "$lib/types";
   import { format as formatTime } from "timeago.js";
-  import { getIdentity, ipfs, log, updateIdentity } from "$lib/core";
+  import { getIdentity, ipfs, updateIdentity } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 

@@ -4,7 +4,7 @@
   import type { IDResult } from "ipfs-core-types/src/root";
   import type { Post } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
-  import { ipfs, log, updateFeed } from "$lib/core";
+  import { ipfs, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 

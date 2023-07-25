@@ -122,13 +122,6 @@ struct Payload {
 
 fn main() {
   tauri::Builder::default()
-    .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-      println!("{}, {argv:?}, {cwd}", app.package_info().name);
-
-      app
-        .emit_all("single-instance", Payload { args: argv, cwd })
-        .unwrap();
-    }))
     .system_tray(
       SystemTray::new()
         .with_menu(SystemTrayMenu::new().add_item(CustomMenuItem::new("exit_app", "Quit"))),

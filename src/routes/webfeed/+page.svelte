@@ -5,7 +5,7 @@
   import type { WebFeedEntry, WebFeed, Media } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api";
-  import { ipfs, log, updateFeed } from "$lib/core";
+  import { ipfs, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 
@@ -65,8 +65,6 @@
   // }
 
   onMount(async () => {
-    // ipfs_info = await ipfs.id();
-    // ipfs_id = ipfs_info.id.toString();
     getWebFeedPage();
     // update_feed_interval = setInterval(getWebFeed, 60 * 1000);
   });
