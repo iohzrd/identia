@@ -1,7 +1,6 @@
 <script lang="ts">
   import MediaModalComponent from "$lib/MediaModal.svelte";
   import WebFeedEntriesComponent from "./WebFeedEntries.svelte";
-  import type { IDResult } from "ipfs-core-types/src/root";
   import type { WebFeedEntry, WebFeed, Media } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
   import { invoke } from "@tauri-apps/api";
@@ -9,7 +8,6 @@
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 
-  let ipfs_info: IDResult;
   let ipfs_id: string;
   let update_feed_interval = null;
   let limit: number = 10;
@@ -65,8 +63,6 @@
   // }
 
   onMount(async () => {
-    // ipfs_info = await ipfs.id();
-    // ipfs_id = ipfs_info.id.toString();
     getWebFeedPage();
     // update_feed_interval = setInterval(getWebFeed, 60 * 1000);
   });

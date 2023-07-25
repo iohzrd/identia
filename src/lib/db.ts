@@ -20,5 +20,28 @@ export async function select(
   bindValues?: unknown[]
 ): Promise<QueryResult> {
   await loadDB;
-  return await db.select(query, bindValues ?? []);
+  // return await db.select(query, bindValues ?? []);
+  const array: {}[] = await db.select(query, bindValues ?? []);
+  array.forEach((element) => {
+    Object.entries(element).forEach(([key, value]) => {
+      console.log(`${key} ${value}`); // "a 5", "b 7", "c 9"
+      console.log("value");
+      console.log(typeof value);
+      console.log(value);
+      if (
+        typeof value === "string" &&
+        (value.startsWith("{") || value.startsWith("[")) &&
+        (value.endsWith("}") || value.endsWith("]"))
+      ) {
+        try {
+          element[key] = JSON.parse(value);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    });
+  });
+
+  console.log("select", array);
+  return array;
 }

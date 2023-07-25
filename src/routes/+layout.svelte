@@ -24,8 +24,8 @@
     TextInput,
   } from "carbon-components-svelte";
   import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
-  import type { IDResult } from "ipfs-core-types/src/root";
-  import { Add, UserAvatarFilled } from "carbon-icons-svelte";
+  import Add from "carbon-icons-svelte/lib/Add.svelte";
+  import UserAvatarFilled from "carbon-icons-svelte/lib/UserAvatarFilled.svelte";
   import {
     followPublisher,
     getIdentity,

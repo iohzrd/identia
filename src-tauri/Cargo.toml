@@ -13,10 +13,7 @@ rust-version = "1.70"
 strip = true
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.0", features = [] }
-tauri-codegen = { version = "2.0.0-alpha.0", features = [] }
-tauri-macros = { version = "2.0.0-alpha.0", features = [] }
-tauri-utils = { version = "2.0.0-alpha.0", features = [] }
+tauri-build = { version = "1", features = [] }
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
@@ -24,17 +21,13 @@ feed-rs = "1"
 ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri = { version = "2.0.0-alpha", features = ["dialog-all", "fs-all", "http-all", "icon-png", "native-tls-vendored", "path-all", "reqwest-native-tls-vendored", "shell-open", "shell-sidecar", "system-tray"] }
+tauri = { version = "1", features = ["dialog-all", "fs-all", "http-all", "icon-png", "native-tls-vendored", "path-all", "reqwest-native-tls-vendored", "shell-open", "shell-sidecar", "system-tray"] }
 urlencoding = "2"
 
-[dependencies.rust-ipfs]
-git = "https://github.com/iohzrd/rust-ipfs"
-branch = "libp2p-next"
-
 [dependencies.tauri-plugin-sql]
-git = "https://github.com/iohzrd/plugins-workspace"
+git = "https://github.com/tauri-apps/plugins-workspace"
 features = ["sqlite"]
-branch = "dev"
+branch = "v1"
 
 [features]
 default = ["custom-protocol"]
