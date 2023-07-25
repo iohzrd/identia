@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.32",
+  "version": "0.4.4",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -25,7 +25,7 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0-alpha.0"
+    "@tauri-apps/api": "^1.4.0"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^2.0.4",
@@ -33,7 +33,7 @@
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^2.0.2",
     "@sveltejs/kit": "^1.22.3",
-    "@tauri-apps/cli": "^2.0.0-alpha.2",
+    "@tauri-apps/cli": "^1.4.0",
     "carbon-components-svelte": "^0.79.0",
     "carbon-icons-svelte": "^12.1.0",
     "carbon-preprocess-svelte": "^0.10.0",
