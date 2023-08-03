@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -28,16 +28,16 @@
     "@tauri-apps/api": "^1.4.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^2.0.4",
+    "@libp2p/peer-id": "^3.0.0",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
-    "@sveltejs/adapter-static": "^2.0.2",
-    "@sveltejs/kit": "^1.22.3",
+    "@sveltejs/adapter-static": "^2.0.3",
+    "@sveltejs/kit": "^1.22.4",
     "@tauri-apps/cli": "^1.4.0",
     "carbon-components-svelte": "^0.79.0",
     "carbon-icons-svelte": "^12.1.0",
     "carbon-preprocess-svelte": "^0.10.0",
-    "execa": "^7.1.1",
+    "execa": "^7.2.0",
     "ext2mime": "^2.0.0",
     "flatbuffers": "^23.5.26",
     "get-video-id": "^3.6.5",
@@ -48,7 +48,7 @@
     "linkify-html": "^4.1.1",
     "semver": "^7.5.4",
     "string-strip-html": "^13.4.2",
-    "svelte": "^4.1.1",
+    "svelte": "^4.1.2",
     "svelte-check": "^3.4.6",
     "svelte-inview": "^4.0.1",
     "svelte-lite-youtube-embed": "^1.1.0",
@@ -59,6 +59,6 @@
     "tslib": "^2.6.1",
     "typescript": "^5.1.6",
     "uint8arrays": "^4.0.4",
-    "vite": "^4.4.7"
+    "vite": "^4.4.8"
   }
 }
