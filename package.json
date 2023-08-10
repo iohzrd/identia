@@ -28,7 +28,7 @@
     "@tauri-apps/api": "^1.4.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^3.0.0",
+    "@libp2p/peer-id": "^3.0.1",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^2.0.3",
@@ -41,7 +41,7 @@
     "ext2mime": "^2.0.0",
     "flatbuffers": "^23.5.26",
     "get-video-id": "^3.6.5",
-    "go-ipfs": "^0.21.0",
+    "go-ipfs": "^0.22.0",
     "ipfs-http-client": "^60.0.1",
     "is-ipfs": "^8.0.1",
     "it-all": "^3.0.2",
@@ -58,7 +58,7 @@
     "timeago.js": "^4.0.2",
     "tslib": "^2.6.1",
     "typescript": "^5.1.6",
-    "uint8arrays": "^4.0.4",
-    "vite": "^4.4.8"
+    "uint8arrays": "^4.0.6",
+    "vite": "^4.4.9"
   }
 }
