@@ -1,4 +1,4 @@
-import type { Message } from "ipfs-http-client/pubsub/subscribe";
+// import type { Message } from "kubo-rpc-client/pubsub/subscribe";
 import { Builder, ByteBuffer } from "flatbuffers";
 import {
   Json,
@@ -56,7 +56,7 @@ export function createTopical(
   return builder.asUint8Array();
 }
 
-export function parsePubsubMessage(message: Message) {
+export function parsePubsubMessage(message: any) {
   let buff = new ByteBuffer(message.data);
   let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
   if (pubsubMessage.messageType() != undefined) {

@@ -14,8 +14,8 @@ async function main() {
     console.error("Failed to determine platform target triple");
   }
   fs.copyFileSync(
-    `node_modules/go-ipfs/go-ipfs/ipfs${extension}`,
-    `node_modules/go-ipfs/go-ipfs/ipfs-${targetTriple}${extension}`
+    `node_modules/kubo/kubo/ipfs${extension}`,
+    `node_modules/kubo/kubo/ipfs-${targetTriple}${extension}`
   );
 }
 

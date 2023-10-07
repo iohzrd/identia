@@ -12,7 +12,6 @@ use ipfs::{post, repost_webfeed_entry};
 use ipfs_api_backend_hyper::{IpfsApi, IpfsClient};
 use std::env;
 use std::{fs, path::PathBuf};
-use std::{thread, time::Duration};
 use tauri;
 use tauri::api::path::config_dir;
 use tauri::api::process::Command;
@@ -22,9 +21,7 @@ use tauri_plugin_sql::{Builder, Migration, MigrationKind};
 use webfeed::fetch_webfeed;
 
 fn identia_app_data_path() -> PathBuf {
-  config_dir()
-    .expect("Could not get config dir")
-    .join("identia")
+  config_dir().unwrap().join("identia")
 }
 
 fn create_dir_if_necessary(path: PathBuf) {
@@ -190,28 +187,6 @@ fn main() {
           .spawn()
           .expect("Failed to spawn ipfs");
       });
-
-      tauri::async_runtime::block_on(async move {
-        let client = IpfsClient::default();
-        let mut ready = false;
-        let mut retries = 1;
-        while !ready {
-          match client.id(None).await {
-            Ok(resp) => {
-              println!("using id: {}", resp.id);
-              ready = true;
-            }
-            Err(_err) => {
-              if retries > 6000 {
-                break;
-              }
-              retries += 1;
-              thread::sleep(Duration::from_millis(10));
-            }
-          }
-        }
-      });
-
       Ok(())
     })
     .plugin({

@@ -1,11 +1,11 @@
 import all from "it-all";
 import type { AddResult } from "ipfs-core-types/src/root";
-import type { IPFSHTTPClient } from "ipfs-http-client";
+import type { IPFSHTTPClient } from "kubo-rpc-client";
 import type { Identity, Post } from "./types";
 import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
 import { concat, toString } from "uint8arrays";
-import { create } from "ipfs-http-client";
+import { create } from "kubo-rpc-client";
 import { execute, select } from "./db";
 
 const DEBUG = import.meta.env.DEV;

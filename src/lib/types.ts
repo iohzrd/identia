@@ -1,4 +1,4 @@
-// import type { Message } from "ipfs-http-client/pubsub/subscribe";
+// import type { Message } from "kubo-rpc-client/pubsub/subscribe";
 // import type { Message } from '@libp2p/interface-pubsub'
 import type { PeerId } from "@libp2p/interface-peer-id";
 

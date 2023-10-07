@@ -42,7 +42,7 @@
         "depends": []
       },
       "externalBin": [
-        "../node_modules/go-ipfs/go-ipfs/ipfs"
+        "../node_modules/kubo/kubo/ipfs"
       ],
       "icon": [
         "icons/32x32.png",

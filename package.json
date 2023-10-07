@@ -10,7 +10,6 @@
   "scripts": {
     "build": "vite build",
     "bump": "node scripts/bump-versions.js && npm run update",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
     "compile": "cd src/lib/flatbuffers; flatc --ts messages.fbs",
     "dev": "vite",
     "info": "tauri info",
@@ -25,40 +24,37 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.4.0"
+    "@tauri-apps/api": "^1.5.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^3.0.1",
+    "@libp2p/peer-id": "^3.0.3",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.22.4",
-    "@tauri-apps/cli": "^1.4.0",
-    "carbon-components-svelte": "^0.79.0",
-    "carbon-icons-svelte": "^12.1.0",
-    "carbon-preprocess-svelte": "^0.10.0",
-    "execa": "^7.2.0",
+    "@sveltejs/kit": "^1.25.1",
+    "@tauri-apps/cli": "^1.5.1",
+    "carbon-components-svelte": "^0.80.0",
+    "carbon-icons-svelte": "^12.3.0",
+    "execa": "^8.0.1",
     "ext2mime": "^2.0.0",
     "flatbuffers": "^23.5.26",
     "get-video-id": "^3.6.5",
-    "go-ipfs": "^0.22.0",
-    "ipfs-http-client": "^60.0.1",
     "is-ipfs": "^8.0.1",
-    "it-all": "^3.0.2",
+    "it-all": "^3.0.3",
+    "kubo": "^0.23.0",
+    "kubo-rpc-client": "^3.0.1",
     "linkify-html": "^4.1.1",
     "semver": "^7.5.4",
-    "string-strip-html": "^13.4.2",
-    "svelte": "^4.1.2",
-    "svelte-check": "^3.4.6",
+    "string-strip-html": "^13.4.3",
+    "svelte": "^4.2.1",
     "svelte-inview": "^4.0.1",
     "svelte-lite-youtube-embed": "^1.1.0",
-    "svelte-preprocess": "^5.0.4",
     "svelte-tauri-filedrop": "^1.0.0",
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql",
     "timeago.js": "^4.0.2",
-    "tslib": "^2.6.1",
-    "typescript": "^5.1.6",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
     "uint8arrays": "^4.0.6",
-    "vite": "^4.4.9"
+    "vite": "^4.4.11"
   }
 }
