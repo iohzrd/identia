@@ -24,25 +24,15 @@ fn identia_app_data_path() -> PathBuf {
   config_dir().unwrap().join("identia")
 }
 
-fn create_dir_if_necessary(path: PathBuf) {
-  if let Err(_) = fs::read(path.clone()) {
-    let _result = fs::create_dir(path);
-  }
-}
-
 fn initialize_ipfs() {
-  create_dir_if_necessary(identia_app_data_path());
-  println!(
-    "Initializing IPFS: {:?}",
-    identia_app_data_path().into_os_string().to_str().unwrap()
-  );
+  let path = identia_app_data_path();
+  if let Err(_) = fs::read(path.clone()) {
+    let _result = fs::create_dir(path.clone());
+  }
+  println!("Initializing IPFS: {:?}", path);
   let mut output = Command::new_sidecar("ipfs")
     .unwrap()
-    .args(&[
-      "init",
-      "--repo-dir",
-      identia_app_data_path().into_os_string().to_str().unwrap(),
-    ])
+    .args(&["init", "--repo-dir", path.to_str().unwrap()])
     .output()
     .unwrap();
   println!("IPFS init: {:?}", output);
@@ -51,7 +41,7 @@ fn initialize_ipfs() {
     .unwrap()
     .args(&[
       "--repo-dir",
-      identia_app_data_path().into_os_string().to_str().unwrap(),
+      path.to_str().unwrap(),
       "config",
       "--json",
       "API.HTTPHeaders.Access-Control-Allow-Origin",
@@ -63,7 +53,7 @@ fn initialize_ipfs() {
     .unwrap()
     .args(&[
       "--repo-dir",
-      identia_app_data_path().into_os_string().to_str().unwrap(),
+      path.to_str().unwrap(),
       "config",
       "--json",
       "API.HTTPHeaders.Access-Control-Allow-Methods",
@@ -77,7 +67,7 @@ fn initialize_ipfs() {
     .unwrap()
     .args(&[
       "--repo-dir",
-      identia_app_data_path().into_os_string().to_str().unwrap(),
+      path.to_str().unwrap(),
       "config",
       "--json",
       "Addresses.Gateway",
@@ -91,7 +81,7 @@ fn initialize_ipfs() {
     .unwrap()
     .args(&[
       "--repo-dir",
-      identia_app_data_path().into_os_string().to_str().unwrap(),
+      path.to_str().unwrap(),
       "config",
       "--json",
       "Datastore.StorageMax",
@@ -169,18 +159,16 @@ fn main() {
     ])
     .setup(|_app| {
       initialize_ipfs();
+      let path = identia_app_data_path();
       tauri::async_runtime::spawn(async move {
         println!("Starting IPFS.");
-        env::set_var(
-          "IPFS_PATH",
-          identia_app_data_path().into_os_string().to_str().unwrap(),
-        );
+        env::set_var("IPFS_PATH", path.to_str().unwrap());
         Command::new_sidecar("ipfs")
           .expect("failed to setup ipfs sidecar")
           .args(&[
             "daemon",
             "--repo-dir",
-            identia_app_data_path().into_os_string().to_str().unwrap(),
+            path.to_str().unwrap(),
             "--migrate=true",
             "--enable-pubsub-experiment",
           ])

@@ -24,16 +24,16 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.5.0"
+    "@tauri-apps/api": "^1.5.1"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^3.0.3",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.25.1",
-    "@tauri-apps/cli": "^1.5.1",
-    "carbon-components-svelte": "^0.80.0",
+    "@sveltejs/kit": "^1.26.0",
+    "@tauri-apps/cli": "^1.5.5",
+    "carbon-components-svelte": "^0.81.0",
     "carbon-icons-svelte": "^12.3.0",
     "execa": "^8.0.1",
     "ext2mime": "^2.0.0",
@@ -46,7 +46,7 @@
     "linkify-html": "^4.1.1",
     "semver": "^7.5.4",
     "string-strip-html": "^13.4.3",
-    "svelte": "^4.2.1",
+    "svelte": "^4.2.2",
     "svelte-inview": "^4.0.1",
     "svelte-lite-youtube-embed": "^1.1.0",
     "svelte-tauri-filedrop": "^1.0.0",
@@ -55,6 +55,6 @@
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
     "uint8arrays": "^4.0.6",
-    "vite": "^4.4.11"
+    "vite": "^4.5.0"
   }
 }
