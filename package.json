@@ -27,13 +27,13 @@
     "@tauri-apps/api": "^1.5.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^3.0.3",
+    "@libp2p/peer-id": "^3.0.5",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.26.0",
-    "@tauri-apps/cli": "^1.5.5",
-    "carbon-components-svelte": "^0.81.0",
+    "@sveltejs/kit": "^1.27.3",
+    "@tauri-apps/cli": "^1.5.6",
+    "carbon-components-svelte": "^0.81.2",
     "carbon-icons-svelte": "^12.3.0",
     "execa": "^8.0.1",
     "ext2mime": "^2.0.0",
