@@ -27,13 +27,13 @@
     "@tauri-apps/api": "^1.5.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^3.0.6",
+    "@libp2p/peer-id": "^4.0.1",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^2.0.3",
     "@sveltejs/kit": "^1.27.6",
     "@tauri-apps/cli": "^1.5.6",
-    "carbon-components-svelte": "^0.82.0",
+    "carbon-components-svelte": "^0.82.4",
     "carbon-icons-svelte": "^12.4.0",
     "execa": "^8.0.1",
     "ext2mime": "^2.0.0",
@@ -42,19 +42,19 @@
     "is-ipfs": "^8.0.1",
     "it-all": "^3.0.4",
     "kubo": "^0.24.0",
-    "kubo-rpc-client": "^3.0.1",
-    "linkify-html": "^4.1.2",
+    "kubo-rpc-client": "^3.0.2",
+    "linkify-html": "^4.1.3",
     "semver": "^7.5.4",
     "string-strip-html": "^13.4.3",
-    "svelte": "^4.2.5",
+    "svelte": "^4.2.8",
     "svelte-inview": "^4.0.1",
     "svelte-lite-youtube-embed": "^1.1.0",
     "svelte-tauri-filedrop": "^1.0.0",
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql",
     "timeago.js": "^4.0.2",
     "tslib": "^2.6.2",
-    "typescript": "^5.2.2",
-    "uint8arrays": "^4.0.6",
-    "vite": "^5.0.0"
+    "typescript": "^5.3.2",
+    "uint8arrays": "^4.0.9",
+    "vite": "^4.5.0"
   }
 }
