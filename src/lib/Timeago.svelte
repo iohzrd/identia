@@ -4,7 +4,7 @@
 
   export let timestamp: number;
 
-  let timer;
+  let timer: ReturnType<typeof setTimeout>;
   let timeout_time = 1000;
   let timeago: string = format(timestamp);
   let datetime: string = new Date(timestamp).toLocaleString();

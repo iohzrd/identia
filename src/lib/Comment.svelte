@@ -4,10 +4,10 @@
   import type { MessageExtended } from "$lib/types";
   import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
-  import { ThumbsDown as TD } from "carbon-icons-svelte/lib/";
-  import { ThumbsDownFilled as TDF } from "carbon-icons-svelte/lib/";
-  import { ThumbsUp as TU } from "carbon-icons-svelte/lib/";
-  import { ThumbsUpFilled as TUF } from "carbon-icons-svelte/lib/";
+  import { ThumbsDown as TD } from "carbon-icons-svelte";
+  import { ThumbsDownFilled as TDF } from "carbon-icons-svelte";
+  import { ThumbsUp as TU } from "carbon-icons-svelte";
+  import { ThumbsUpFilled as TUF } from "carbon-icons-svelte";
   import { createJson, createTopical } from "$lib/flatbuffers";
   import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
