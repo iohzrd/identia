@@ -27,7 +27,7 @@
     "@tauri-apps/api": "^1.5.3"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^4.0.2",
+    "@libp2p/peer-id": "^4.0.3",
     "@ltd/j-toml": "^1.38.0",
     "@splidejs/svelte-splide": "^0.2.9",
     "@sveltejs/adapter-static": "^3.0.1",
@@ -46,7 +46,7 @@
     "kubo-rpc-client": "^3.0.2",
     "linkify-html": "^4.1.3",
     "semver": "^7.5.4",
-    "string-strip-html": "^13.4.4",
+    "string-strip-html": "^13.4.5",
     "svelte": "^4.2.8",
     "svelte-inview": "^4.0.2",
     "svelte-lite-youtube-embed": "^1.1.0",
@@ -55,7 +55,7 @@
     "timeago.js": "^4.0.2",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",
-    "uint8arrays": "^5.0.0",
-    "vite": "^5.0.10"
+    "uint8arrays": "^5.0.1",
+    "vite": "^5.0.11"
   }
 }
