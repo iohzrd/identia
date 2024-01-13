@@ -10,6 +10,10 @@ Successor to [follow](https://github.com/iohzrd/follow)
 
 Follow [this guide](https://tauri.studio/v1/guides/getting-started/prerequisites) to setup dev dependencies...
 
+### Install Protobuf
+
+Install the latest version of protobuf from the Github [releases page](https://github.com/protocolbuffers/protobuf/releases). The latest version at the time of writing is v22.3.
+
 ### Linux
 
 For video playback on linux, you may need to manually install gstreamer/gst-plugins:
