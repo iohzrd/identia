@@ -1,5 +1,6 @@
 <script lang="ts">
-  import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
+  import { PlaySolid } from "flowbite-svelte-icons";
+
   import type {
     WebFeedEntry,
     WebFeedMediaContent,
@@ -58,7 +59,7 @@
       {#if typeof mediaObj.thumbnail_url === "string"}
         <img src={mediaObj.thumbnail_url} alt="" />
       {:else}
-        <PlayFilled size={32} />
+        <PlaySolid size={32} />
       {/if}
     </div>
   {:else if mediaObj.content_type.includes("audio/")}

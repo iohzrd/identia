@@ -1,8 +1,13 @@
 <script lang="ts">
-  import Reply from "carbon-icons-svelte/lib/Reply.svelte";
+  import { ReplySolid } from "flowbite-svelte-icons";
+
   import TopicPostComponent from "$lib/TopicPost.svelte";
   import type { MessageExtended } from "$lib/types";
-  import { Button, TextArea, Tile } from "carbon-components-svelte";
+
+  import { Button } from "flowbite-svelte";
+  import { Card } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+
   import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
@@ -48,7 +53,7 @@
   });
 </script>
 
-<Tile style="outline: 2px solid black">
+<Card>
   {post.from}
   <br />
   <br />
@@ -57,10 +62,9 @@
   <br />
 
   <Button
-    icon={Reply}
+    icon={ReplySolid}
     iconDescription="Reply"
     kind="ghost"
-    size="small"
     on:click={() => {
       replying = !replying;
     }}
@@ -68,18 +72,12 @@
 
   {#if replying}
     <div>
-      <TextArea bind:value={reply_body} placeholder="Add a reply..." rows={2} />
-      <Button
-        kind="ghost"
-        size="small"
-        style="float:right;"
-        on:click={postReply}>Reply</Button
+      <Textarea bind:value={reply_body} placeholder="Add a reply..." rows={2} />
+      <Button kind="ghost" style="float:right;" on:click={postReply}
+        >Reply</Button
       >
-      <Button
-        kind="ghost"
-        size="small"
-        style="float:right;"
-        on:click={cancelReply}>Cancel</Button
+      <Button kind="ghost" style="float:right;" on:click={cancelReply}
+        >Cancel</Button
       >
     </div>
     <br />
@@ -89,4 +87,4 @@
   {#each sub_replies as reply (reply.sequenceNumber)}
     <TopicPostComponent post={reply} />
   {/each}
-</Tile>
+</Card>

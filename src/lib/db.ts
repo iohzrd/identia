@@ -18,10 +18,10 @@ export async function execute(
 export async function select(
   query: string,
   bindValues?: unknown[]
-): Promise<QueryResult> {
+): Promise<any[]> {
   await loadDB;
   // return await db.select(query, bindValues ?? []);
-  const array: {}[] = await db.select(query, bindValues ?? []);
+  const array: any[] = await db.select(query, bindValues ?? []);
   array.forEach((element) => {
     Object.entries(element).forEach(([key, value]) => {
       console.log(`${key} ${value}`); // "a 5", "b 7", "c 9"

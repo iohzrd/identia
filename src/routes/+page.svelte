@@ -1,16 +1,15 @@
 <script lang="ts">
   import NewPostComponent from "$lib/NewPost.svelte";
   import PostComponent from "$lib/Post.svelte";
-  import type { IDResult } from "ipfs-core-types/src/root";
-  import type { Post } from "$lib/types";
-  import { inview } from "svelte-inview/dist/";
+  import type { IDResult, Post } from "$lib/types";
+  import { inview } from "svelte-inview";
   import { ipfs, log, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 
   let ipfs_info: IDResult;
   let ipfs_id: string;
-  let update_feed_interval = null;
+  let update_feed_interval: any = null;
   let limit: number = 10;
   let feed: Post[] = [];
   $: newest_ts = feed.length > 0 ? feed[0].timestamp : 0;
@@ -77,8 +76,9 @@
 {#if feed.length >= limit}
   <div
     use:inview={{}}
-    on:enter={(event) => {
-      if (event.detail.inView) {
+    on:inview_enter={(event) => {
+      const { inView } = event.detail;
+      if (inView) {
         getFeedPage();
       }
     }}

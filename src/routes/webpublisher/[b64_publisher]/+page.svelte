@@ -2,7 +2,7 @@
   import WebFeedEntriesComponent from "../../webfeed/WebFeedEntries.svelte";
   import type { PageData } from "./$types";
   import type { WebFeed, WebFeedEntry } from "$lib/types";
-  import { Form, FormGroup, Link } from "carbon-components-svelte";
+
   import { invoke } from "@tauri-apps/api";
   import { onMount, onDestroy } from "svelte";
 
@@ -33,9 +33,9 @@
 </script>
 
 {#if feed}
-  <Form>
+  <div>
     {#if feed.title}
-      <FormGroup>
+      <div>
         <div class="title">
           {#if logo && logo["uri"]}
             <img class="thumbnail" src={logo["uri"]} alt="" />
@@ -44,44 +44,44 @@
             {feed.title}
           </h1>
         </div>
-      </FormGroup>
+      </div>
     {/if}
 
     {#if published_or_updated}
-      <FormGroup legendText="Updated">
+      <div legendText="Updated">
         {published_or_updated}
-      </FormGroup>
+      </div>
     {/if}
 
     {#if feed.description}
-      <FormGroup legendText="Description">
+      <div legendText="Description">
         <h4>
           {@html feed.description}
         </h4>
-      </FormGroup>
+      </div>
     {/if}
 
     {#if links}
-      <FormGroup legendText="Links">
+      <div legendText="Links">
         {#each links as link (link)}
-          <Link size="lg" target="_blank" href={link}>
+          <a target="_blank" href={link}>
             {link}
-          </Link>
+          </a>
           <br />
         {/each}
-      </FormGroup>
+      </div>
     {/if}
 
     {#if entries}
-      <FormGroup legendText="Entries">
+      <div legendText="Entries">
         {#each entries as entry (entry.cid)}
           <div>
             <WebFeedEntriesComponent {entry} />
           </div>
         {/each}
-      </FormGroup>
+      </div>
     {/if}
-  </Form>
+  </div>
 {/if}
 
 <style>

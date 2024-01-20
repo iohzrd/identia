@@ -3,7 +3,9 @@
   import TimeagoComponent from "$lib/Timeago.svelte";
   import linkifyHtml from "linkify-html";
   import type { WebFeedEntry } from "$lib/types";
-  import { ExpandableTile, Link } from "carbon-components-svelte";
+
+  import { Card } from "flowbite-svelte";
+
   import { getLongestString } from "$lib/utils";
   import { stripHtml } from "string-strip-html";
 
@@ -26,18 +28,18 @@
 
 <TimeagoComponent timestamp={entry.timestamp} />
 <br />
-<Link size="lg" target="_blank" href={link}>
+<a target="_blank" href={link}>
   {entry.title}
-</Link>
+</a>
 <br />
 {#if entry.media.length > 0}
   <GenericMediaComponent {entry} />
 {/if}
-<ExpandableTile tileExpandedLabel="Show less" tileCollapsedLabel="Show more">
+<Card tileExpandedLabel="Show less" tileCollapsedLabel="Show more">
   <div slot="above">
     {@html body.slice(0, first_br)}
   </div>
   <div slot="below">
     {@html body.slice(first_br, body.length)}
   </div>
-</ExpandableTile>
+</Card>

@@ -1,36 +1,38 @@
 <script lang="ts">
-  import {
-    Button,
-    Column,
-    Link,
-    OverflowMenu,
-    OverflowMenuItem,
-    ProgressBar,
-    Row,
-    TextArea,
-    Tile,
-  } from "carbon-components-svelte";
   import CommentComponent from "$lib/Comment.svelte";
-  import Download from "carbon-icons-svelte/lib/Download.svelte";
   import MediaModalComponent from "$lib/MediaModal.svelte";
-  import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
-  import Reply from "carbon-icons-svelte/lib/Reply.svelte";
-  import ThumbsDown from "carbon-icons-svelte/lib/ThumbsDown.svelte";
-  import ThumbsDownFilledfrom from "carbon-icons-svelte/lib/ThumbsDownFilled.svelte";
-  import ThumbsUp from "carbon-icons-svelte/lib/ThumbsUp.svelte";
-  import ThumbsUpFilled from "carbon-icons-svelte/lib/ThumbsUpFilled.svelte";
   import TimeagoComponent from "$lib/Timeago.svelte";
+  import type { Media, Post } from "$lib/types";
+  import type { MessageExtended } from "$lib/types";
+  import { createJson, createTopical } from "$lib/flatbuffers";
+  import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
+  import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
+
+  import { Button } from "flowbite-svelte";
+  import { ButtonGroup } from "flowbite-svelte";
+  import { Card } from "flowbite-svelte";
+  import { Dropdown } from "flowbite-svelte";
+  import { DropdownItem } from "flowbite-svelte";
+  import { Progressbar } from "flowbite-svelte";
+  import { Spinner } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+
+  import { DotsHorizontalOutline } from "flowbite-svelte-icons";
+  import { ThumbsDownOutline } from "flowbite-svelte-icons";
+  import { ThumbsDownSolid } from "flowbite-svelte-icons";
+  import { ThumbsUpOutline } from "flowbite-svelte-icons";
+  import { ThumbsUpSolid } from "flowbite-svelte-icons";
+  import { DownloadSolid } from "flowbite-svelte-icons";
+  import { PlaySolid } from "flowbite-svelte-icons";
+  import { ReplySolid } from "flowbite-svelte-icons";
+  import { ReplyOutline } from "flowbite-svelte-icons";
+
   import all from "it-all";
   import ext2mime from "ext2mime";
   import linkifyHtml from "linkify-html";
-  import type { Media, Post } from "$lib/types";
-  import type { MessageExtended } from "$lib/types";
   import { concat } from "uint8arrays/concat";
-  import { createJson, createTopical } from "$lib/flatbuffers";
-  import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
-  import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
   import { save } from "@tauri-apps/api/dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
@@ -98,6 +100,7 @@
   // }
 
   function openMediaModal(idx: number) {
+    console.log("openMediaModal", idx);
     media_modal_open = true;
     media_modal_idx = idx;
     media_modal_media = media.filter((m) => m.filename != "post.json");
@@ -288,46 +291,49 @@
   />
 {/if}
 
-{#if post}
-  <Tile style="outline: 2px solid black">
-    <div>
-      {#if deleting}
-        <ProgressBar helperText="Deleting..." />
-      {:else}
-        <OverflowMenu flipped style="float:right;">
-          <OverflowMenuItem text="Comments" href="/post/{post.cid}" />
-          {#if post.publisher === ipfs_id}
-            <OverflowMenuItem
-              text="Delete post"
-              on:click={() => {
-                removePostFromDbAndFeed(post.cid);
-              }}
-            />
-          {:else}
-            <OverflowMenuItem
-              text="Unfollow publisher"
-              on:click={() => {
-                unfollowPublisher(post.publisher);
-              }}
-            />
-          {/if}
-        </OverflowMenu>
-      {/if}
+<Card class="w-full max-w-md">
+  <div class="flex justify-end">
+    {#if deleting}
+      <Spinner />
+      <!-- <Progressbar /> -->
+    {:else}
+      <DotsHorizontalOutline />
+      <Dropdown>
+        <DropdownItem href="/post/{post.cid}">Comments</DropdownItem>
+        {#if post.publisher === ipfs_id}
+          <DropdownItem
+            on:click={() => {
+              removePostFromDbAndFeed(post.cid);
+            }}>Delete post</DropdownItem
+          >
+        {:else}
+          <DropdownItem
+            on:click={() => {
+              unfollowPublisher(post.publisher);
+            }}>Unfollow publisher</DropdownItem
+          >
+        {/if}
+      </Dropdown>
+    {/if}
+  </div>
 
-      <Link size="lg" href="/identity/{post.publisher}">
-        {post.display_name || post.publisher}
-      </Link>
-      -
+  <div class="flex flex-col">
+    <a href="/identity/{post.publisher}">
+      {#if post.display_name}
+        {post.display_name}
+      {:else}
+        {post.publisher.slice(0, 32)}...
+      {/if}
+    </a>
+    <div>
       <TimeagoComponent timestamp={post.timestamp} />
     </div>
-    <br />
-    {#if post.body || post.files}
-      <div>
-        {#if post.body}
-          <div>
-            {@html bodyHTML}
-          </div>
-          <!-- <div>
+  </div>
+
+  <br />
+  {#if post.body}
+    {@html bodyHTML}
+    <!-- <div>
             {#each video_ids as link, idx (link)}
               <Player controls>
                 {#if link.service === "dailymotion"}
@@ -340,147 +346,86 @@
               </Player>
             {/each}
           </div> -->
-          <br />
-        {/if}
-        <Row>
-          {#each media as mediaObj, idx (mediaObj.filename)}
-            <Column sm={8} md={8} lg={4}>
-              {#if mediaObj.content_type}
-                {#if mediaObj.content_type.includes("image")}
-                  {#if mediaObj.thumbnail_for}
-                    <div
-                      bind:this={mediaObj.element}
-                      on:click={() => loadVideo(mediaObj.filename, idx)}
-                      on:keypress
-                    >
-                      <PlayFilled size={32} />
-                    </div>
-
-                    <!-- <img
-                      alt=""
-                      bind:this={mediaObj.element}
-                      on:click={() => loadVideo(mediaObj, idx)}
-                      src={mediaObj.url}
-                    /> -->
-                  {:else}
-                    <img
-                      alt=""
-                      bind:this={mediaObj.element}
-                      on:click={() => openMediaModal(idx)}
-                      on:keypress
-                      src={mediaObj.url}
-                    />
-                  {/if}
-                {:else if mediaObj.content_type.includes("audio")}
-                  <audio
-                    bind:this={mediaObj.element}
-                    controls
-                    src={mediaObj.url}
-                  />
-                {:else if mediaObj.content_type.includes("video")}
-                  <video
-                    bind:this={mediaObj.element}
-                    controls
-                    src={mediaObj.url}
-                  >
-                    <track kind="captions" />
-                  </video>
-                {:else if mediaObj.content_type.includes("pdf")}
-                  <Button
-                    download={mediaObj.filename}
-                    href={mediaObj.url}
-                    icon={Download}
-                    iconDescription="Download"
-                    kind="secondary"
-                    on:click={() => saveMedia(mediaObj.filename)}
-                  >
-                    {mediaObj.filename}
-                  </Button>
-                {/if}
-              {/if}
-            </Column>
-          {/each}
-        </Row>
-      </div>
-    {/if}
-
     <br />
-
-    {#if true}
-      <Button
-        disabled
-        icon={ThumbsUp}
-        iconDescription="Like"
-        kind="ghost"
-        size="small"
-      />
-    {:else}
-      <Button
-        disabled
-        icon={ThumbsUpFilled}
-        iconDescription="Like"
-        kind="ghost"
-        size="small"
-      />
-    {/if}
-
-    {#if true}
-      <Button
-        disabled
-        icon={ThumbsDown}
-        iconDescription="Dislike"
-        kind="ghost"
-        size="small"
-      />
-    {:else}
-      <Button
-        disabled
-        icon={ThumbsDownFilledfrom}
-        iconDescription="Dislike"
-        kind="ghost"
-        size="small"
-      />
-    {/if}
-
-    <Button
-      icon={Reply}
-      iconDescription="Reply"
-      kind="ghost"
-      size="small"
-      on:click={() => {
-        replying = !replying;
-      }}
-    />
-
-    {#if replying}
-      <div>
-        <TextArea bind:value={reply} placeholder="Add a reply..." rows={2} />
+  {/if}
+  {#each media as mediaObj, idx (mediaObj.filename)}
+    {#if mediaObj.content_type.includes("image")}
+      {#if mediaObj.thumbnail_for}
         <Button
-          kind="ghost"
-          size="small"
-          style="float:right;"
-          on:click={postReply}>Reply</Button
+          bind:this={mediaObj.element}
+          on:click={() => loadVideo(mediaObj.filename, idx)}
         >
-        <Button
-          kind="ghost"
-          size="small"
-          style="float:right;"
-          on:click={cancelReply}>Cancel</Button
-        >
-      </div>
-      <br />
-      <br />
+          <PlaySolid />
+        </Button>
+      {:else}
+        <button type="button" on:click={() => openMediaModal(idx)}>
+          <img alt="" src={mediaObj.url} />
+        </button>
+      {/if}
+    {:else if mediaObj.content_type.includes("audio")}
+      <audio bind:this={mediaObj.element} controls src={mediaObj.url} />
+    {:else if mediaObj.content_type.includes("video")}
+      <video bind:this={mediaObj.element} controls src={mediaObj.url}>
+        <track kind="captions" />
+      </video>
+    {:else if mediaObj.content_type.includes("pdf")}
+      <Button
+        download={mediaObj.filename}
+        href={mediaObj.url}
+        icon={DownloadSolid}
+        iconDescription="DownloadSolid"
+        kind="secondary"
+        on:click={() => saveMedia(mediaObj.filename)}
+      >
+        {mediaObj.filename}
+      </Button>
     {/if}
+  {/each}
 
-    <br />
+  <br />
 
-    {#if show_comments}
-      {#each comments as comment (comment.sequenceNumber)}
-        <CommentComponent {comment} />
-      {/each}
-    {/if}
-  </Tile>
-{/if}
+  <ButtonGroup>
+    <Button disabled={true}>
+      {#if true}
+        <ThumbsUpOutline />
+      {:else}
+        <ThumbsUpSolid />
+      {/if}
+    </Button>
+
+    <Button disabled={true}>
+      {#if true}
+        <ThumbsDownOutline />
+      {:else}
+        <ThumbsDownSolid />
+      {/if}
+    </Button>
+
+    <Button on:click={() => (replying = !replying)}>
+      {#if replying}
+        <ReplySolid />
+      {:else}
+        <ReplyOutline />
+      {/if}
+    </Button>
+  </ButtonGroup>
+
+  {#if replying}
+    <Textarea bind:value={reply} placeholder="Add a reply..." />
+    <ButtonGroup>
+      <Button on:click={postReply}>ReplySolid</Button>
+      <Button on:click={cancelReply}>Cancel</Button>
+    </ButtonGroup>
+  {/if}
+
+  <br />
+
+  {#if show_comments}
+    {#each comments as comment (comment.sequenceNumber)}
+      <CommentComponent {comment} />
+    {/each}
+  {/if}
+</Card>
 
 <style>
   img {

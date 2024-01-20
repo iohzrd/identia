@@ -1,6 +1,16 @@
 // import type { Message } from "kubo-rpc-client/pubsub/subscribe";
 // import type { Message } from '@libp2p/interface-pubsub'
 import type { PeerId } from "@libp2p/interface-peer-id";
+import type { Multiaddr } from "@multiformats/multiaddr";
+
+export interface IDResult {
+  id: PeerId;
+  publicKey: string;
+  addresses: Multiaddr[];
+  agentVersion: string;
+  protocolVersion: string;
+  protocols: string[];
+}
 
 export interface MessageExtended {
   // pubsub

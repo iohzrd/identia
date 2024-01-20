@@ -2,7 +2,7 @@
   import MediaModalComponent from "$lib/MediaModal.svelte";
   import WebFeedEntriesComponent from "./WebFeedEntries.svelte";
   import type { WebFeedEntry, WebFeed, Media } from "$lib/types";
-  import { inview } from "svelte-inview/dist/";
+  import { inview } from "svelte-inview";
   import { invoke } from "@tauri-apps/api";
   import { ipfs, log, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";

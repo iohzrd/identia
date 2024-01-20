@@ -1,18 +1,17 @@
 <script lang="ts">
   import type { PageData } from "./$types";
-  import {
-    Button,
-    ClickableTile,
-    Form,
-    FormGroup,
-    TextArea,
-    TextInput,
-    Link,
-  } from "carbon-components-svelte";
+
+  import { Avatar } from "flowbite-svelte";
+  import { Button } from "flowbite-svelte";
+  import { Card } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+  import { Listgroup } from "flowbite-svelte";
+  import { ListgroupItem } from "flowbite-svelte";
+
   import MediaModalComponent from "$lib/MediaModal.svelte";
   import MetaComponent from "$lib/Meta.svelte";
   import PostComponent from "$lib/Post.svelte";
-  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { IDResult } from "$lib/types";
   import type { Identity, Post } from "$lib/types";
   import { format as formatTime } from "timeago.js";
   import { getIdentity, ipfs, log, updateIdentity } from "$lib/core";
@@ -71,22 +70,21 @@
 </script>
 
 <MediaModalComponent
-  bind:start={media_modal_idx}
   bind:media={media_modal_media}
   bind:open={media_modal_open}
 />
 
-<Form on:submit>
+<div on:submit>
   {#if identity}
-    <!-- <FormGroup legendText="avatar">
+    <!-- <div legendText="avatar">
         <UserProfile20>
           <title>Avitar</title>
         </UserProfile20>
         {identity["avatar"]}
-      </FormGroup> -->
+      </div> -->
 
-    <FormGroup>
-      <TextArea
+    <div>
+      <Textarea
         bind:value={identity["description"]}
         labelText="description"
         readonly={ipfs_id !== identity.publisher}
@@ -94,77 +92,80 @@
           ? "Enter a description..."
           : ""}
       />
-    </FormGroup>
+    </div>
 
-    <FormGroup>
-      <TextInput
+    <div>
+      <Textarea
         bind:value={identity["display_name"]}
         inline
         labelText="display name"
         placeholder=""
         readonly={ipfs_id !== identity.publisher}
       />
-    </FormGroup>
+    </div>
 
-    <FormGroup>
-      <TextInput
+    <div>
+      <Textarea
         readonly
         inline
         labelText="publisher"
         placeholder=""
         bind:value={identity.publisher}
       />
-    </FormGroup>
+    </div>
 
-    <FormGroup legendText="following">
-      {#if following}
-        {#each following as identity}
-          <div>
-            <Link href="/identity/{identity.publisher}">
-              {#if identity.display_name}
-                {identity.display_name} ({identity.publisher})
-              {:else}
-                {identity.publisher}
-              {/if}
-            </Link>
-          </div>
-        {/each}
-      {:else if identity && identity.following}
-        {#each identity.following as id}
-          <div>
-            <Link href="/identity/{id}">
-              {id}
-            </Link>
-          </div>
-        {/each}
-      {/if}
-    </FormGroup>
+    <Listgroup>
+      <h3 class="p-1 text-center text-xl font-medium dark:text-white">
+        following
+      </h3>
+      {#each following as identity}
+        <ListgroupItem class="text-base font-semibold gap-2">
+          <Avatar src="" size="xs" />
+          <a href="/identity/{identity.publisher}">
+            {#if identity.display_name}
+              {identity.display_name} ({identity.publisher})
+            {:else}
+              {identity.publisher}
+            {/if}
+          </a>
+        </ListgroupItem>
+      {/each}
+    </Listgroup>
 
-    <FormGroup legendText="meta">
+    <Listgroup>
       {#if identity && identity.meta}
+        <h3 class="p-1 text-center text-xl font-medium dark:text-white">
+          meta
+        </h3>
+
         <MetaComponent
           meta={identity.meta}
           readonly={ipfs_id !== identity.publisher}
         />
       {/if}
-    </FormGroup>
+    </Listgroup>
 
-    <FormGroup legendText="posts">
+    <Listgroup>
+      <h3 class="p-1 text-center text-xl font-medium dark:text-white">posts</h3>
       {#if identity && identity.posts}
         {#each posts as post (post.cid)}
-          <PostComponent {ipfs_id} {post} />
+          <ListgroupItem>
+            <PostComponent {ipfs_id} {post} />
+          </ListgroupItem>
         {/each}
       {/if}
-      <ClickableTile on:click={getPostsPage}>Load more posts</ClickableTile>
-    </FormGroup>
+      <Card on:click={getPostsPage}>Load more posts</Card>
+    </Listgroup>
 
-    <FormGroup legendText="Last published">
-      {timeago} ({datetime}) - ({identity.timestamp})
-    </FormGroup>
+    <Listgroup>
+      <ListgroupItem legendText="Last published">
+        {timeago} ({datetime}) - ({identity.timestamp})
+      </ListgroupItem>
 
-    <FormGroup legendText="last known cid">
-      {identity["cid"]}
-    </FormGroup>
+      <ListgroupItem legendText="last known cid">
+        {identity["cid"]}
+      </ListgroupItem>
+    </Listgroup>
 
     <Button
       disabled={ipfs_id !== identity.publisher}
@@ -173,4 +174,4 @@
       }}>Save</Button
     >
   {/if}
-</Form>
+</div>

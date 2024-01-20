@@ -1,11 +1,9 @@
 <script lang="ts">
-  import {
-    Link,
-    OverflowMenu,
-    OverflowMenuItem,
-    ProgressBar,
-    Tile,
-  } from "carbon-components-svelte";
+  import { Card } from "flowbite-svelte";
+  import { Dropdown } from "flowbite-svelte";
+  import { DropdownItem } from "flowbite-svelte";
+  import { Progressbar } from "flowbite-svelte";
+
   import GenericEntryComponent from "./WebFeedEntries/GenericEntry.svelte";
   import OdyseeEntryComponent from "./WebFeedEntries/OdyseeEntry.svelte";
   import YoutubeEntryComponent from "./WebFeedEntries/YoutubeEntry.svelte";
@@ -28,23 +26,23 @@
   onDestroy(() => {});
 </script>
 
-<Tile style="outline: 2px solid black">
+<Card style="outline: 2px solid black">
   {#if deleting}
-    <ProgressBar helperText="Deleting..." />
+    <Progressbar helperText="Deleting..." />
   {:else}
-    <OverflowMenu flipped style="float:right;">
-      <OverflowMenuItem
+    <Dropdown flipped style="float:right;">
+      <DropdownItem
         text="Re-post to identia"
         on:click={() => {
           repost(entry);
         }}
       />
-    </OverflowMenu>
+    </Dropdown>
   {/if}
 
-  <Link size="lg" href="/webpublisher/{btoa(entry.publisher)}">
+  <a href="/webpublisher/{btoa(entry.publisher)}">
     {entry.display_name}
-  </Link>
+  </a>
   -
   {#if entry.cid.startsWith("yt:video:")}
     <YoutubeEntryComponent {entry} />
@@ -53,4 +51,4 @@
   {:else}
     <GenericEntryComponent {entry} />
   {/if}
-</Tile>
+</Card>

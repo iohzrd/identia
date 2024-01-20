@@ -2,7 +2,11 @@
   import TopicPostComponent from "$lib/TopicPost.svelte";
   import type { MessageExtended } from "$lib/types";
   import type { PageData } from "./$types";
-  import { Button, TextArea, Tile } from "carbon-components-svelte";
+
+  import { Button } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+  import { Card } from "flowbite-svelte";
+
   import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs, log } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
@@ -45,14 +49,14 @@
   });
 </script>
 
-<Tile style="outline: 2px solid black">
-  <TextArea
+<Card style="outline: 2px solid black">
+  <Textarea
     bind:value={body}
     labelText="/{data.topic}/"
     placeholder="What's happening?"
   />
-  <Button size="small" on:click={post}>Post</Button>
-</Tile>
+  <Button on:click={post}>Post</Button>
+</Card>
 
 {#each posts as post (post.sequenceNumber)}
   <TopicPostComponent {post} />

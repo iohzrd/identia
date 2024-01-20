@@ -1,68 +1,56 @@
 <script lang="ts">
-  // import PdfViewer from "svelte-pdf";
   import type { Media } from "$lib/types";
-  import { Modal } from "carbon-components-svelte";
-  import { Splide, SplideSlide } from "@splidejs/svelte-splide";
+  import { Modal } from "flowbite-svelte";
+  import { Carousel } from "flowbite-svelte";
+  import { Thumbnails } from "flowbite-svelte";
+
+  import type { HTMLImgAttributes } from "svelte/elements";
   import { onMount, onDestroy } from "svelte";
 
-  export let start: number;
   export let media: Media[];
   export let open: boolean;
-  $: filename =
-    typeof Array.isArray(media) && media.length > 0
-      ? media[start].filename
-      : "";
+  let images: HTMLImgAttributes[] = [];
+  let index = 0;
+  let forward = true; // sync animation direction between Thumbnails and Carousel
+  // $: filename =
+  //   typeof Array.isArray(media) && media.length > 0
+  //     ? media[start].filename
+  //     : "";
+
+  function map_images(m: Media): HTMLImgAttributes {
+    return {
+      alt: m.filename,
+      src: m.url,
+      title: m.filename,
+    };
+  }
 
   onMount(async () => {
-    media = media.filter((m) => m.filename != "post.json");
+    console.log("MediaModal.onMount");
+    console.log(open);
+    images = media.filter((m) => m.filename != "post.json").map(map_images);
+    console.log("images");
+    console.log(images);
   });
 
   onDestroy(() => {});
 </script>
 
-<Modal
-  bind:open
-  modalHeading={filename}
-  on:close
-  on:open
-  passiveModal
-  size="lg"
->
-  {#if open}
-    <Splide
-      options={{ start: start }}
-      on:move={(e) => (start = e.detail.index)}
-    >
-      {#each media as mediaObj (mediaObj.filename)}
-        <SplideSlide>
-          {#if mediaObj.content_type && mediaObj.content_type.includes("image")}
-            <img src={mediaObj.url} alt="" bind:this={mediaObj.element} />
-          {:else if mediaObj.content_type && mediaObj.content_type.includes("pdf")}
-            <!-- <PdfViewer url={mediaObj.url} scale={1.0} showBorder={false} /> -->
-          {/if}
-        </SplideSlide>
-      {/each}
-    </Splide>
-  {/if}
-</Modal>
-
-<style>
-  img {
-    height: auto;
-    width: 100%;
-  }
-
-  /* img {
-    height: auto;
-    width: 100%;
-    object-fit: contain;
-  } */
-
-  /* @media only screen and (orientation: landscape) {
-    img {
-      height: auto;
-      max-width: 100%;
-      object-fit: contain;
-    }
-  } */
-</style>
+{#if open}
+  <Modal bind:open autoclose size="xl">
+    <div class="max-w-4xl space-y-4">
+      <Carousel
+        {images}
+        {forward}
+        let:Indicators
+        let:Controls
+        bind:index
+        transition={null}
+      >
+        <Controls />
+        <Indicators />
+      </Carousel>
+      <Thumbnails {images} {forward} bind:index />
+    </div>
+  </Modal>
+{/if}

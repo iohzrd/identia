@@ -4,7 +4,10 @@
   import getVideoId from "get-video-id";
   import linkifyHtml from "linkify-html";
   import type { WebFeedEntry } from "$lib/types";
-  import { ExpandableTile, Link } from "carbon-components-svelte";
+
+  import { Accordion } from "flowbite-svelte";
+  import { AccordionItem } from "flowbite-svelte";
+
   import { stripHtml } from "string-strip-html";
 
   export let entry: WebFeedEntry;
@@ -25,18 +28,18 @@
 
 <TimeagoComponent timestamp={entry.timestamp} />
 <br />
-<Link size="lg" target="_blank" href={video_link}>
+<a target="_blank" href={video_link}>
   {entry.title}
-</Link>
+</a>
 <br />
 <div style="width: 400px;">
   <LiteYouTube videoId={video_id_obj.id} videoTitle={entry.title} />
 </div>
-<ExpandableTile tileExpandedLabel="Show less" tileCollapsedLabel="Show more">
-  <div slot="above">
-    {@html description.slice(0, first_br)}
-  </div>
-  <div slot="below">
+<Accordion>
+  <AccordionItem>
+    <div slot="header">
+      {@html description.slice(0, first_br)}
+    </div>
     {@html description.slice(first_br, description.length)}
-  </div>
-</ExpandableTile>
+  </AccordionItem>
+</Accordion>

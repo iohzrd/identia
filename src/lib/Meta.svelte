@@ -1,13 +1,11 @@
 <script lang="ts">
-  import {
-    Button,
-    ButtonSet,
-    Dropdown,
-    ListItem,
-    TextInput,
-    Column,
-    UnorderedList,
-  } from "carbon-components-svelte";
+  import { Button } from "flowbite-svelte";
+  import { ButtonGroup } from "flowbite-svelte";
+  import { Dropdown } from "flowbite-svelte";
+  import { Listgroup } from "flowbite-svelte";
+  import { ListgroupItem } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+
   import { onMount, onDestroy } from "svelte";
 
   export let readonly: boolean;
@@ -40,60 +38,37 @@
   onDestroy(() => {});
 </script>
 
-<UnorderedList nested={depth > 0}>
+<Listgroup>
   {#each Object.keys(meta) as k}
-    <ListItem>
-      <ButtonSet>
-        <Column sm={1} md={1} lg={1}>
-          <div>
-            {k}:
-          </div>
-        </Column>
+    <ListgroupItem>
+      <ButtonGroup>
+        <div>
+          {k}:
+        </div>
 
-        <Column sm={8} md={8} lg={8}>
-          {#if isObject(meta[k])}
-            <svelte:self meta={meta[k]} {readonly} depth={depth + 1} />
-          {:else if Array.isArray(meta[k])}
-            {meta[k]}
-          {:else if typeof meta[k] === "string"}
-            <TextInput
-              size="sm"
-              inline
-              placeholder=""
-              bind:value={meta[k]}
-              {readonly}
-            />
-          {:else}
-            else: {meta[k]}
-          {/if}
-        </Column>
+        {#if isObject(meta[k])}
+          <svelte:self meta={meta[k]} {readonly} depth={depth + 1} />
+        {:else if Array.isArray(meta[k])}
+          {meta[k]}
+        {:else if typeof meta[k] === "string"}
+          <Textarea inline placeholder="" bind:value={meta[k]} {readonly} />
+        {:else}
+          else: {meta[k]}
+        {/if}
 
         {#if !readonly}
-          <Column sm={1} md={1} lg={1}>
-            <Button size="small" on:click={() => removeMeta(k)}>delete</Button>
-          </Column>
+          <Button on:click={() => removeMeta(k)}>delete</Button>
         {/if}
-      </ButtonSet>
-    </ListItem>
+      </ButtonGroup>
+    </ListgroupItem>
   {/each}
-</UnorderedList>
+</Listgroup>
 
 <br />
 {#if !readonly}
-  <ButtonSet>
-    <Dropdown
-      type="inline"
-      size="sm"
-      titleText="new entry type"
-      bind:selectedId={new_meta_index}
-      items={meta_types}
-    />
-    <TextInput
-      class="input"
-      size="sm"
-      placeholder="key"
-      bind:value={new_meta_key}
-    />
-    <Button class="button" size="small" on:click={addMeta}>add entry</Button>
-  </ButtonSet>
+  <ButtonGroup>
+    <Dropdown type="inline" />
+    <Textarea class="input" placeholder="key" bind:value={new_meta_key} />
+    <Button class="button" on:click={addMeta}>add entry</Button>
+  </ButtonGroup>
 {/if}

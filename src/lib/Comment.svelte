@@ -1,13 +1,16 @@
 <script lang="ts">
   import CommentComponent from "$lib/Comment.svelte";
-  import Reply from "carbon-icons-svelte/lib/Reply.svelte";
   import type { MessageExtended } from "$lib/types";
   import type { QueryResult } from "tauri-plugin-sql-api";
-  import { Button, TextArea, Tile } from "carbon-components-svelte";
-  import { ThumbsDown as TD } from "carbon-icons-svelte";
-  import { ThumbsDownFilled as TDF } from "carbon-icons-svelte";
-  import { ThumbsUp as TU } from "carbon-icons-svelte";
-  import { ThumbsUpFilled as TUF } from "carbon-icons-svelte";
+  import { Button } from "flowbite-svelte";
+  import { Card } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+  import { ThumbsDownOutline } from "flowbite-svelte-icons";
+  import { ThumbsDownSolid } from "flowbite-svelte-icons";
+  import { ThumbsUpOutline } from "flowbite-svelte-icons";
+  import { ThumbsUpSolid } from "flowbite-svelte-icons";
+  import { ReplySolid } from "flowbite-svelte-icons";
+
   import { createJson, createTopical } from "$lib/flatbuffers";
   import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
@@ -73,7 +76,7 @@
   });
 </script>
 
-<Tile style="outline: 2px solid black">
+<Card style="outline: 2px solid black">
   {comment.from}
   <br />
   <br />
@@ -82,22 +85,21 @@
   <br />
 
   {#if true}
-    <Button icon={TU} iconDescription="Like" kind="ghost" size="small" />
+    <Button icon={ThumbsUpOutline} iconDescription="Like" kind="ghost" />
   {:else}
-    <Button icon={TUF} iconDescription="Like" kind="ghost" size="small" />
+    <Button icon={ThumbsUpSolid} iconDescription="Like" kind="ghost" />
   {/if}
 
   {#if true}
-    <Button icon={TD} iconDescription="Dislike" kind="ghost" size="small" />
+    <Button icon={ThumbsDownOutline} iconDescription="Dislike" kind="ghost" />
   {:else}
-    <Button icon={TDF} iconDescription="Dislike" kind="ghost" size="small" />
+    <Button icon={ThumbsDownSolid} iconDescription="Dislike" kind="ghost" />
   {/if}
 
   <Button
-    icon={Reply}
+    icon={ReplySolid}
     iconDescription="Reply"
     kind="ghost"
-    size="small"
     on:click={() => {
       replying = !replying;
     }}
@@ -105,18 +107,12 @@
 
   {#if replying}
     <div>
-      <TextArea bind:value={reply} placeholder="Add a reply..." rows={2} />
-      <Button
-        kind="ghost"
-        size="small"
-        style="float:right;"
-        on:click={postReply}>Reply</Button
+      <Textarea bind:value={reply} placeholder="Add a reply..." rows={2} />
+      <Button kind="ghost" style="float:right;" on:click={postReply}
+        >Reply</Button
       >
-      <Button
-        kind="ghost"
-        size="small"
-        style="float:right;"
-        on:click={cancelReply}>Cancel</Button
+      <Button kind="ghost" style="float:right;" on:click={cancelReply}
+        >Cancel</Button
       >
     </div>
     <br />
@@ -126,4 +122,4 @@
   {#each sub_comments as sub_comment (sub_comment.sequenceNumber)}
     <CommentComponent comment={sub_comment} />
   {/each}
-</Tile>
+</Card>

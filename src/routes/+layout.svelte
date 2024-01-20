@@ -1,31 +1,30 @@
 <script lang="ts">
-  import "@splidejs/splide/dist/css/splide.min.css";
-  // import "carbon-components-svelte/css/all.css";
-  import "carbon-components-svelte/css/g100.css";
-  import {
-    Button,
-    ButtonSet,
-    Content,
-    Grid,
-    Header,
-    HeaderActionLink,
-    HeaderGlobalAction,
-    HeaderUtilities,
-    Loading,
-    Modal,
-    ProgressBar,
-    SideNav,
-    SideNavDivider,
-    SideNavItems,
-    SideNavLink,
-    SideNavMenu,
-    SideNavMenuItem,
-    SkipToContent,
-    TextInput,
-  } from "carbon-components-svelte";
-  import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
-  import Add from "carbon-icons-svelte/lib/Add.svelte";
-  import UserAvatarFilled from "carbon-icons-svelte/lib/UserAvatarFilled.svelte";
+  import "../app.css";
+
+  import { Button } from "flowbite-svelte";
+  import { ButtonGroup } from "flowbite-svelte";
+  import { Drawer } from "flowbite-svelte";
+  import { Modal } from "flowbite-svelte";
+  import { NavBrand } from "flowbite-svelte";
+  import { NavHamburger } from "flowbite-svelte";
+  import { NavLi } from "flowbite-svelte";
+  import { NavUl } from "flowbite-svelte";
+  import { Navbar } from "flowbite-svelte";
+  import { Progressbar } from "flowbite-svelte";
+  import { Sidebar } from "flowbite-svelte";
+  import { SidebarDropdownItem } from "flowbite-svelte";
+  import { SidebarDropdownWrapper } from "flowbite-svelte";
+  import { SidebarGroup } from "flowbite-svelte";
+  import { SidebarItem } from "flowbite-svelte";
+  import { SidebarWrapper } from "flowbite-svelte";
+  import { Spinner } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+
+  import { TrashBinSolid } from "flowbite-svelte-icons";
+  import { UserAddOutline } from "flowbite-svelte-icons";
+  import { UserSolid } from "flowbite-svelte-icons";
+  import { sineIn } from "svelte/easing";
+
   import {
     followPublisher,
     getIdentity,
@@ -33,6 +32,8 @@
     log,
     republishIdentity,
   } from "$lib/core";
+  import type { IDResult } from "$lib/types";
+
   import { getTauriVersion, getVersion } from "@tauri-apps/api/app";
   import {
     deleteTopicFromDB,
@@ -45,7 +46,8 @@
   import { onMount, onDestroy } from "svelte";
   import { page } from "$app/stores";
 
-  let isSideNavOpen = false;
+  $: activeUrl = $page.url.pathname;
+  let hidden = true;
 
   let ipfs_id: string;
   let ipfs_info: IDResult;
@@ -111,138 +113,103 @@
   });
 </script>
 
-{#if ipfs_id}
-  <Header
-    bind:isSideNavOpen
-    platformName="identia"
-    persistentHamburgerMenu={true}
-  >
-    <svelte:fragment slot="skip-to-content">
-      <SkipToContent />
-    </svelte:fragment>
+<Navbar>
+  <NavBrand class="dark:text-white">
+    <button on:click={() => (hidden = false)}>
+      <img alt="" class="me-3 h-6 sm:h-9" src="/favicon.png" />
+    </button>
+    <span class="self-center text-xl font-semibold dark:text-white">
+      Identia
+    </span>
+  </NavBrand>
 
-    <HeaderUtilities>
-      <HeaderActionLink href="/identity/{ipfs_id}" icon={UserAvatarFilled} />
-      <HeaderGlobalAction
-        aria-label="Follow new identity"
-        icon={Add}
-        on:click={() => (follow_modal_open = !follow_modal_open)}
-      />
-    </HeaderUtilities>
-  </Header>
+  <NavUl>
+    <NavLi href="/identity/{ipfs_id}">Profile</NavLi>
+    <NavLi on:click={() => (follow_modal_open = !follow_modal_open)}>
+      Follow new identity
+    </NavLi>
+  </NavUl>
+</Navbar>
 
-  <SideNav bind:isOpen={isSideNavOpen}>
-    <SideNavItems>
-      <SideNavLink
-        href="/"
-        text="Feed"
-        isSelected={$page.url.pathname === "/"}
-      />
-      <SideNavLink
-        href="/identity/{ipfs_id}"
-        text="Identity"
-        isSelected={$page.url.pathname.includes("/identity/")}
-      />
-      <SideNavLink
-        href="/webfeed"
-        text="Web Feed"
-        isSelected={$page.url.pathname.includes("/webfeed/")}
-      />
-      <SideNavMenu text="Topic Feeds" expanded>
-        {#each subs as topic}
-          <ButtonSet>
-            <SideNavLink
-              href="/topicfeed/{topic}"
-              isSelected={$page.url.pathname === "/topicfeed/" + topic}
-              style="width: 20em; overflow: hidden"
-              text="/{topic}/"
-            />
+<Drawer bind:hidden>
+  <Sidebar {activeUrl}>
+    <SidebarWrapper>
+      <SidebarGroup>
+        <SidebarItem href="/" label="Feed" />
+        <SidebarItem href="/identity/{ipfs_id}" label="Identity" />
+        <SidebarItem href="/webfeed" label="Web Feed" />
+        <SidebarDropdownWrapper label="Topic Feeds" expanded>
+          {#each subs as topic}
+            <SidebarDropdownItem href="/topicfeed/{topic}" label="/{topic}/"
+            ></SidebarDropdownItem>
             {#if $page.url.pathname === "/topicfeed/" + topic}
-              <Button
-                icon={TrashCan}
-                kind="danger-tertiary"
-                size="small"
-                style="position: absolute; right: 0; width: 12.5%;"
-                tooltipPosition="right"
+              <SidebarDropdownItem
+                icon={TrashBinSolid}
                 on:click={() => unfollowTopic(topic)}
               />
             {/if}
-          </ButtonSet>
-        {/each}
-        {#if topic_modal_open}
-          <SideNavMenuItem text="/{topic_to_follow}/" />
-        {/if}
-        <SideNavMenuItem
-          text="Add new Topic"
-          on:click={() => (topic_modal_open = !topic_modal_open)}
+          {/each}
+          {#if topic_modal_open}
+            <SidebarDropdownItem label="/{topic_to_follow}/" />
+          {/if}
+          <SidebarDropdownItem
+            label="new Topic"
+            on:click={() => (topic_modal_open = !topic_modal_open)}
+          />
+        </SidebarDropdownWrapper>
+      </SidebarGroup>
+
+      <SidebarGroup border>
+        <SidebarItem
+          href="https://github.com/iohzrd/identia"
+          label="identia: v{app_version}"
+          target="_blank"
         />
-      </SideNavMenu>
+        <SidebarItem
+          href="https://github.com/ipfs/go-ipfs"
+          label="ipfs: v{ipfs_version}"
+          target="_blank"
+        />
+        <SidebarItem
+          href="https://github.com/tauri-apps/tauri"
+          label="tauri: v{tauri_version}"
+          target="_blank"
+        />
+      </SidebarGroup>
+    </SidebarWrapper>
+  </Sidebar>
+</Drawer>
+<div class="grid grid-cols-1 justify-items-center">
+  <slot />
+</div>
 
-      <div style="bottom: 0; position: absolute; width: 100%;">
-        <SideNavDivider />
-        <SideNavLink href="https://github.com/iohzrd/identia" target="_blank">
-          identia: v{app_version}
-        </SideNavLink>
-        <SideNavLink href="https://github.com/ipfs/go-ipfs" target="_blank">
-          ipfs: v{ipfs_version}
-        </SideNavLink>
-        <SideNavLink href="https://github.com/tauri-apps/tauri" target="_blank">
-          tauri: v{tauri_version}
-        </SideNavLink>
-      </div>
-    </SideNavItems>
-  </SideNav>
+<Modal bind:open={follow_modal_open}>
+  <Textarea
+    invalid={publisher_invalid}
+    invalidText="Invalid IPNS id. Please try another."
+    labelText="publisher to follow"
+    placeholder="12D3KooW..."
+    disabled={follow_waiting}
+    bind:value={publisher_to_follow}
+  />
+  {#if follow_waiting}
+    <Progressbar helperText="Please wait..." />
+  {:else}
+    <Button disabled={publisher_invalid} on:click={follow}>Follow</Button>
+  {/if}
+</Modal>
 
-  <Content>
-    <Grid>
-      <slot />
-    </Grid>
-  </Content>
-
-  <Modal
-    bind:open={follow_modal_open}
-    modalHeading="Follow publisher"
-    on:close={clearFollowModal}
-    on:open
-    passiveModal
-    size="lg"
+<Modal bind:open={topic_modal_open} on:close={() => (topic_to_follow = "")}>
+  <Textarea
+    invalid={false}
+    invalidText=""
+    labelText="topic to follow"
+    placeholder="pol"
+    disabled={false}
+    bind:value={topic_to_follow}
+  />
+  <Button
+    disabled={!topic_to_follow || subs.includes(topic_to_follow)}
+    on:click={followTopic}>Follow Topic</Button
   >
-    <TextInput
-      invalid={publisher_invalid}
-      invalidText="Invalid IPNS id. Please try another."
-      labelText="publisher to follow"
-      placeholder="12D3KooW..."
-      disabled={follow_waiting}
-      bind:value={publisher_to_follow}
-    />
-    {#if follow_waiting}
-      <ProgressBar helperText="Please wait..." />
-    {:else}
-      <Button disabled={publisher_invalid} on:click={follow}>Follow</Button>
-    {/if}
-  </Modal>
-
-  <Modal
-    bind:open={topic_modal_open}
-    modalHeading="Add topic"
-    on:close={() => (topic_to_follow = "")}
-    on:open
-    passiveModal
-    size="lg"
-  >
-    <TextInput
-      invalid={false}
-      invalidText=""
-      labelText="topic to follow"
-      placeholder="pol"
-      disabled={false}
-      bind:value={topic_to_follow}
-    />
-    <Button
-      disabled={!topic_to_follow || subs.includes(topic_to_follow)}
-      on:click={followTopic}>Follow Topic</Button
-    >
-  </Modal>
-{:else}
-  <Loading />
-{/if}
+</Modal>

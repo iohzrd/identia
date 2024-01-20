@@ -1,12 +1,11 @@
 <script lang="ts">
-  import {
-    Button,
-    FileUploaderItem,
-    Form,
-    FormGroup,
-    ProgressBar,
-    TextArea,
-  } from "carbon-components-svelte";
+  import { Button } from "flowbite-svelte";
+  import { ButtonGroup } from "flowbite-svelte";
+  import { Card } from "flowbite-svelte";
+  import { Fileupload } from "flowbite-svelte";
+  import { Progressbar } from "flowbite-svelte";
+  import { Textarea } from "flowbite-svelte";
+
   import FileDrop from "svelte-tauri-filedrop";
   import type { Identity, Post, PostRequest, PostResponse } from "$lib/types";
   import { addPost, getIdentityFromDB } from "$lib/core";
@@ -99,25 +98,20 @@
   onDestroy(() => {});
 </script>
 
-<Form>
-  <FormGroup>
-    <FileDrop {handleFiles}>
-      <TextArea
-        bind:value={body}
-        disabled={posting}
-        labelText="New post"
-        placeholder="What's happening?"
-      />
+<Card class="w-full max-w-md">
+  <FileDrop {handleFiles}>
+    <Textarea
+      bind:value={body}
+      disabled={posting}
+      labelText="New post"
+      placeholder="What's happening?"
+    />
 
-      {#each files as file, i}
-        <FileUploaderItem
-          status="edit"
-          name={file}
-          on:delete={() => removeFile(i)}
-        />
-      {/each}
+    {#each files as file, i}
+      <Fileupload status="edit" name={file} on:delete={() => removeFile(i)} />
+    {/each}
+    <ButtonGroup>
       <Button on:click={openDialog} disabled={posting}>Add files</Button>
-
       {#if !posting}
         <Button
           on:click={post}
@@ -126,8 +120,8 @@
           Post
         </Button>
       {:else}
-        <ProgressBar helperText="Publishing..." />
+        <Progressbar helperText="Publishing..." />
       {/if}
-    </FileDrop>
-  </FormGroup>
-</Form>
+    </ButtonGroup>
+  </FileDrop>
+</Card>

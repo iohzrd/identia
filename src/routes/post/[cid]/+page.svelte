@@ -3,7 +3,6 @@
   import PostComponent from "$lib/Post.svelte";
   import type { PageData } from "./$types";
   import type { Post } from "$lib/types";
-  import { Tile } from "carbon-components-svelte";
   import { getPostFromDB } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
 
