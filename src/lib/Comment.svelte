@@ -10,8 +10,6 @@
   import { ThumbsUpOutline } from "flowbite-svelte-icons";
   import { ThumbsUpSolid } from "flowbite-svelte-icons";
   import { ReplySolid } from "flowbite-svelte-icons";
-
-  import { createJson, createTopical } from "$lib/flatbuffers";
   import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
@@ -27,10 +25,12 @@
   async function postReply() {
     await ipfs.pubsub.publish(
       comment.topic,
-      createJson({
-        body: reply,
-        inReplyTo: String(comment.sequenceNumber),
-      })
+      new TextEncoder().encode(
+        JSON.stringify({
+          body: reply,
+          inReplyTo: String(comment.sequenceNumber),
+        })
+      )
     );
     reply = "";
     replying = false;

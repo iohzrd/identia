@@ -75,8 +75,8 @@ These relationships can be stored in a post object to add context to a specific 
 - [x] migrate to SQLite...
 - [x] Paginate feed
 - [x] enable(fix) audio/video playback
-- [ ] re-implement comment system via pubsub
-- [ ] implement image(media) board system via pubsub
+- [x] re-implement comment system via pubsub
+- [x] implement image(media) board system via pubsub
 - [ ] implement custom IPFS in rust-libp2p
 - [ ] mobile...
 - [ ] "re-post" / mirror a post

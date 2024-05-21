@@ -10,7 +10,7 @@
   "scripts": {
     "build": "vite build",
     "bump": "node scripts/bump-versions.js",
-    "compile": "cd src/lib/flatbuffers; flatc --ts messages.fbs",
+    "clean": "rm -rf .svelte-kit build node_modules package-lock.json && cd src-tauri && cargo clean",
     "dev": "vite",
     "info": "tauri info",
     "postinstall": "npm run renameIpfsBinary",
@@ -24,32 +24,31 @@
     "update": "ncu -u && npm install && cd src-tauri && cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.5.3"
+    "@tauri-apps/api": "^1.5.6"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^4.0.9",
+    "@libp2p/peer-id": "^4.1.2",
     "@ltd/j-toml": "^1.38.0",
     "@sveltejs/adapter-static": "^3.0.1",
-    "@sveltejs/kit": "^2.5.5",
-    "@sveltejs/vite-plugin-svelte": "^3.0.2",
-    "@tauri-apps/cli": "^1.5.11",
+    "@sveltejs/kit": "^2.5.9",
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@tauri-apps/cli": "^1.5.14",
     "autoprefixer": "^10.4.19",
-    "execa": "^8.0.1",
+    "execa": "^9.1.0",
     "ext2mime": "^2.0.0",
-    "flatbuffers": "^24.3.25",
     "flowbite": "^2.3.0",
-    "flowbite-svelte": "^0.44.24",
-    "flowbite-svelte-icons": "^1.5.0",
+    "flowbite-svelte": "^0.46.1",
+    "flowbite-svelte-icons": "^1.6.1",
     "get-video-id": "^4.1.5",
     "is-ipfs": "^8.0.4",
-    "it-all": "^3.0.4",
-    "kubo": "^0.27.0",
-    "kubo-rpc-client": "^3.0.4",
+    "it-all": "^3.0.6",
+    "kubo": "^0.28.0",
+    "kubo-rpc-client": "^4.1.1",
     "linkify-html": "^4.1.3",
     "postcss": "^8.4.38",
-    "semver": "^7.6.0",
+    "semver": "^7.6.2",
     "string-strip-html": "^13.4.8",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.17",
     "svelte-inview": "^4.0.2",
     "svelte-lite-youtube-embed": "^1.1.0",
     "svelte-tauri-filedrop": "^1.0.0",
@@ -57,8 +56,8 @@
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql",
     "timeago.js": "^4.0.2",
     "tslib": "^2.6.2",
-    "typescript": "^5.4.4",
-    "uint8arrays": "^5.0.3",
-    "vite": "^5.2.8"
+    "typescript": "^5.4.5",
+    "uint8arrays": "^5.1.0",
+    "vite": "^5.2.11"
   }
 }

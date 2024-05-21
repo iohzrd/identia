@@ -7,8 +7,6 @@
   import { Button } from "flowbite-svelte";
   import { Card } from "flowbite-svelte";
   import { Textarea } from "flowbite-svelte";
-
-  import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore } from "$lib/pubsub";
@@ -25,7 +23,12 @@
   async function postReply() {
     await ipfs.pubsub.publish(
       post.topic,
-      createJson({ inReplyTo: String(post.sequenceNumber), body: reply_body })
+      new TextEncoder().encode(
+        JSON.stringify({
+          inReplyTo: String(post.sequenceNumber),
+          body: reply_body,
+        })
+      )
     );
     reply_body = "";
     replying = false;

@@ -1,8 +1,6 @@
 import all from "it-all";
-import type { AddResult } from "ipfs-core-types/src/root";
-import type { IPFSHTTPClient } from "kubo-rpc-client";
+import type { AddResult, KuboRPCClient } from "kubo-rpc-client";
 import type { Identity, Post } from "./types";
-import type { PublishResult } from "ipfs-core-types/src/name/index";
 import type { QueryResult } from "tauri-plugin-sql-api";
 import { concat, toString } from "uint8arrays";
 import { create } from "kubo-rpc-client";
@@ -15,9 +13,7 @@ export function log(message?: any, ...optionalParams: any[]) {
   }
 }
 
-export const ipfs: IPFSHTTPClient = create({
-  url: "/ip4/127.0.0.1/tcp/5001",
-});
+export const ipfs: KuboRPCClient = create('/ip4/127.0.0.1/tcp/5001');
 
 export async function deleteIdentityFromDB(
   publisher: string

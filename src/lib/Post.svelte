@@ -4,7 +4,6 @@
   import TimeagoComponent from "$lib/Timeago.svelte";
   import type { Media, Post } from "$lib/types";
   import type { MessageExtended } from "$lib/types";
-  import { createJson, createTopical } from "$lib/flatbuffers";
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
 
@@ -177,10 +176,12 @@
     await ipfs.pubsub.publish(
       post.publisher,
       // createTopical(post.cid, reply, [])
-      createJson({
-        body: reply,
-        inReplyTo: post.cid,
-      })
+      new TextEncoder().encode(
+        JSON.stringify({
+          body: reply,
+          inReplyTo: post.cid,
+        })
+      )
     );
     reply = "";
     replying = false;
