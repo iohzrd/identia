@@ -17,7 +17,7 @@ tauri-build = { version = "1", features = [] }
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-feed-rs = "1"
+feed-rs = "2"
 ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"] }
 # ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"], path = "../../rust/rust-ipfs-api/ipfs-api-backend-hyper" }
 serde = { version = "1", features = ["derive"] }
