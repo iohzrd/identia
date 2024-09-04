@@ -26,7 +26,6 @@
   import type { Media, Post } from "$lib/types";
   import type { MessageExtended } from "$lib/types";
   import { concat } from "uint8arrays/concat";
-  import { createJson, createTopical } from "$lib/flatbuffers";
   import { deletePost, ipfs, unfollowPublisher } from "$lib/core";
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
@@ -173,11 +172,12 @@
   async function postReply() {
     await ipfs.pubsub.publish(
       post.publisher,
-      // createTopical(post.cid, reply, [])
-      createJson({
-        body: reply,
-        inReplyTo: post.cid,
-      })
+      new TextEncoder().encode(
+        JSON.stringify({
+          body: reply,
+          inReplyTo: post.cid,
+        })
+      )
     );
     reply = "";
     replying = false;

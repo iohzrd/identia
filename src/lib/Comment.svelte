@@ -2,14 +2,13 @@
   import CommentComponent from "$lib/Comment.svelte";
   import Reply from "carbon-icons-svelte/lib/Reply.svelte";
   import type { MessageExtended } from "$lib/types";
-  import type { QueryResult } from "tauri-plugin-sql-api";
+  // import type { QueryResult } from "tauri-plugin-sql-api";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
   import { ThumbsDown as TD } from "carbon-icons-svelte";
   import { ThumbsDownFilled as TDF } from "carbon-icons-svelte";
   import { ThumbsUp as TU } from "carbon-icons-svelte";
   import { ThumbsUpFilled as TUF } from "carbon-icons-svelte";
-  import { createJson, createTopical } from "$lib/flatbuffers";
-  import { execute, select } from "./db";
+  // import { execute, select } from "./db";
   import { ipfs } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore } from "$lib/pubsub";
@@ -24,10 +23,12 @@
   async function postReply() {
     await ipfs.pubsub.publish(
       comment.topic,
-      createJson({
-        body: reply,
-        inReplyTo: String(comment.sequenceNumber),
-      })
+      new TextEncoder().encode(
+        JSON.stringify({
+          body: reply,
+          inReplyTo: String(comment.sequenceNumber),
+        })
+      )
     );
     reply = "";
     replying = false;

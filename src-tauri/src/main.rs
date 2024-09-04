@@ -101,12 +101,6 @@ async fn shutdown_ipfs() {
   };
 }
 
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-  args: Vec<String>,
-  cwd: String,
-}
-
 fn main() {
   tauri::Builder::default()
     .system_tray(

@@ -3,7 +3,6 @@
   import type { MessageExtended } from "$lib/types";
   import type { PageData } from "./$types";
   import { Button, TextArea, Tile } from "carbon-components-svelte";
-  import { createJson, createTopical } from "$lib/flatbuffers";
   import { ipfs, log } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
@@ -17,7 +16,12 @@
   async function post() {
     ipfs.pubsub.publish(
       data.topic,
-      createJson({ inReplyTo: "root", body: body })
+      new TextEncoder().encode(
+        JSON.stringify({
+          inReplyTo: "root",
+          body: body,
+        })
+      )
     );
     body = "";
   }

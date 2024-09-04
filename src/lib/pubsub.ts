@@ -1,12 +1,5 @@
 import type { MessageExtended } from "$lib/types";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import {
-  Json,
-  MessageType,
-  PubsubMessage,
-  Topical,
-} from "./flatbuffers/messages";
-import { ByteBuffer } from "flatbuffers";
 import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
 
@@ -38,25 +31,12 @@ export const pubsubStore = subscriptionStore();
 export async function globalPubsubHandler(message: MessageExtended) {
   console.log("globalPubsubHandler", message);
   if (message.type === "signed" && !blacklist.includes(String(message.from))) {
-    let buff = new ByteBuffer(message.data);
-    let pubsubMessage = PubsubMessage.getRootAsPubsubMessage(buff);
-    let messageType = pubsubMessage.messageType();
-    // let timestamp = pubsubMessage.timestamp();
-    switch (messageType) {
-      case MessageType.Json:
-        let j: Json = pubsubMessage.message(Json.getRootAsJson(buff));
-        let parsed = JSON.parse(j.data() || "");
-        message.inReplyTo = parsed["inReplyTo"] || "";
-        message.body = parsed["body"] || "";
-        message.files = parsed["files"] || [];
-        break;
-      case MessageType.Topical:
-        let t: Topical = pubsubMessage.message(Topical.getRootAsTopical(buff));
-        message.inReplyTo = t.inReplyTo() || "";
-        message.body = t.body() || "";
-        // message.files = t.files(t.filesLength()) || [];
-        break;
-    }
+    let json = new TextDecoder("utf-8").decode(message.data);
+    let parsed = JSON.parse(json);
+    message.inReplyTo = parsed["inReplyTo"] || "";
+    message.body = parsed["body"] || "";
+    message.files = parsed["files"] || [];
+
     if (message.inReplyTo != null) {
       pubsubStore.set(message.topic, message.inReplyTo, message);
     }
