@@ -1,6 +1,5 @@
 import type { MessageExtended } from "$lib/types";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import { peerIdFromPeerId } from "@libp2p/peer-id";
 import { select, execute } from "./db";
 
 const blacklist: string[] = [];
