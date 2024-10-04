@@ -3,7 +3,7 @@
   import WebFeedEntriesComponent from "./WebFeedEntries.svelte";
   import type { WebFeedEntry, WebFeed, Media } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
-  import { invoke } from "@tauri-apps/api";
+  import { invoke } from "@tauri-apps/api/core";
   import { ipfs, log, updateFeed } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";

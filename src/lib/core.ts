@@ -1,9 +1,7 @@
 import all from "it-all";
-import type { AddResult } from "ipfs-core-types/src/root";
-import type { IPFSHTTPClient } from "kubo-rpc-client";
+import type { AddResult,KuboRPCClient } from "kubo-rpc-client";
 import type { Identity, Post } from "./types";
-import type { PublishResult } from "ipfs-core-types/src/name/index";
-import type { QueryResult } from "tauri-plugin-sql-api";
+import type { QueryResult } from "@tauri-apps/plugin-sql";
 import { concat, toString } from "uint8arrays";
 import { create } from "kubo-rpc-client";
 import { execute, select } from "./db";
@@ -15,7 +13,7 @@ export function log(message?: any, ...optionalParams: any[]) {
   }
 }
 
-export const ipfs: IPFSHTTPClient = create({
+export const ipfs: KuboRPCClient = create({
   url: "/ip4/127.0.0.1/tcp/5001",
 });
 

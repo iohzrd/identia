@@ -1,5 +1,5 @@
-import Database from "tauri-plugin-sql-api";
-import type { QueryResult } from "tauri-plugin-sql-api";
+import Database from "@tauri-apps/plugin-sql";
+import type { QueryResult } from "@tauri-apps/plugin-sql";
 
 let db: Database;
 const loadDB = Database.load("sqlite:sqlite.db").then((instance) => {

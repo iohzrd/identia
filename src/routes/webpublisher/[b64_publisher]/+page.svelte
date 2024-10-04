@@ -3,7 +3,7 @@
   import type { PageData } from "./$types";
   import type { WebFeed, WebFeedEntry } from "$lib/types";
   import { Form, FormGroup, Link } from "carbon-components-svelte";
-  import { invoke } from "@tauri-apps/api";
+  import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
   export let data: PageData;

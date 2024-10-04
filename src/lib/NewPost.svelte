@@ -10,9 +10,9 @@
   import FileDrop from "svelte-tauri-filedrop";
   import type { Identity, Post, PostRequest, PostResponse } from "$lib/types";
   import { addPost, getIdentityFromDB } from "$lib/core";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
-  import { open } from "@tauri-apps/api/dialog";
+  import { open } from "@tauri-apps/plugin-dialog";
   import { stripHtml } from "string-strip-html";
 
   export let insertPostIntoFeed: Function;

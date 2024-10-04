@@ -1,0 +1,43 @@
+{
+  "identifier": "migrated",
+  "description": "permissions that were migrated from v1",
+  "local": true,
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    "fs:allow-copy-file",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    "fs:allow-exists",
+    "shell:allow-execute",
+    "shell:allow-open",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:allow-message",
+    "dialog:allow-ask",
+    "dialog:allow-confirm",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://**/"
+        },
+        {
+          "url": "https://**/"
+        }
+      ]
+    },
+    "http:default",
+    "fs:default",
+    "dialog:default",
+    "shell:default",
+    "sql:allow-execute",
+    "sql:allow-load",
+    "sql:allow-select"
+  ]
+}

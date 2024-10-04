@@ -1,6 +1,6 @@
 {
   "name": "identia",
-  "version": "0.4.10",
+  "version": "0.5.0",
   "description": "Decentralized, censorship resistant social media on IPFS",
   "productName": "identia",
   "author": "iohzrd <iohzrd@gmail.com>",
@@ -23,7 +23,12 @@
     "update": "ncu -u; npm install; cd src-tauri; cargo update"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.6.0"
+    "@tauri-apps/api": "^2.0.1",
+    "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.0.0",
+    "@tauri-apps/plugin-http": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.0.0",
+    "@tauri-apps/plugin-sql": "^2.0.0"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^5.0.4",
@@ -32,9 +37,9 @@
     "@sveltejs/adapter-static": "^3.0.5",
     "@sveltejs/kit": "^2.6.1",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
-    "@tauri-apps/cli": "^1.6.2",
+    "@tauri-apps/cli": "^2.0.1",
     "carbon-components-svelte": "^0.85.2",
-    "carbon-icons-svelte": "^12.11.0",
+    "carbon-icons-svelte": "^12.11.1",
     "execa": "^9.4.0",
     "ext2mime": "^2.0.0",
     "get-video-id": "^4.1.7",
@@ -46,10 +51,9 @@
     "semver": "^7.6.3",
     "string-strip-html": "^13.4.8",
     "svelte": "^4.2.19",
-    "svelte-inview": "^4.0.3",
+    "svelte-inview": "^4.0.4",
     "svelte-lite-youtube-embed": "^1.1.0",
     "svelte-tauri-filedrop": "^1.0.0",
-    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql",
     "timeago.js": "^4.0.2",
     "tslib": "^2.7.0",
     "typescript": "^5.6.2",

@@ -1,7 +1,7 @@
 <script lang="ts">
   import NewPostComponent from "$lib/NewPost.svelte";
   import PostComponent from "$lib/Post.svelte";
-  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { IDResult } from "kubo-rpc-client";
   import type { Post } from "$lib/types";
   import { inview } from "svelte-inview/dist/";
   import { ipfs, log, updateFeed } from "$lib/core";
@@ -46,12 +46,14 @@
   async function getFeed() {
     await updateFeed();
     let new_posts: Post[] = await select(new_posts_query);
+    console.log("new_posts: ", new_posts);
     if (new_posts.length > 0) {
       // the filter ensures posts from onPost and getFeed don't collide, which would cause an error.
       feed = [
         ...new_posts.filter((post) => post.publisher != ipfs_id),
         ...feed,
       ];
+      console.log("feed: ", feed);
     }
   }
 

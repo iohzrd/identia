@@ -2,81 +2,57 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:1420",
-    "distDir": "../build",
-    "withGlobalTauri": false
+    "frontendDist": "../build",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "identia",
-    "version": "0.4.10"
-  },
-  "tauri": {
-    "allowlist": {
-      "dialog": {
-        "all": true
-      },
-      "fs": {
-        "all": true
-      },
-      "http": {
-        "all": true,
-        "request": false,
-        "scope": [
-          "http://**",
-          "https://**"
-        ]
-      },
-      "path": {
-        "all": true
-      },
-      "shell": {
-        "open": true,
-        "sidecar": true
-      }
+  "bundle": {
+    "active": true,
+    "category": "SocialNetworking",
+    "copyright": "iohzrd",
+    "targets": "all",
+    "externalBin": [
+      "../node_modules/kubo/kubo/ipfs"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     },
-    "bundle": {
-      "active": true,
-      "category": "SocialNetworking",
-      "copyright": "iohzrd",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [
-        "../node_modules/kubo/kubo/ipfs"
-      ],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "identia",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
+    }
+  },
+  "productName": "identia",
+  "mainBinaryName": "identia",
+  "version": "0.4.10",
+  "identifier": "identia",
+  "plugins": {},
+  "app": {
+    "withGlobalTauri": false,
+    "trayIcon": {
+      "iconPath": "icons/icon.png"
     },
     "security": {
       "csp": null
-    },
-    "systemTray": {
-      "iconPath": "icons/icon.png"
-    },
-    "updater": {
-      "active": false
     },
     "windows": [
       {

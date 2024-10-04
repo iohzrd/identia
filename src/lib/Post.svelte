@@ -30,10 +30,10 @@
   import { homeDir, join } from "@tauri-apps/api/path";
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
-  import { save } from "@tauri-apps/api/dialog";
+  import { save } from "@tauri-apps/plugin-dialog";
   import { select } from "./db";
   import { stripHtml } from "string-strip-html";
-  import { writeBinaryFile } from "@tauri-apps/api/fs";
+  import { writeFile } from "@tauri-apps/plugin-fs";
 
   // import getVideoId from "get-video-id";
   // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
@@ -138,9 +138,10 @@
   }
 
   async function getMediaBlob(filename: string) {
+    const ext = filename.split(".").pop();
     const fileType = {
-      ext: filename.split(".").pop(),
-      mime: ext2mime(filename.split(".").pop()),
+      ext: ext,
+      mime: ext2mime(ext || ""),
     };
     const buf = await getMediaBinary(filename);
     return new Blob([buf], { type: fileType.mime });
@@ -158,10 +159,9 @@
     const user_path = await save({
       defaultPath: path,
     });
-    await writeBinaryFile({
-      path: user_path,
-      contents: await getMediaBinary(filename),
-    });
+    if (typeof user_path === "string") {
+      await writeFile(user_path, await getMediaBinary(filename));
+    }
   }
 
   async function loadVideo(filename: string, idx: number) {
@@ -231,7 +231,9 @@
     // }
 
     for await (const filename of post.files) {
-      const is_video = ext2mime(filename.split(".").pop()).includes("video");
+      const is_video = ext2mime(filename.split(".").pop() || "").includes(
+        "video"
+      );
       if (is_video) {
         // get thumbnail here...
         media = [...media, await getMedia(filename, true)];

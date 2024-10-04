@@ -12,7 +12,7 @@
   import MediaModalComponent from "$lib/MediaModal.svelte";
   import MetaComponent from "$lib/Meta.svelte";
   import PostComponent from "$lib/Post.svelte";
-  import type { IDResult } from "ipfs-core-types/src/root";
+  import type { IDResult } from "kubo-rpc-client";
   import type { Identity, Post } from "$lib/types";
   import { format as formatTime } from "timeago.js";
   import { getIdentity, ipfs, log, updateIdentity } from "$lib/core";

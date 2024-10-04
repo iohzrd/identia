@@ -2,7 +2,7 @@
 name = "identia"
 version = "0.4.10"
 description = "Decentralized, censorship resistant social media on IPFS"
-authors = [ "iohzrd" ]
+authors = ["iohzrd"]
 license = "AGPL-3.0"
 repository = "https://github.com/iohzrd/tauri-svelte"
 default-run = "identia"
@@ -13,23 +13,33 @@ rust-version = "1.70"
 strip = true
 
 [build-dependencies]
-tauri-build = { version = "1", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-feed-rs = "1"
+feed-rs = "2"
 ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"] }
 # ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"], path = "../../rust/rust-ipfs-api/ipfs-api-backend-hyper" }
+reqwest = "0.12.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri = { version = "1", features = ["dialog-all", "fs-all", "http-all", "icon-png", "native-tls-vendored", "path-all", "reqwest-native-tls-vendored", "shell-open", "shell-sidecar", "system-tray"] }
+tauri = { version = "2", features = [
+    "native-tls-vendored",
+    "tray-icon",
+    "native-tls-vendored",
+    "image-png",
+] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-http = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 urlencoding = "2"
-
-[dependencies.tauri-plugin-sql]
-git = "https://github.com/tauri-apps/plugins-workspace"
-features = ["sqlite"]
-branch = "v1"
 
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "lib"]

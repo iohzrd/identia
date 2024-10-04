@@ -44,6 +44,7 @@
   import { multihash } from "is-ipfs";
   import { onMount, onDestroy } from "svelte";
   import { page } from "$app/stores";
+  import type { IDResult } from "kubo-rpc-client";
 
   let isSideNavOpen = false;
 

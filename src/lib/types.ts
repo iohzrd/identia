@@ -1,11 +1,11 @@
 // import type { Message } from "kubo-rpc-client/pubsub/subscribe";
 // import type { Message } from '@libp2p/interface-pubsub'
-import type { PeerId } from "@libp2p/interface-peer-id";
+import type { IDResult } from "kubo-rpc-client";
 
 export interface MessageExtended {
   // pubsub
   data: Uint8Array;
-  from: PeerId;
+  from: IDResult;
   key: Uint8Array;
   sequenceNumber: bigint;
   signature: Uint8Array;

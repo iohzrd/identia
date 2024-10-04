@@ -10,7 +10,7 @@
   import OdyseeEntryComponent from "./WebFeedEntries/OdyseeEntry.svelte";
   import YoutubeEntryComponent from "./WebFeedEntries/YoutubeEntry.svelte";
   import type { WebFeedEntry } from "$lib/types";
-  import { invoke } from "@tauri-apps/api/tauri";
+  import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
   export let entry: WebFeedEntry;

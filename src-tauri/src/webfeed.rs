@@ -9,7 +9,6 @@
 use chrono::{DateTime, Utc};
 use feed_rs;
 use serde::{Deserialize, Serialize};
-use tauri::api::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Feed {
@@ -381,16 +380,10 @@ impl From<feed_rs::model::Person> for Person {
 #[tauri::command]
 pub async fn fetch_webfeed(url: String) -> Feed {
   println!("fetch_webfeed");
-  let client = ClientBuilder::new().build().unwrap();
-  let response = client
-    .send(
-      HttpRequestBuilder::new("GET", &url)
-        .unwrap()
-        .response_type(ResponseType::Text),
-    )
+  let response = reqwest::get(&url)
     .await
     .unwrap();
-  let data: &[u8] = &response.bytes().await.unwrap().data;
+  let data: &[u8] = &response.bytes().await.unwrap();
   let f = feed_rs::parser::parse(data).unwrap();
   println!("{:#?}", f);
 
