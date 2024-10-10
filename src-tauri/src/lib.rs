@@ -11,12 +11,15 @@ mod webfeed;
 use ipfs::{post, repost_webfeed_entry};
 use ipfs_api_backend_hyper::{IpfsApi, IpfsClient};
 use std::env;
-use std::{fs, path::PathBuf};
+use std::fs;
 use tauri;
 use tauri_plugin_shell::ShellExt;
-use tauri_plugin_shell::process::Command;
 use tauri_plugin_shell::process::CommandEvent;
 use tauri::Manager;
+use tauri::{
+  menu::{Menu, MenuItem},
+  tray::TrayIconBuilder,
+};
 use tauri_plugin_sql::{Builder, Migration, MigrationKind};
 use webfeed::fetch_webfeed;
 
@@ -44,6 +47,23 @@ pub fn run() {
       repost_webfeed_entry
     ])
     .setup(|app| {
+      let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+      let menu = Menu::with_items(app, &[&quit_i])?;
+      
+      let tray = TrayIconBuilder::new()
+      .on_menu_event(|app, event| match event.id.as_ref() {
+        "quit" => {
+          tauri::async_runtime::block_on(async move {
+            shutdown_ipfs().await;
+          });
+          app.exit(0);
+        }
+        _ => {}
+      })
+        .menu(&menu)
+        .menu_on_left_click(true)
+        .build(app)?;
+
       let config_dir = app.path().app_config_dir().expect("failed to get home dir");
       // 
 
@@ -124,7 +144,7 @@ pub fn run() {
         // read events such as stdout
         while let Some(event) = rx.recv().await {
           if let CommandEvent::Stdout(line_bytes) = event {
-            let line = String::from_utf8_lossy(&line_bytes);
+            let _line = String::from_utf8_lossy(&line_bytes);
             // write to stdin
             _child.write("message from Rust\n".as_bytes()).unwrap();
           }
