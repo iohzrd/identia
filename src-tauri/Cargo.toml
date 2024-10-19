@@ -21,8 +21,8 @@ feed-rs = "2"
 # ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"] }
 ipfs-api-backend-hyper = { version = "*", features = [
     "with-send-sync",
-], path = "../../rust/rust-ipfs-api/ipfs-api-backend-hyper" }
-reqwest = "0.12.8"
+], path = "../../rust-ipfs-api/ipfs-api-backend-hyper" }
+# reqwest = "0.12.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", features = [
@@ -37,6 +37,20 @@ tauri-plugin-http = "2"
 tauri-plugin-shell = "2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 urlencoding = "2"
+
+
+# monolith deps
+url = "2" # Used for parsing URLs
+encoding_rs = "0" # Used for parsing and converting document charsets
+markup5ever_rcdom = "0.3" # Used for manipulating DOM
+reqwest = { version = "0.12.8", features = [
+    "blocking",
+    "brotli",
+    "default-tls",
+    "deflate",
+    "gzip",
+] }
+monolith = { path = "../monolith/" }
 
 [features]
 default = ["custom-protocol"]

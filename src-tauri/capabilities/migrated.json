@@ -28,6 +28,9 @@
           "url": "http://**/"
         },
         {
+          "url": "http://localhost:8080/"
+        },
+        {
           "url": "https://**/"
         }
       ]

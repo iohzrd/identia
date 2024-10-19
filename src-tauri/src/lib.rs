@@ -7,6 +7,7 @@
 )]
 
 mod ipfs;
+mod webarchiver;
 mod webfeed;
 use ipfs::{post, repost_webfeed_entry};
 use ipfs_api_backend_hyper::{IpfsApi, IpfsClient};
@@ -22,6 +23,7 @@ use tauri::{
 };
 use tauri_plugin_sql::{Builder, Migration, MigrationKind};
 use webfeed::fetch_webfeed;
+use webarchiver::archive_webpage;
 
 
 async fn shutdown_ipfs() {
@@ -42,6 +44,7 @@ pub fn run() {
     .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_http::init())
     .invoke_handler(tauri::generate_handler![
+      archive_webpage,
       fetch_webfeed,
       post,
       repost_webfeed_entry
@@ -84,7 +87,7 @@ pub fn run() {
       //     "config",
       //     "--json",
       //     "API.HTTPHeaders.Access-Control-Allow-Origin",
-      //     r#"["http://localhost:1420","http://127.0.0.1:1430","http://127.0.0.1:5001","tauri://localhost","https://tauri.localhost"]"#,
+      //     r#"["http://127.0.0.1:1420","http://127.0.0.1:3000","http://127.0.0.1:5001","http://localhost:1420","http://localhost:3000","http://localhost:5001","http://webui.ipfs.io.ipns.localhost:8080","https://tauri.localhost","https://webui.ipfs.io","tauri://localhost"]"#,
       //   ]).spawn().unwrap();
       // println!("configuring Access-Control-Allow-Origin: {:?}", output);
     

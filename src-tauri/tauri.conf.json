@@ -10,9 +10,7 @@
     "category": "SocialNetworking",
     "copyright": "iohzrd",
     "targets": "all",
-    "externalBin": [
-      "../node_modules/kubo/kubo/ipfs"
-    ],
+    "externalBin": ["../node_modules/kubo/kubo/ipfs", "../bin/monolith"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -43,7 +41,7 @@
   },
   "productName": "identia",
   "mainBinaryName": "identia",
-  "version": "0.4.10",
+  "version": "0.5.0",
   "identifier": "identia",
   "plugins": {},
   "app": {

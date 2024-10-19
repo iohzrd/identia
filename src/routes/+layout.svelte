@@ -145,9 +145,14 @@
         isSelected={$page.url.pathname.includes("/identity/")}
       />
       <SideNavLink
+        href="/webarchive"
+        text="Web Archive"
+        isSelected={$page.url.pathname.includes("/webarchive")}
+      />
+      <SideNavLink
         href="/webfeed"
         text="Web Feed"
-        isSelected={$page.url.pathname.includes("/webfeed/")}
+        isSelected={$page.url.pathname.includes("/webfeed")}
       />
       <SideNavMenu text="Topic Feeds" expanded>
         {#each subs as topic}
@@ -178,6 +183,11 @@
           on:click={() => (topic_modal_open = !topic_modal_open)}
         />
       </SideNavMenu>
+      <SideNavLink
+        href="/settings"
+        text="Settings"
+        isSelected={$page.url.pathname.includes("/settings/")}
+      />
 
       <div style="bottom: 0; position: absolute; width: 100%;">
         <SideNavDivider />
