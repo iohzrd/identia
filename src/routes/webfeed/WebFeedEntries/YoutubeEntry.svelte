@@ -7,14 +7,18 @@
   import { ExpandableTile, Link } from "carbon-components-svelte";
   import { stripHtml } from "string-strip-html";
 
-  export let entry: WebFeedEntry;
+  interface Props {
+    entry: WebFeedEntry;
+  }
+
+  let { entry }: Props = $props();
 
   let video_link: string = entry.links.length > 0 ? entry.links[0] : "";
   let video_id_obj = getVideoId(video_link);
   let description: string =
-    entry.media.length > 0 && typeof entry.media[0].description == "string"
+    $state(entry.media.length > 0 && typeof entry.media[0].description == "string"
       ? entry.media[0].description
-      : "";
+      : "");
   description = stripHtml(description).result;
   description = linkifyHtml(description, {
     nl2br: true,
@@ -33,10 +37,14 @@
   <LiteYouTube videoId={video_id_obj.id} videoTitle={entry.title} />
 </div>
 <ExpandableTile tileExpandedLabel="Show less" tileCollapsedLabel="Show more">
-  <div slot="above">
-    {@html description.slice(0, first_br)}
-  </div>
-  <div slot="below">
-    {@html description.slice(first_br, description.length)}
-  </div>
+  {#snippet above()}
+    <div >
+      {@html description.slice(0, first_br)}
+    </div>
+  {/snippet}
+  {#snippet below()}
+    <div >
+      {@html description.slice(first_br, description.length)}
+    </div>
+  {/snippet}
 </ExpandableTile>

@@ -13,7 +13,11 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
-  export let entry: WebFeedEntry;
+  interface Props {
+    entry: WebFeedEntry;
+  }
+
+  let { entry }: Props = $props();
   // export let removePostFromFeed: Function;
 
   let deleting: boolean = false;

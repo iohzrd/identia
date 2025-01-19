@@ -7,14 +7,18 @@
   import { getLongestString } from "$lib/utils";
   import { stripHtml } from "string-strip-html";
 
-  export let entry: WebFeedEntry;
+  interface Props {
+    entry: WebFeedEntry;
+  }
+
+  let { entry }: Props = $props();
 
   let stripOpts = {
     onlyStripTags: ["p"],
     stripTogetherWithTheirContents: ["p"],
   };
 
-  let body: string = getLongestString([entry.content, entry.summary]);
+  let body: string = $state(getLongestString([entry.content, entry.summary]));
   // this strips the thumbnail from the body
   body = stripHtml(body, stripOpts).result;
   body = linkifyHtml(body, { target: "_blank" });
@@ -35,10 +39,14 @@
   <GenericMediaComponent {entry} />
 {/if}
 <ExpandableTile tileExpandedLabel="Show less" tileCollapsedLabel="Show more">
-  <div slot="above">
-    {@html body.slice(0, first_br)}
-  </div>
-  <div slot="below">
-    {@html body.slice(first_br, body.length)}
-  </div>
+  {#snippet above()}
+    <div >
+      {@html body.slice(0, first_br)}
+    </div>
+  {/snippet}
+  {#snippet below()}
+    <div >
+      {@html body.slice(first_br, body.length)}
+    </div>
+  {/snippet}
 </ExpandableTile>

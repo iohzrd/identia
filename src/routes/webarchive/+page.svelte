@@ -3,15 +3,16 @@
   import { onMount, onDestroy } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
 
-  let main: any;
+  let main: any = $state();
   let height: number = 1000;
   console.log("clientHeight", height);
 
-  let url =
-    "https://apnews.com/article/israel-palestinians-hamas-war-lebanon-hezbollah-10-10-2024-a5e53cdd4fca30be1909506b5c777922";
+  let url = $state(
+    "https://apnews.com/article/israel-palestinians-hamas-war-lebanon-hezbollah-10-10-2024-a5e53cdd4fca30be1909506b5c777922"
+  );
   let htmlString: string = "";
   let blob: Blob;
-  let blobUrl: string;
+  let blobUrl: string = $state("");
   const urlCreator = window.URL || window.webkitURL;
 
   async function fetchUrl() {

@@ -13,11 +13,15 @@
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore } from "$lib/pubsub";
 
-  export let comment: MessageExtended;
+  interface Props {
+    comment: MessageExtended;
+  }
 
-  let reply: string = "";
-  let replying = false;
-  let sub_comments: any[] = [];
+  let { comment }: Props = $props();
+
+  let reply: string = $state("");
+  let replying = $state(false);
+  let sub_comments: any[] = $state([]);
   let unsubscribe: any;
 
   async function postReply() {

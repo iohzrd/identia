@@ -5,13 +5,20 @@
   import { Splide, SplideSlide } from "@splidejs/svelte-splide";
   import { onMount, onDestroy } from "svelte";
 
-  export let start: number;
-  export let media: Media[];
-  export let open: boolean;
-  $: filename =
-    typeof Array.isArray(media) && media.length > 0
-      ? media[start].filename
-      : "";
+  interface Props {
+    start: number;
+    media: Media[];
+    open: boolean;
+  }
+
+  let {
+    start = $bindable(),
+    media = $bindable(),
+    open = $bindable(),
+  }: Props = $props();
+  let filename = $derived(
+    typeof Array.isArray(media) && media.length > 0 ? media[start].filename : ""
+  );
 
   onMount(async () => {
     media = media.filter((m) => m.filename != "post.json");

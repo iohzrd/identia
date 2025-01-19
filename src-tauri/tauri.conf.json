@@ -10,7 +10,7 @@
     "category": "SocialNetworking",
     "copyright": "iohzrd",
     "targets": "all",
-    "externalBin": ["../node_modules/kubo/kubo/ipfs", "../bin/monolith"],
+    "externalBin": ["../node_modules/kubo/kubo/ipfs"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

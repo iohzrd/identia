@@ -9,14 +9,10 @@
   import { select } from "$lib/db";
 
   let ipfs_info: IDResult;
-  let ipfs_id: string;
-  let update_feed_interval = null;
+  let ipfs_id: string = $state("");
+  let update_feed_interval: any = null;
   let limit: number = 10;
-  let feed: Post[] = [];
-  $: newest_ts = feed.length > 0 ? feed[0].timestamp : 0;
-  $: oldest_ts = feed.length > 0 ? feed[feed.length - 1].timestamp : ts();
-  $: feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${ipfs_id}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
+  let feed: Post[] = $state([]);
 
   let media_modal_idx = 0;
   let media_modal_media = [];
@@ -67,6 +63,16 @@
   onDestroy(() => {
     clearInterval(update_feed_interval);
   });
+  let newest_ts = $derived(feed.length > 0 ? feed[0].timestamp : 0);
+  let oldest_ts = $derived(
+    feed.length > 0 ? feed[feed.length - 1].timestamp : ts()
+  );
+  let feed_query = $derived(
+    `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`
+  );
+  let new_posts_query = $derived(
+    `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${ipfs_id}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`
+  );
 </script>
 
 <NewPostComponent {insertPostIntoFeed} />
@@ -79,10 +85,10 @@
 {#if feed.length >= limit}
   <div
     use:inview={{}}
-    on:enter={(event) => {
+    onenter={(event) => {
       if (event.detail.inView) {
         getFeedPage();
       }
     }}
-  />
+  ></div>
 {/if}

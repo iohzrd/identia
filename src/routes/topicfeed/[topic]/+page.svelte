@@ -7,11 +7,15 @@
   import { onMount, onDestroy } from "svelte";
   import { pubsubStore, globalPubsubHandler } from "$lib/pubsub";
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   let unsubscribe: any;
-  let posts: MessageExtended[] = [];
-  let body: string = "";
+  let posts: MessageExtended[] = $state([]);
+  let body: string = $state("");
 
   async function post() {
     ipfs.pubsub.publish(

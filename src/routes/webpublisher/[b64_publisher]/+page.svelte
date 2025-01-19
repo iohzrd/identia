@@ -6,14 +6,18 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount, onDestroy } from "svelte";
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
   let publisher = atob(data.b64_publisher);
 
-  let entries: WebFeedEntry[] = [];
-  let feed: WebFeed;
-  let links: string[] = [];
-  let logo: object | null;
-  let published_or_updated: string | null = null;
+  let entries: WebFeedEntry[] = $state([]);
+  let feed: WebFeed = $state();
+  let links: string[] = $state([]);
+  let logo: object | null = $state(null);
+  let published_or_updated: string | null = $state(null);
   let title: string = "";
 
   onMount(async () => {

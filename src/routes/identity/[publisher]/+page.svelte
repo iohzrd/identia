@@ -19,24 +19,32 @@
   import { onMount, onDestroy } from "svelte";
   import { select } from "$lib/db";
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   let ipfs_info: IDResult;
-  let ipfs_id: string;
+  let ipfs_id: string = $state("");
 
-  let identity: Identity;
-  $: timeago = formatTime(identity ? identity["timestamp"] : 0);
-  $: datetime = new Date(identity ? identity["timestamp"] : 0).toLocaleString();
+  let identity: Identity = $state();
+  let timeago = $derived(formatTime(identity ? identity["timestamp"] : 0));
+  let datetime = $derived(
+    new Date(identity ? identity["timestamp"] : 0).toLocaleString()
+  );
 
-  let posts: Post[] = [];
-  let following: Identity[] = [];
-  let posts_oldest_ts: number = new Date().getTime();
+  let posts: Post[] = $state([]);
+  let following: Identity[] = $state([]);
+  let posts_oldest_ts: number = $state(new Date().getTime());
   let posts_limit: number = 5;
-  $: posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher = '${data.publisher}' AND posts.timestamp < ${posts_oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${posts_limit}`;
+  let posts_query = $derived(
+    `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher = '${data.publisher}' AND posts.timestamp < ${posts_oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${posts_limit}`
+  );
 
-  let media_modal_idx = 0;
-  let media_modal_media = [];
-  let media_modal_open = false;
+  let media_modal_idx = $state(0);
+  let media_modal_media = $state([]);
+  let media_modal_open = $state(false);
 
   async function getPostsPage() {
     if (identity && identity.posts) {

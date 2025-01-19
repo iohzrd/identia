@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let main: any;
-  let height: Number = 1000;
+  let main: any = $state();
+  let height: Number = $state(1000);
 
   onMount(() => {
     height = main.clientHeight;

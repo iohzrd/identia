@@ -45,25 +45,30 @@
   import { onMount, onDestroy } from "svelte";
   import { page } from "$app/stores";
   import type { IDResult } from "kubo-rpc-client";
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  let isSideNavOpen = false;
+  let { children }: Props = $props();
 
-  let ipfs_id: string;
+  let isSideNavOpen = $state(false);
+
+  let ipfs_id: string = $state("");
   let ipfs_info: IDResult;
   let republishInterval: any;
 
-  let app_version: string;
-  let ipfs_version: string;
-  let tauri_version: string;
+  let app_version: string = $state("");
+  let ipfs_version: string = $state("");
+  let tauri_version: string = $state("");
 
-  let follow_modal_open: boolean = false;
-  let follow_waiting: boolean = false;
-  let publisher_to_follow: string = "";
-  $: publisher_invalid = !multihash(publisher_to_follow);
+  let follow_modal_open: boolean = $state(false);
+  let follow_waiting: boolean = $state(false);
+  let publisher_to_follow: string = $state("");
+  let publisher_invalid = $derived(!multihash(publisher_to_follow));
 
-  let topic_modal_open = false;
-  let topic_to_follow: string = "";
-  let subs: string[] = [];
+  let topic_modal_open = $state(false);
+  let topic_to_follow: string = $state("");
+  let subs: string[] = $state([]);
 
   function clearFollowModal() {
     follow_waiting = false;
@@ -118,7 +123,8 @@
     platformName="identia"
     persistentHamburgerMenu={true}
   >
-    <svelte:fragment slot="skip-to-content">
+    <!-- @migration-task: migrate this slot by hand, `skip-to-content` is an invalid identifier -->
+  <svelte:fragment slot="skip-to-content">
       <SkipToContent />
     </svelte:fragment>
 
@@ -206,7 +212,7 @@
 
   <Content>
     <Grid>
-      <slot />
+      {@render children?.()}
     </Grid>
   </Content>
 

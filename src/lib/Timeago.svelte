@@ -2,11 +2,15 @@
   import { format } from "timeago.js";
   import { onMount, onDestroy } from "svelte";
 
-  export let timestamp: number;
+  interface Props {
+    timestamp: number;
+  }
+
+  let { timestamp }: Props = $props();
 
   let timer: ReturnType<typeof setTimeout>;
   let timeout_time = 1000;
-  let timeago: string = format(timestamp);
+  let timeago: string = $state(format(timestamp));
   let datetime: string = new Date(timestamp).toLocaleString();
 
   function newTimeout() {

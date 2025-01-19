@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Meta from "./Meta.svelte";
   import {
     Button,
     ButtonSet,
@@ -10,11 +11,15 @@
   } from "carbon-components-svelte";
   import { onMount, onDestroy } from "svelte";
 
-  export let readonly: boolean;
-  export let meta: { [k: string]: any } = {};
-  export let depth: number = 0;
-  let new_meta_key: string = "";
-  let new_meta_index: number = 0;
+  interface Props {
+    readonly: boolean;
+    meta?: { [k: string]: any };
+    depth?: number;
+  }
+
+  let { readonly, meta = $bindable({}), depth = 0 }: Props = $props();
+  let new_meta_key: string = $state("");
+  let new_meta_index: number = $state(0);
   let meta_types = [
     { id: 0, text: "string", value: "" },
     { id: 1, text: "object", value: {} },
@@ -52,7 +57,7 @@
 
         <Column sm={8} md={8} lg={8}>
           {#if isObject(meta[k])}
-            <svelte:self meta={meta[k]} {readonly} depth={depth + 1} />
+            <Meta meta={meta[k]} {readonly} depth={depth + 1} />
           {:else if Array.isArray(meta[k])}
             {meta[k]}
           {:else if typeof meta[k] === "string"}

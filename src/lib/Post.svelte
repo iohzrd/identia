@@ -38,30 +38,39 @@
   // import getVideoId from "get-video-id";
   // import { Player, Youtube, Dailymotion, Vimeo } from "@vime/svelte";
 
-  export let removePostFromFeed: Function = () => {};
-  export let ipfs_id: string = "";
-  export let post: Post;
-  export let show_comments: boolean = false;
+  interface Props {
+    removePostFromFeed?: Function;
+    ipfs_id?: string;
+    post: Post;
+    show_comments?: boolean;
+  }
+
+  let {
+    removePostFromFeed = () => {},
+    ipfs_id = "",
+    post,
+    show_comments = false,
+  }: Props = $props();
 
   let unsubscribe: any;
 
   // media modal props...
-  let media_modal_idx = 0;
-  let media_modal_media: Media[] = [];
-  let media_modal_open = false;
+  let media_modal_idx = $state(0);
+  let media_modal_media: Media[] = $state([]);
+  let media_modal_open = $state(false);
 
-  let deleting: boolean = false;
-  let media: Media[] = [];
+  let deleting: boolean = $state(false);
+  let media: Media[] = $state([]);
 
-  let comments: MessageExtended[] = [];
-  let replying = false;
-  let reply: string = "";
+  let comments: MessageExtended[] = $state([]);
+  let replying = $state(false);
+  let reply: string = $state("");
 
   let stripOpts = {
     onlyStripTags: ["script", "style", "xml", "sandbox"],
     stripTogetherWithTheirContents: ["script", "style", "xml", "sandbox"],
   };
-  let bodyHTML = post.body;
+  let bodyHTML = $state(post.body);
   bodyHTML = stripHtml(bodyHTML, stripOpts).result.replace(/\n/g, "<br>");
   bodyHTML = linkifyHtml(bodyHTML, { target: "_blank" });
 
@@ -352,8 +361,7 @@
                   {#if mediaObj.thumbnail_for}
                     <div
                       bind:this={mediaObj.element}
-                      on:click={() => loadVideo(mediaObj.filename, idx)}
-                      on:keypress
+                      onclick={() => loadVideo(mediaObj.filename, idx)}
                     >
                       <PlayFilled size={32} />
                     </div>
@@ -368,8 +376,7 @@
                     <img
                       alt=""
                       bind:this={mediaObj.element}
-                      on:click={() => openMediaModal(idx)}
-                      on:keypress
+                      onclick={() => openMediaModal(idx)}
                       src={mediaObj.url}
                     />
                   {/if}
@@ -378,7 +385,7 @@
                     bind:this={mediaObj.element}
                     controls
                     src={mediaObj.url}
-                  />
+                  ></audio>
                 {:else if mediaObj.content_type.includes("video")}
                   <video
                     bind:this={mediaObj.element}

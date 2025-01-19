@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler } from "svelte/legacy";
+
+  const bubble = createBubbler();
   import PlayFilled from "carbon-icons-svelte/lib/PlayFilled.svelte";
   import type {
     WebFeedEntry,
@@ -8,9 +11,13 @@
   // import { fetch, ResponseType } from "@tauri-apps/api/http";
   import { onMount, onDestroy } from "svelte";
 
-  export let entry: WebFeedEntry;
+  interface Props {
+    entry: WebFeedEntry;
+  }
 
-  let media = [];
+  let { entry }: Props = $props();
+
+  let media = $state([]);
   let mediaObjects: WebFeedMediaObject[] = entry.media.map((obj) => obj);
   let mediaContent: WebFeedMediaContent[] = mediaObjects.flatMap((m) =>
     m.content.map((c) => c)
@@ -52,8 +59,8 @@
   {#if mediaObj.thumbnail_for}
     <div
       bind:this={mediaObj.element}
-      on:click={() => loadMedia(mediaObj, idx)}
-      on:keypress
+      onclick={() => loadMedia(mediaObj, idx)}
+      onkeypress={bubble("keypress")}
     >
       {#if typeof mediaObj.thumbnail_url === "string"}
         <img src={mediaObj.thumbnail_url} alt="" />
@@ -62,7 +69,7 @@
       {/if}
     </div>
   {:else if mediaObj.content_type.includes("audio/")}
-    <audio bind:this={mediaObj.element} controls src={mediaObj.url} />
+    <audio bind:this={mediaObj.element} controls src={mediaObj.url}></audio>
   {:else if mediaObj.content_type.includes("image/")}
     <img bind:this={mediaObj.element} src={mediaObj.url} alt={mediaObj.url} />
   {:else if mediaObj.content_type.includes("video/")}

@@ -7,8 +7,12 @@
   import { getPostFromDB } from "$lib/core";
   import { onMount, onDestroy } from "svelte";
 
-  export let data: PageData;
-  let post: Post | null = null;
+  // interface Props {
+  //   data: PageData;
+  // }
+
+  // let { data }: Props = $props();
+  let post: Post | null = $state(null);
   let show_comments: boolean = true;
 
   onMount(async () => {

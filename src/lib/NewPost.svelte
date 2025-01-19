@@ -7,7 +7,7 @@
     ProgressBar,
     TextArea,
   } from "carbon-components-svelte";
-  import FileDrop from "svelte-tauri-filedrop";
+  // import FileDrop from "svelte-tauri-filedrop";
   import type { Identity, Post, PostRequest, PostResponse } from "$lib/types";
   import { addPost, getIdentityFromDB } from "$lib/core";
   import { invoke } from "@tauri-apps/api/core";
@@ -15,14 +15,18 @@
   import { open } from "@tauri-apps/plugin-dialog";
   import { stripHtml } from "string-strip-html";
 
-  export let insertPostIntoFeed: Function;
+  interface Props {
+    insertPostIntoFeed: Function;
+  }
+
+  let { insertPostIntoFeed }: Props = $props();
 
   let identity: Identity;
 
-  let body: string = "";
-  let files: string[] = [];
+  let body: string = $state("");
+  let files: string[] = $state([]);
   let meta: object = {};
-  let posting = false;
+  let posting = $state(false);
 
   function getFilename(path: string) {
     return path.split("/").pop();
@@ -101,33 +105,32 @@
 
 <Form>
   <FormGroup>
-    <FileDrop {handleFiles}>
-      <TextArea
-        bind:value={body}
-        disabled={posting}
-        labelText="New post"
-        placeholder="What's happening?"
+    <TextArea
+      bind:value={body}
+      disabled={posting}
+      labelText="New post"
+      placeholder="What's happening?"
+    />
+
+    {#each files as file, i}
+      <FileUploaderItem
+        status="edit"
+        name={file}
+        on:delete={() => removeFile(i)}
       />
+    {/each}
+    <Button on:click={openDialog} disabled={posting}>Add files</Button>
 
-      {#each files as file, i}
-        <FileUploaderItem
-          status="edit"
-          name={file}
-          on:delete={() => removeFile(i)}
-        />
-      {/each}
-      <Button on:click={openDialog} disabled={posting}>Add files</Button>
-
-      {#if !posting}
-        <Button
-          on:click={post}
-          disabled={posting || (files.length < 1 && body.length < 1)}
-        >
-          Post
-        </Button>
-      {:else}
-        <ProgressBar helperText="Publishing..." />
-      {/if}
-    </FileDrop>
+    {#if !posting}
+      <Button
+        on:click={post}
+        disabled={posting || (files.length < 1 && body.length < 1)}
+      >
+        Post
+      </Button>
+    {:else}
+      <ProgressBar helperText="Publishing..." />
+    {/if}
+    <!-- <FileDrop {handleFiles}></FileDrop> -->
   </FormGroup>
 </Form>

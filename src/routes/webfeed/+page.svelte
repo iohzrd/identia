@@ -11,15 +11,11 @@
   let ipfs_id: string;
   let update_feed_interval = null;
   let limit: number = 10;
-  let feed: WebFeedEntry[] = [];
-  $: newest_ts = feed.length > 0 ? feed[0].timestamp : 0;
-  $: oldest_ts = feed.length > 0 ? feed[feed.length - 1].timestamp : ts();
-  $: web_feed_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`;
-  $: new_posts_query = `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${ipfs_id}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`;
+  let feed: WebFeedEntry[] = $state([]);
 
-  let media_modal_idx: number = 0;
-  let media_modal_media: Media[] = [];
-  let media_modal_open: boolean = false;
+  let media_modal_idx: number = $state(0);
+  let media_modal_media: Media[] = $state([]);
+  let media_modal_open: boolean = $state(false);
 
   function ts() {
     return new Date().getTime();
@@ -70,6 +66,16 @@
   onDestroy(() => {
     // clearInterval(update_feed_interval);
   });
+  let newest_ts = $derived(feed.length > 0 ? feed[0].timestamp : 0);
+  let oldest_ts = $derived(
+    feed.length > 0 ? feed[feed.length - 1].timestamp : ts()
+  );
+  let web_feed_query = $derived(
+    `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.timestamp < ${oldest_ts} ORDER BY posts.timestamp DESC LIMIT ${limit}`
+  );
+  let new_posts_query = $derived(
+    `SELECT posts.cid, posts.body, posts.files, posts.meta, posts.publisher, posts.timestamp, identities.display_name FROM posts INNER JOIN identities ON identities.publisher = posts.publisher WHERE posts.publisher != '${ipfs_id}' AND posts.timestamp > ${newest_ts} ORDER BY posts.timestamp DESC`
+  );
 </script>
 
 <!-- keyed each block required for reactivity... -->
