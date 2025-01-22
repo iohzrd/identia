@@ -1,0 +1,170 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/rust
+{
+	"name": "identia",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+  "runArgs": [
+    "--cap-add=SYS_ADMIN",
+    "--cap-add=SYS_RAWIO",
+    "--group-add=video",
+    "--group-add=render"
+  ],
+	"containerEnv": {
+      "DISPLAY": "${localEnv:DISPLAY}",
+      "XDG_RUNTIME_DIR": "/tmp",
+      "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+      "QT_QPA_PLATFORM": "wayland"
+	},
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	// Use 'mounts' to make the cargo cache persistent in a Docker Volume.
+	 "mounts": [
+	 	{
+	 		"source": "devcontainer-cargo-cache-${devcontainerId}",
+	 		"target": "/usr/local/cargo",
+	 		"type": "volume"
+	 	},
+       {
+         "source": "${localEnv:XDG_RUNTIME_DIR}/${localEnv:WAYLAND_DISPLAY}",
+         "target": "/tmp/${localEnv:WAYLAND_DISPLAY}",
+         "type": "bind"
+       },
+       {
+         "source": "/dev/dri",
+         "target": "/dev/dri",
+         "type": "bind"
+       }
+	 ],
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "rustc --version",
+	// Configure tool-specific properties.
+	"customizations": {
+      "jetbrains" : {
+        "backend" : "RustRover"
+      },
+		"vscode": {
+			"extensions": [
+				"tauri-apps.tauri-vscode",
+				"rust-lang.rust-analyzer",
+				"vadimcn.vscode-lldb",
+				"vuetifyjs.vuetify-vscode",
+				"Vue.volar",
+				"GaiyaObedMathias.vuetify-snippets",
+				"ms-vscode.vscode-typescript-next"
+			],
+			"settings": {
+				"launch": {
+					"version": "0.2.0",
+					"configurations": [
+						{
+							"type": "node",
+							"request": "launch",
+							"name": "Tauri Run Dev",
+							"preLaunchTask": "tauri:dev"
+						},
+						{
+							"type": "lldb",
+							"request": "launch",
+							"name": "Tauri Development Debug",
+							"cargo": {
+								"args": [
+									"build",
+									"--manifest-path=${workspaceFolder}/src-tauri/Cargo.toml",
+									"--no-default-features"
+								]
+							},
+							// task for the `beforeDevCommand` if used, must be configured in `.vscode/tasks.json`
+							"preLaunchTask": "ui:dev"
+						},
+						{
+							"type": "lldb",
+							"request": "launch",
+							"name": "Tauri Production Debug",
+							"cargo": {
+								"args": [
+									"build",
+									"--release",
+									"--manifest-path=${workspaceFolder}/src-tauri/Cargo.toml"
+								]
+							},
+							// task for the `beforeBuildCommand` if used, must be configured in `.vscode/tasks.json`
+							"preLaunchTask": "ui:build"
+						}
+					],
+					"compounds": []
+				},
+				"tasks": {
+					"version": "2.0.0",
+					"tasks": [
+						{
+							"label": "tauri:dev",
+							"command": "npm",
+							"args": [
+								"run",
+								"tauri",
+								"dev"
+							]
+						},
+						{
+							"label": "ui:dev",
+							"type": "shell",
+							// `dev` keeps running in the background
+							// ideally you should also configure a `problemMatcher`
+							// see https://code.visualstudio.com/docs/editor/tasks#_can-a-background-task-be-used-as-a-prelaunchtask-in-launchjson,
+							"problemMatcher": {
+								"owner": "vite",
+								"fileLocation": "relative",
+								"background": {
+									"activeOnStart": true,
+									"beginsPattern": "^\\s*VITE v\\d\\.\\d\\.\\d\\s+ ready in \\d+ m*s$",
+									"endsPattern": "Local:\\s*http:\/\/localhost:\\d+\/"
+								},
+								"pattern": {
+									"regexp": ".*"
+								}
+							},
+							"isBackground": true,
+							// change this to your `beforeDevCommand`:
+							"command": "npm",
+							"args": [
+								"run",
+								"dev"
+							]
+						},
+						{
+							"label": "ui:build",
+							"type": "shell",
+							"problemMatcher": {
+								"owner": "vite",
+								"fileLocation": "relative",
+								"background": {
+									"activeOnStart": true,
+									"beginsPattern": "^\\s*VITE v\\d\\.\\d\\.\\d\\s+ ready in \\d+ m*s$",
+									"endsPattern": "Local:\\s*http:\/\/localhost:\\d+\/"
+								},
+								"pattern": {
+									"regexp": ".*"
+								}
+							},
+							"isBackground": true,
+							// change this to your `beforeBuildCommand`:
+							"command": "npm",
+							"args": [
+								"run",
+								"build"
+							]
+						}
+					]
+				}
+			}
+		}
+	},
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "root"
+}
