@@ -18,10 +18,10 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 feed-rs = "2"
-# ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"] }
-ipfs-api-backend-hyper = { version = "*", features = [
-    "with-send-sync",
-], path = "../../rust-ipfs-api/ipfs-api-backend-hyper" }
+ ipfs-api-backend-hyper = { version = "*", features = ["with-send-sync"] }
+#ipfs-api-backend-hyper = { version = "*", features = [
+#    "with-send-sync",
+#], path = "../../rust-ipfs-api/ipfs-api-backend-hyper" }
 iroh = "0"
 # reqwest = "0.12.8"
 serde = { version = "1", features = ["derive"] }
@@ -51,11 +51,11 @@ reqwest = { version = "0.12", features = [
     "deflate",
     "gzip",
 ] }
-monolith = { path = "../monolith/" }
+monolith = { path = "../monolith" }
 
-[features]
-default = ["custom-protocol"]
-custom-protocol = ["tauri/custom-protocol"]
+#[features]
+#default = ["custom-protocol"]
+#custom-protocol = ["tauri/custom-protocol"]
 
 [lib]
 name = "app_lib"

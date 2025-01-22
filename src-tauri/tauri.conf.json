@@ -51,14 +51,13 @@
     },
     "security": {
       "csp": null
-    },
+      },
     "windows": [
       {
         "fullscreen": false,
-        "height": 1080,
+        "maximized": true,
         "resizable": true,
-        "title": "identia",
-        "width": 1920
+        "title": "identia"
       }
     ]
   }
