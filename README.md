@@ -1,5 +1,7 @@
 # identia
 
+> **Deprecated:** This project is no longer maintained. Please see [iroh-tauri-app](https://github.com/iohzrd/iroh-tauri-app/tree/master) instead.
+
 Peer-to-peer, censorship resistant social media on IPFS. Plus experimental RSS reader.
 
 Successor to [follow](https://github.com/iohzrd/follow)
